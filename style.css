@@ -1,0 +1,656 @@
+/**
+ * Duke Nukem 1 Map Viewer - Stylesheet
+ * * Design System:
+ * - Dark theme with Duke Nukem-inspired accent colors
+ * - Retro-futuristic aesthetic
+ * - Pixel-perfect rendering for game graphics
+ */
+
+/* ========================================================================== */
+/* CSS CUSTOM PROPERTIES (DESIGN TOKENS)                                     */
+/* ========================================================================== */
+
+:root {
+    /* Color Palette */
+    --bg-app: #0f172a;           /* Main application background */
+    --bg-panel: #1e293b;         /* Sidebar and header background */
+    --bg-input: #020617;         /* Input fields and log boxes */
+    
+    --accent: #38bdf8;           /* Primary accent (Interface Blue) */
+    --duke-yellow: #ffcc00;      /* Duke Nukem signature color */
+    --accent-hover: #7dd3fc;     /* Hover state for accents */
+    --accent-dim: rgba(56, 189, 248, 0.1); /* Subtle accent overlay */
+    
+    --text-main: #f1f5f9;        /* Primary text color */
+    --text-muted: #94a3b8;       /* Secondary/muted text */
+    
+    --border: #334155;           /* Border color */
+    
+    /* Layout Values */
+    --radius: 12px;              /* Standard border radius */
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3); /* Standard shadow */
+}
+
+/* ========================================================================== */
+/* GLOBAL RESETS AND BASE STYLES                                             */
+/* ========================================================================== */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+    background-color: var(--bg-app);
+    color: var(--text-main);
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* ========================================================================== */
+/* TYPOGRAPHY                                                                 */
+/* ========================================================================== */
+
+h1 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--duke-yellow);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-shadow: 0 0 10px rgba(255, 204, 0, 0.2);
+    white-space: nowrap;
+}
+
+h3 {
+    margin: 0;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    font-weight: 700;
+    transition: color 0.2s;
+}
+
+/* ========================================================================== */
+/* LAYOUT STRUCTURE                                                           */
+/* ========================================================================== */
+
+/* -------------------------------------------------------------------------- */
+/* Header Bar                                                                 */
+/* -------------------------------------------------------------------------- */
+
+header {
+    background: var(--bg-panel);
+    padding: 0 20px;
+    height: 50px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    box-shadow: var(--shadow);
+    z-index: 20;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.header-sep {
+    color: var(--border);
+    font-size: 1.2rem;
+    user-select: none;
+}
+
+/* Header Status Display */
+#tile-count-display {
+    font-family: 'Consolas', monospace;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+/* Emphasize map name in header */
+#tile-count-display strong {
+    color: var(--duke-yellow);
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 0.5px;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Main Layout Wrapper                                                        */
+/* -------------------------------------------------------------------------- */
+
+.layout-wrapper {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Sidebar                                                                    */
+/* -------------------------------------------------------------------------- */
+
+.sidebar {
+    width: 320px;
+    background: var(--bg-panel);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    gap: 20px;
+    flex-shrink: 0;
+    z-index: 10;
+    transition: all 0.2s;
+}
+
+.sidebar-section {
+    display: flex;
+    flex-direction: column;
+    min-height: 0; /* Allow flex children to shrink */
+    transition: flex 0.3s ease;
+}
+
+/* COLLAPSED STATE LOGIC */
+/* When collapsed, override inline flex styles to shrink, and hide content */
+.sidebar-section.collapsed {
+    flex: 0 0 auto !important; 
+}
+
+.sidebar-section.collapsed .scroll-box,
+.sidebar-section.collapsed .control-box {
+    display: none;
+}
+
+.sidebar-section.collapsed .collapse-arrow {
+    transform: rotate(-90deg);
+}
+
+/* Header Interactions */
+.collapsible-header {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.collapsible-header:hover h3 {
+    color: var(--text-main);
+}
+
+.collapsible-header:hover .collapse-arrow {
+    border-top-color: var(--text-main);
+}
+
+/* Triangle Arrow using CSS borders */
+.collapse-arrow {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid var(--text-muted);
+    margin-right: 8px;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+/* Header row for sections (Assets title + Filters) */
+.section-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px; /* Standard spacing above the list */
+}
+
+.episode-filters {
+    display: flex;
+    gap: 12px; /* Reduce horizontal distance */
+    align-items: center;
+}
+
+.episode-filters label {
+    font-size: 0.8rem;
+    color: var(--text-main);
+    cursor: pointer;
+    gap: 6px;
+}
+
+.log-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+#debug-canvas {
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    background: #000;
+}
+
+/* ========================================================================== */
+/* FORM ELEMENTS                                                              */
+/* ========================================================================== */
+
+/* -------------------------------------------------------------------------- */
+/* File Input Button (Styled Label)                                           */
+/* -------------------------------------------------------------------------- */
+
+.btn-file-select {
+    background: var(--bg-input);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+}
+
+.btn-file-select:hover {
+    border-color: var(--accent);
+    color: var(--text-main);
+    background: var(--bg-panel);
+}
+
+.btn-file-select:active {
+    background: var(--accent);
+    color: var(--bg-app);
+}
+
+/* Text status next to button */
+#file-input-status {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-left: 0px; /* Spacing requested */
+}
+
+/* -------------------------------------------------------------------------- */
+/* Number Input                                                               */
+/* -------------------------------------------------------------------------- */
+
+input[type="number"] {
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    color: var(--accent);
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-family: monospace;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Labels                                                                     */
+/* -------------------------------------------------------------------------- */
+
+label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: var(--text-main);
+    cursor: pointer;
+    user-select: none;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Checkboxes and Radio Buttons                                               */
+/* -------------------------------------------------------------------------- */
+
+input[type="checkbox"],
+input[type="radio"] {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    position: relative;
+    cursor: pointer;
+}
+
+/* Radio buttons are circular */
+input[type="radio"] {
+    border-radius: 50%;
+}
+
+/* Checked state */
+input[type="checkbox"]:checked,
+input[type="radio"]:checked {
+    background: var(--accent);
+    border-color: var(--accent);
+}
+
+/* Checkmark for checkboxes */
+input[type="checkbox"]:checked::after {
+    content: '✓';
+    font-size: 10px;
+    color: var(--bg-app);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-weight: bold;
+}
+
+/* Dot for radio buttons */
+input[type="radio"]:checked::after {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: var(--bg-app);
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* ========================================================================== */
+/* SCROLLABLE CONTAINERS                                                      */
+/* ========================================================================== */
+
+.scroll-box {
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow-y: auto;
+    flex: 1;
+    padding: 10px;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 0.8rem;
+}
+
+/* ========================================================================== */
+/* LOG ENTRIES                                                                */
+/* ========================================================================== */
+
+.log-entry {
+    margin-bottom: 4px;
+    border-bottom: 1px solid #1e293b;
+    padding-bottom: 2px;
+}
+
+.log-error {
+    color: #ef4444;
+}
+
+.log-success {
+    color: var(--duke-yellow);
+    font-weight: bold;
+}
+
+.log-info {
+    color: var(--text-muted);
+}
+
+.log-warning {
+    color: #f59e0b;
+}
+
+/* ========================================================================== */
+/* FILE LIST (COLLAPSIBLE DETAILS)                                           */
+/* ========================================================================== */
+
+details {
+    margin-bottom: 8px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid transparent;
+}
+
+details[open] {
+    border-color: var(--border);
+    background: var(--bg-input);
+}
+
+summary {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--text-muted);
+    outline: none;
+    display: flex;
+    justify-content: space-between;
+    border-radius: 6px;
+    transition: color 0.2s, background 0.2s;
+}
+
+summary:hover {
+    color: var(--accent);
+    background: var(--accent-dim);
+}
+
+details[open] summary {
+    border-bottom: 1px solid var(--border);
+    border-radius: 6px 6px 0 0;
+    color: var(--accent);
+}
+
+.group-content {
+    padding: 5px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+/* -------------------------------------------------------------------------- */
+/* File Links                                                                 */
+/* -------------------------------------------------------------------------- */
+
+.file-link {
+    padding: 4px 10px;
+    border-radius: 4px;
+    color: var(--text-muted);
+    cursor: pointer;
+    text-decoration: none;
+    display: block;
+}
+
+.file-link:hover {
+    background: var(--accent-dim);
+    color: var(--accent);
+}
+
+/* Active/selected file */
+.file-link.active {
+    background: var(--accent);
+    color: var(--bg-app);
+    font-weight: bold;
+    box-shadow: 0 0 10px var(--accent-dim);
+}
+
+/* ========================================================================== */
+/* MAIN VIEWER AREA                                                           */
+/* ========================================================================== */
+
+.main-content {
+    flex: 1;
+    background: #000;
+    position: relative;
+    overflow: hidden;
+    cursor: grab;
+    
+    /* Subtle grid pattern */
+    background-image: radial-gradient(#222 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+.main-content:active {
+    cursor: grabbing;
+}
+
+/* ========================================================================== */
+/* CANVAS ELEMENTS                                                            */
+/* ========================================================================== */
+
+#preview-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform-origin: 0 0;
+    image-rendering: pixelated; /* Crisp pixel art */
+    box-shadow: 0 0 100px rgba(56, 189, 248, 0.1);
+}
+
+#debug-canvas {
+    display: block;
+    position: static;
+    image-rendering: pixelated;
+    /* Dimensions are handled by width/height attributes */
+}
+
+/* ========================================================================== */
+/* FLOATING UI ELEMENTS                                                       */
+/* ========================================================================== */
+
+/* -------------------------------------------------------------------------- */
+/* Zoom Controls                                                              */
+/* -------------------------------------------------------------------------- */
+
+.zoom-controls {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: var(--bg-panel);
+    padding: 8px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    z-index: 100;
+}
+
+.zoom-btn {
+    background: var(--bg-input);
+    color: var(--text-main);
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: monospace;
+    font-size: 0.75rem;
+    transition: all 0.2s;
+}
+
+.zoom-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    box-shadow: 0 0 8px var(--accent-dim);
+}
+
+.zoom-btn:active {
+    background: var(--accent);
+    color: var(--bg-app);
+}
+
+/* Checkbox labels within zoom controls */
+.zoom-controls label {
+    font-size: 0.75rem;
+    color: #aaa;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    margin-top: 5px;
+    padding-top: 5px;
+    border-top: 1px solid #444;
+}
+
+.zoom-controls label:hover {
+    color: #fff;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Tooltip                                                                    */
+/* -------------------------------------------------------------------------- */
+
+#tooltip {
+    position: fixed;
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-family: 'Consolas', monospace;
+    font-size: 0.8rem;
+    pointer-events: none;
+    display: none;
+    z-index: 1000;
+    white-space: pre-line;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+}
+
+/* ========================================================================== */
+/* CONTROL PANELS                                                             */
+/* ========================================================================== */
+
+/* New styled container for controls matching Asset/Log boxes */
+.control-box {
+    display: flex;
+    flex-direction: column;
+    padding: 0 15px 7px 15px; /* Side padding only */
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+
+.control-group {
+    padding: 10px 0;
+    margin: 0;
+    /* Borders handled below via :not(:first-child) */
+}
+
+/* Border Strategy: Add border to TOP of elements, skipping the first one.
+   This prevents dangling borders on the bottom of the last element */
+.control-group:not(:first-child) {
+    border-top: 1px solid var(--border);
+}
+
+.control-group-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+}
+
+.checkbox-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+/* ========================================================================== */
+/* SCROLLBAR STYLING                                                          */
+/* ========================================================================== */
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-app);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
