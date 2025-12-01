@@ -61,7 +61,9 @@ export class Renderer {
     draw(level, tileset, spriteRegistry, layerConfig, viewport, debugMode, spriteMode, solidBackground) {
         const ctx = this.ctx;
         const zoom = viewport.zoom;
-        ctx.imageSmoothingEnabled = false;
+        // Calculate dynamic overlap to ensure exactly 1 screen-pixel of coverage
+        // regardless of how far in or out the user has zoomed.
+        const fix = 1 / zoom;
         
         // ====================================================================
         // 1. Setup Canvas and Background
@@ -87,12 +89,21 @@ export class Renderer {
         const centerY = viewport.height / 2;
         
         // Calculate translation to center on viewport position
-        const transX = centerX - (viewport.x * zoom);
-        const transY = centerY - (viewport.y * zoom);
+        // Use Math.floor to snap to integer pixels and prevent tile seams/gaps
+        const transX = Math.floor(centerX - (viewport.x * zoom));
+        const transY = Math.floor(centerY - (viewport.y * zoom));
         
         // Apply transform
         ctx.translate(transX, transY);
         ctx.scale(zoom, zoom);
+		
+		// ====================================================================
+        // Special Case: Full Screen Image
+        // ====================================================================
+        if (level.type === 'image' && level.image) {
+            ctx.drawImage(level.image, 0, 0);
+            return; // Skip tile rendering
+        }
         
         // ====================================================================
         // 3. Calculate Visible Tile Range (Culling)
@@ -147,7 +158,12 @@ export class Renderer {
                 
                 // Draw tile if available
                 if (tileID < tileset.length && tileset[tileID]) {
-                    ctx.drawImage(tileset[tileID], posX, posY);
+                    // Use dynamic size to overlap and prevent sub-pixel seams
+                    ctx.drawImage(
+                        tileset[tileID], 
+                        posX, posY, 
+                        16 + fix, 16 + fix
+                    );
                 }
                 // Debug overlay for missing tiles
                 else if (debugMode) {
@@ -206,7 +222,11 @@ export class Renderer {
                     
                     // Draw background tile if found
                     if (bgTileID > 1 && bgTileID < 3000 && tileset[bgTileID]) {
-                        ctx.drawImage(tileset[bgTileID], posX, posY);
+                        ctx.drawImage(
+                            tileset[bgTileID], 
+                            posX, posY, 
+                            16 + fix, 16 + fix
+                        );
                     }
                 }
                 

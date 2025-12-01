@@ -10,6 +10,7 @@ import { AssetManager } from './assets.js';
 import { LevelManager } from './level.js';
 import { Renderer } from './renderer.js';
 import { SPRITE_MAP } from './sprites.js';
+import { DataViewer } from './data_viewer.js';
 
 // ============================================================================
 // DOM ELEMENT REFERENCES
@@ -107,6 +108,7 @@ const fileManager = new FileManager((msg) => console.log(msg));
 const assetManager = new AssetManager();
 const levelManager = new LevelManager();
 const renderer = new Renderer(previewCanvas);
+const dataViewer = new DataViewer('data-view-container');
 
 // ============================================================================
 // APPLICATION STATE
@@ -251,8 +253,23 @@ function resizeCanvas() {
  */
 function getFitZoom() {
     if (!currentLevel) return 1;
-    const w = currentLevel.width * 16 + 32;
-    const h = currentLevel.height * 16 + 32;
+    
+    let w, h;
+    
+    // Calculate dimensions based on level type
+    if (currentLevel.type === 'image') {
+        w = currentLevel.width;
+        h = currentLevel.height;
+    } else {
+        // Tile maps (standard levels or tile sheets)
+        // Width in tiles * 16px + padding
+        w = currentLevel.width * 16 + 32;
+        h = currentLevel.height * 16 + 32;
+    }
+    
+    // Avoid division by zero
+    if (w === 0 || h === 0) return 1;
+    
     return Math.min(viewport.width / w, viewport.height / h);
 }
 
@@ -262,8 +279,18 @@ function getFitZoom() {
  */
 function setZoom(z) {
     viewport.zoom = z;
-    viewport.x = (currentLevel.width * 16) / 2;
-    viewport.y = (currentLevel.height * 16) / 2;
+    
+    // Calculate center point based on level type
+    if (currentLevel.type === 'image') {
+        // Image dimensions are already in pixels
+        viewport.x = currentLevel.width / 2;
+        viewport.y = currentLevel.height / 2;
+    } else {
+        // Map dimensions are in tiles, convert to pixels
+        viewport.x = (currentLevel.width * 16) / 2;
+        viewport.y = (currentLevel.height * 16) / 2;
+    }
+    
     requestRender();
 }
 
@@ -500,6 +527,8 @@ async function inspectAsset(file) {
         try {
             uiLog(`Loading ${file.name}...`, "info");
             updateHeaderStatus(`Loading ${file.name}...`);
+			previewCanvas.style.display = 'block';
+			dataViewer.hide();
             
             // Load level data
             currentLevel = await levelManager.loadLevel(file);
@@ -548,7 +577,7 @@ async function inspectAsset(file) {
                     );
                 }
             }
-            
+			         
             // ================================================================
             // Tile Patches (Context-Aware Corrections)
             // ================================================================
@@ -636,12 +665,83 @@ async function inspectAsset(file) {
         return;
     }
     
+	// ========================================================================
+    // CASE B: Data File (KEYS, HIGHS)
     // ========================================================================
-    // CASE B: Graphic File (Tileset/Sprite Sheet View)
+    if (fileName.startsWith("KEYS") || fileName.startsWith("HIGHS")) {
+        try {
+            uiLog(`Reading Data: ${file.name}`, "info");
+            updateHeaderStatus(`Viewing Data: ${file.name}`);
+
+            // 1. Hide Canvas, Show Data
+            previewCanvas.style.display = 'none';
+            
+            // 2. Hide Graphics Controls
+            controlPanel.style.display = 'none';
+            zoomPanel.style.display = 'none';
+
+            // 3. Render Data
+            await dataViewer.render(file);
+
+        } catch (err) {
+            uiLog(err.message, "error");
+        }
+        return;
+    }
+	
+	// ========================================================================
+    // CASE C: Full Screen Images (CREDITS, BADGUY, etc.)
+    // ========================================================================
+    const fullScreenFiles = ["BADGUY", "CREDITS", "DN", "DUKE", "END"];
+    
+    if (fullScreenFiles.some(prefix => fileName.startsWith(prefix))) {
+        try {
+            uiLog(`View Image: ${file.name}`, "info");
+            updateHeaderStatus(`Viewing Image: ${file.name}`);
+            
+            // 1. Setup UI
+            previewCanvas.style.display = 'block';
+            dataViewer.hide();
+            
+            // Hide specific controls, keep zoom visible
+            controlPanel.style.display = 'none';
+            zoomPanel.style.display = 'flex';
+
+            // 2. Load and Decode
+            const buffer = await file.arrayBuffer();
+            const data = new Uint8Array(buffer);
+            const imageData = EGA.decodePlanarScreen(data);
+            const imageCanvas = imageDataToCanvas(imageData);
+            
+            // 3. Set Application State
+            // We create a "level" object that wraps the static image.
+            // This allows the standard renderer and event listeners to work.
+            currentLevel = {
+                type: 'image',
+                name: file.name,
+                image: imageCanvas,
+                width: imageCanvas.width,
+                height: imageCanvas.height
+            };
+            
+            // 4. Reset View
+            setZoom(getFitZoom());
+            requestRender();
+
+        } catch (err) {
+            uiLog(`Image Error: ${err.message}`, "error");
+        }
+        return;
+    }
+	
+    // ========================================================================
+    // CASE D: Graphic File (Tileset/Sprite Sheet View)
     // ========================================================================
     try {
         uiLog(`View ${file.name}`, "info");
         updateHeaderStatus(`Viewing ${file.name}`);
+		previewCanvas.style.display = 'block';
+		dataViewer.hide();
         
         const tiles = await assetManager.loadTileset(file);
         
@@ -714,67 +814,106 @@ folderInput.addEventListener('change', async (e) => {
     
     // Clear asset list
     assetBox.innerHTML = '';
-    
-    // Get current filter states
+	
+	// Get current filter states
     const showDN1 = document.getElementById('filter-dn1').checked;
     const showDN2 = document.getElementById('filter-dn2').checked;
     const showDN3 = document.getElementById('filter-dn3').checked;
     
-    // Group files by category
+    // ------------------------------------------------------------------------
+    // NEW: Define Categories Buckets (In your specific order)
+    // ------------------------------------------------------------------------
+    const definedCategories = [
+        "Levels",             // WORLDAL
+        "Tiles and Sprites",  // ANIM, BACK, DROP, FONT, MAN, NUMBERS, OBJECT, SOLID
+        "Text",               // HIGHS, KEYS
+        "Fullscreen Artwork", // BADGUY, CREDITS, DN, DUKE, END
+        "Sounds"              // DUKE1, DUKE1-B
+    ];
+    
     const grouped = {};
+    definedCategories.forEach(c => grouped[c] = []);
     
-    // Force Levels into their own "WORLDAL" category first
-    grouped["WORLDAL"] = []; // Ensure it exists
-    
-    for (const file of fileManager.levels) {
+    // Helper: Check if file should be visible based on Episode filters
+    const isVisible = (file) => {
         const name = file.name.toUpperCase();
         const ext = name.match(/\.DN\d$/)?.[0];
-        
-        if (ext === '.DN1' && !showDN1) continue;
-        if (ext === '.DN2' && !showDN2) continue;
-        if (ext === '.DN3' && !showDN3) continue;
-        
-        grouped["WORLDAL"].push(file);
+        if (ext === '.DN1' && !showDN1) return false;
+        if (ext === '.DN2' && !showDN2) return false;
+        if (ext === '.DN3' && !showDN3) return false;
+        return true;
+    };
+
+    // 1. Group Levels (WORLDAL)
+    for (const file of fileManager.levels) {
+        if (isVisible(file)) grouped["Levels"].push(file);
     }
 
-    // Process Graphics files into standard categories
+    // 2. Group Text / Data (KEYS, HIGHS)
+    for (const file of fileManager.data) {
+        if (isVisible(file)) grouped["Text"].push(file);
+    }
+
+    // 3. Group Graphics & Sounds (Everything else)
     for (const file of fileManager.graphics) {
+        if (!isVisible(file)) continue;
+        
         const name = file.name.toUpperCase();
-        const ext = name.match(/\.DN\d$/)?.[0];
         
-        if (ext === '.DN1' && !showDN1) continue;
-        if (ext === '.DN2' && !showDN2) continue;
-        if (ext === '.DN3' && !showDN3) continue;
-        
-        let category = "MISC";
-        for (const cat of CATEGORIES) {
-            if (name.startsWith(cat)) {
-                category = cat;
-                break;
-            }
+        // A. Sounds (DUKE1 and DUKE1-B)
+        // CRITICAL: Must check "DUKE1" BEFORE "DUKE" to prevent overlap
+        if (name.startsWith("DUKE1")) {
+            grouped["Sounds"].push(file);
+            continue;
         }
         
-        // Skip adding if it's already in WORLDAL (unlikely for graphics, but safety check)
-        if (category === "WORLDAL") continue;
-
-        if (!grouped[category]) grouped[category] = [];
-        grouped[category].push(file);
+        // B. Fullscreen Artwork
+        // Matches: BADGUY, CREDITS, DN, DUKE, END
+        const fullScreenPrefixes = ["BADGUY", "CREDITS", "DN", "DUKE", "END"];
+        if (fullScreenPrefixes.some(p => name.startsWith(p))) {
+            grouped["Fullscreen Artwork"].push(file);
+            continue;
+        }
+        
+        // C. Tiles and Sprites (The catch-all)
+        // Matches: ANIM, BACK, DROP, FONT, MAN, NUMBERS, OBJECT, SOLID
+        // Also catches BORDER (HUD) which fits here nicely.
+        grouped["Tiles and Sprites"].push(file);
     }
     
-    // Sort categories: WORLDAL first, then alphabetical
-    const sortedCategories = Object.keys(grouped).sort((a, b) => {
-        if (a === "WORLDAL") return -1;
-        if (b === "WORLDAL") return 1;
-        return a.localeCompare(b);
-    });
+    // ------------------------------------------------------------------------
+    // Render Groups
+    // ------------------------------------------------------------------------
+    
+    // Helper: Creates a clickable file link
+    const createFileLink = (file) => {
+        const link = document.createElement('a');
+        link.className = 'file-link';
+        link.textContent = file.name;
+        link.href = '#';
+        link.dataset.filename = file.name;
+        
+        link.addEventListener('click', async (e) => {
+            e.preventDefault();
+            document.querySelectorAll('.file-link').forEach(l => l.classList.remove('active'));
+            link.classList.add('active');
+            selectedFilename = file.name;
+            
+            if (file.name.toUpperCase().startsWith("DUKE1")) {
+                uiLog(`Audio playback not yet implemented: ${file.name}`, "warning");
+                return;
+            }
+            await inspectAsset(file);
+        });
+        return link;
+    };
 
-    // Render grouped file list
-    for (const category of sortedCategories) {
+    for (const category of definedCategories) {
         const files = grouped[category];
         if (files.length === 0) continue;
 
         const details = document.createElement('details');
-        details.open = (category === "WORLDAL"); // Auto-expand WORLDAL
+        if (category === "Levels") details.open = true;
         
         const summary = document.createElement('summary');
         summary.textContent = `${category} (${files.length})`;
@@ -783,26 +922,55 @@ folderInput.addEventListener('change', async (e) => {
         const content = document.createElement('div');
         content.className = 'group-content';
         
-        // Natural Sort Order (e.g. DROP1 -> DROP2 ... -> DROP10)
-        for (const file of files.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }))) {
-            const link = document.createElement('a');
-            link.className = 'file-link';
-            link.textContent = file.name;
-            link.href = '#';
-            link.dataset.filename = file.name;
+        const sortedFiles = files.sort((a, b) => 
+            a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' })
+        );
+
+        // ====================================================================
+        // Sub-Grouping Logic for Tiles and Sprites
+        // ====================================================================
+        if (category === "Tiles and Sprites") {
+            const subGroups = {};
             
-            link.addEventListener('click', async (e) => {
-                e.preventDefault();
+            // Group by alpha prefix (e.g. ANIM, BACK, SOLID)
+            for (const file of sortedFiles) {
+                const match = file.name.toUpperCase().match(/^([A-Z]+)/);
+                const prefix = match ? match[1] : "MISC";
+                if (!subGroups[prefix]) subGroups[prefix] = [];
+                subGroups[prefix].push(file);
+            }
+            
+            // Render subgroups
+            Object.keys(subGroups).sort().forEach(prefix => {
+                const subFiles = subGroups[prefix];
                 
-                // Update active state
-                document.querySelectorAll('.file-link').forEach(l => l.classList.remove('active'));
-                link.classList.add('active');
-                selectedFilename = file.name;
+                const subDetails = document.createElement('details');
+                subDetails.style.marginLeft = "10px"; // Visual indentation
+                subDetails.style.borderLeft = "1px solid var(--border)";
                 
-                await inspectAsset(file);
+                const subSummary = document.createElement('summary');
+                subSummary.textContent = `${prefix} (${subFiles.length})`;
+                subSummary.style.fontSize = "0.9em";
+                subDetails.appendChild(subSummary);
+                
+                const subContent = document.createElement('div');
+                subContent.className = 'group-content';
+                
+                subFiles.forEach(file => {
+                    subContent.appendChild(createFileLink(file));
+                });
+                
+                subDetails.appendChild(subContent);
+                content.appendChild(subDetails);
             });
-            
-            content.appendChild(link);
+        } 
+        // ====================================================================
+        // Standard Rendering (Flat List)
+        // ====================================================================
+        else {
+            for (const file of sortedFiles) {
+                content.appendChild(createFileLink(file));
+            }
         }
         
         details.appendChild(content);

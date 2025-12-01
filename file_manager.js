@@ -1,8 +1,7 @@
 /**
  * File Manager
- * 
- * Scans and categorizes Duke Nukem game files.
- * Separates level files (WORLD*.DN*) from graphic assets (ANIM, OBJECT, SOLID, etc.)
+ * * Scans and categorizes Duke Nukem game files.
+ * Separates levels, data files, and graphics assets.
  */
 
 export class FileManager {
@@ -12,18 +11,19 @@ export class FileManager {
     constructor(loggerCallback) {
         this.log = loggerCallback;
         this.levels = [];
+        this.data = [];     // New category for KEYS, HIGHS, etc.
         this.graphics = [];
     }
     
     /**
      * Processes a list of files and categorizes them
-     * 
-     * @param {FileList|Array<File>} fileList - Files to process
-     * @returns {Object} Object containing sorted levels and graphics arrays
+     * * @param {FileList|Array<File>} fileList - Files to process
+     * @returns {Object} Object containing sorted categorised arrays
      */
     async handleFiles(fileList) {
         // Clear previous results
         this.levels = [];
+        this.data = [];
         this.graphics = [];
         
         // Pattern to match Duke Nukem episode files (.DN1, .DN2, .DN3, etc.)
@@ -31,43 +31,51 @@ export class FileManager {
         
         let filesFound = 0;
         
-        // ====================================================================
-        // Categorize Files
-        // ====================================================================
-        
         for (const file of fileList) {
             const name = file.name.toUpperCase();
             
             // Only process valid Duke Nukem game files
             if (dnFilePattern.test(name)) {
+                
+                // ============================================================
+                // NEW: Filter out unwanted files
+                // ============================================================
+                // MY_DEMO/USERDEMO: Non-playable demos
+                // SAVED: Save game slots (SAVED1, SAVED2, SAVEDT, etc.)
+                // SPEED: Timing data
+                const ignoredPrefixes = ["MY_DEMO", "SAVED", "SPEED", "USERDEMO"];
+                
+                if (ignoredPrefixes.some(prefix => name.startsWith(prefix))) {
+                    continue; // Skip this file completely
+                }
+                
+                // ============================================================
+                
                 filesFound++;
                 
                 if (name.startsWith("WORLD")) {
                     // Level files
                     this.levels.push(file);
-                } else {
+                } 
+                else if (name.startsWith("KEYS") || name.startsWith("HIGHS")) {
+                    // Data files
+                    this.data.push(file);
+                }
+                else {
                     // Everything else is a graphic asset
-                    // (SOLID, BACK, OBJECT, ANIM, etc.)
                     this.graphics.push(file);
                 }
             }
         }
         
-        // ====================================================================
-        // Sort Results
-        // ====================================================================
-        
-        // Sort levels alphabetically for easier browsing
-        this.levels.sort((a, b) => a.name.localeCompare(b.name));
+        // Sort levels alphabetically
+        this.levels.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
         
         return this.reportResults(filesFound);
     }
     
     /**
      * Reports scan results and logs debug information
-     * 
-     * @param {number} count - Total number of valid files found
-     * @returns {Object|undefined} Object with levels and graphics arrays
      */
     reportResults(count) {
         if (count === 0) {
@@ -75,19 +83,15 @@ export class FileManager {
             return;
         }
         
-        // Debug logging to verify file detection
-        const solids = this.graphics.filter(
-            f => f.name.toUpperCase().startsWith("SOLID")
-        );
-        
         console.log(
-            `FileManager Scan: Found ${this.levels.length} levels, ` +
+            `FileManager Scan: ${this.levels.length} levels, ` +
+            `${this.data.length} data files, ` +
             `${this.graphics.length} graphics.`
         );
-        console.log(`Debug: Found ${solids.length} SOLID files.`);
         
         return {
             levels: this.levels,
+            data: this.data,
             graphics: this.graphics
         };
     }
