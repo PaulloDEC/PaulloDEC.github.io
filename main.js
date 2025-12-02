@@ -12,6 +12,7 @@ import { Renderer } from './renderer.js';
 import { SPRITE_MAP } from './sprites.js';
 import { DataViewer } from './data_viewer.js';
 import { AudioPlayer } from './audio_player.js';
+import { LevelStats } from './level_stats.js';
 
 // ============================================================================
 // DOM ELEMENT REFERENCES
@@ -114,6 +115,8 @@ const dataViewer = new DataViewer('data-view-container');
 // We can reuse the 'data-view-container' div because it's just a generic container
 // that sits where the canvas usually is.
 const audioPlayer = new AudioPlayer('data-view-container');
+// 'level-stats' is the ID of the new div created by the class
+const levelStats = new LevelStats('level-stats');
 
 // ============================================================================
 // APPLICATION STATE
@@ -592,28 +595,56 @@ async function inspectAsset(file) {
             if (currentMasterTileset.length > 300 && currentLevel.grid) {
                 const grid = currentLevel.grid;
                 const width = currentLevel.width;
+                const height = currentLevel.height;
                 
+                // 1. Identify Conveyor Zones
+                // We scan each row to find the areas between conveyor sprites.
+                // Left Moving: 0x3002 (Start) -> 0x3003 (End)
+                // Right Moving: 0x3004 (Start) -> 0x3005 (End)
+                
+                const isConveyorZone = new Uint8Array(grid.length); // 0=False, 1=True
+                
+                for (let y = 0; y < height; y++) {
+                    let activeBelt = false;
+                    const rowOffset = y * width;
+                    
+                    for (let x = 0; x < width; x++) {
+                        const index = rowOffset + x;
+                        const val = grid[index];
+                        
+                        // Check for Start Markers (Start of Belt)
+                        if (val === 0x3002 || val === 0x3004) {
+                            activeBelt = true;
+                        }
+                        
+                        // Mark current tile if we are inside a belt
+                        if (activeBelt) {
+                            isConveyorZone[index] = 1;
+                        }
+                        
+                        // Check for End Markers (End of Belt)
+                        if (val === 0x3003 || val === 0x3005) {
+                            activeBelt = false;
+                        }
+                    }
+                }
+                
+                // 2. Apply Graphics Patches based on Zones
                 for (let i = 0; i < grid.length; i++) {
                     const tileID = grid[i];
                     
-                    // Tile 203: Left cap or conveyor
-                    if (tileID === 203) {
-                        if ((i + 1) % width !== 0) {
-                            const rightID = grid[i + 1];
-                            if (rightID !== 205) {
-                                grid[i] = 224; // Swap to conveyor
-                            }
-                        }
-                    }
-                    
-                    // Tile 206: Right cap or conveyor
-                    if (tileID === 206) {
-                        if (i % width !== 0) {
-                            const leftID = grid[i - 1];
-                            if (leftID !== 205) {
-                                grid[i] = 225; // Swap to conveyor
-                            }
-                        }
+                    // If we are inside a Conveyor Zone defined by sprites...
+                    if (isConveyorZone[i]) {
+                        // Force Platform Ends -> Conveyor Ends
+                        if (tileID === 203) grid[i] = 224; // Left Cap -> Conveyor Left
+                        if (tileID === 206) grid[i] = 225; // Right Cap -> Conveyor Right
+                    } 
+                    // If we are OUTSIDE a Conveyor Zone...
+                    else {
+                        // Force Conveyor Ends -> Platform Ends
+                        // (Fixes cases where map data has wrong tile default)
+                        if (tileID === 224) grid[i] = 203;
+                        if (tileID === 225) grid[i] = 206;
                     }
                 }
             }
@@ -664,7 +695,9 @@ async function inspectAsset(file) {
             // Set initial view
             setZoom(getFitZoom());
             requestRender();
-            uiLog(`Rendered ${file.name}`, "success");
+            // NEW: Update Stats Panel
+            levelStats.update(currentLevel, currentSpriteRegistry);
+			uiLog(`Rendered ${file.name}`, "success");
             
         } catch (err) {
             uiLog(`Error: ${err.message}`, "error");
@@ -683,7 +716,9 @@ async function inspectAsset(file) {
 
             // 1. Hide Canvas, Show Data Container
             previewCanvas.style.display = 'none';
-            document.getElementById('data-view-container').style.display = 'block'; // Ensure container is visible
+            levelStats.hide();
+			dataViewer.hide();
+			document.getElementById('data-view-container').style.display = 'block'; // Ensure container is visible
             
             // 2. Hide other controls
             controlPanel.style.display = 'none';
@@ -708,6 +743,8 @@ async function inspectAsset(file) {
 
             // 1. Hide Canvas, Show Data
             previewCanvas.style.display = 'none';
+			levelStats.hide();
+			audioPlayer.hide();
             
             // 2. Hide Graphics Controls
             controlPanel.style.display = 'none';
@@ -736,6 +773,7 @@ async function inspectAsset(file) {
             previewCanvas.style.display = 'block';
             dataViewer.hide();
 			audioPlayer.hide();
+			levelStats.hide();
             
             // Hide specific controls, keep zoom visible
             controlPanel.style.display = 'none';
@@ -777,6 +815,7 @@ async function inspectAsset(file) {
 		previewCanvas.style.display = 'block';
 		dataViewer.hide();
 		audioPlayer.hide();
+		levelStats.hide();
         
         const tiles = await assetManager.loadTileset(file);
         
