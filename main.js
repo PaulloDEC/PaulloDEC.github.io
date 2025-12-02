@@ -11,6 +11,7 @@ import { LevelManager } from './level.js';
 import { Renderer } from './renderer.js';
 import { SPRITE_MAP } from './sprites.js';
 import { DataViewer } from './data_viewer.js';
+import { AudioPlayer } from './audio_player.js';
 
 // ============================================================================
 // DOM ELEMENT REFERENCES
@@ -97,6 +98,7 @@ zoomPanel.innerHTML = `
     <button class="zoom-btn" id="zoom-2x">2x</button>
     <button class="zoom-btn" id="zoom-4x">4x</button>
     <label><input type="checkbox" id="viz-bg-solid"> Black BG</label>
+	<label><input type="checkbox" id="viz-grid-fix" checked> Grid Fix</label>
 `;
 mainContent.appendChild(zoomPanel);
 
@@ -109,6 +111,9 @@ const assetManager = new AssetManager();
 const levelManager = new LevelManager();
 const renderer = new Renderer(previewCanvas);
 const dataViewer = new DataViewer('data-view-container');
+// We can reuse the 'data-view-container' div because it's just a generic container
+// that sits where the canvas usually is.
+const audioPlayer = new AudioPlayer('data-view-container');
 
 // ============================================================================
 // APPLICATION STATE
@@ -121,6 +126,7 @@ let currentSpriteRegistry = {};
 let currentEpisodeExt = "";
 let animationFrameId = null;
 let selectedFilename = null;
+let useGridFix = true; // Default to On
 
 // Viewport state for panning and zooming
 let viewport = {
@@ -224,7 +230,8 @@ function requestRender() {
             viewport,
             isDebugMode,
             spriteMode,
-            useSolidBG
+            useSolidBG,
+			useGridFix
         );
     });
 }
@@ -529,6 +536,7 @@ async function inspectAsset(file) {
             updateHeaderStatus(`Loading ${file.name}...`);
 			previewCanvas.style.display = 'block';
 			dataViewer.hide();
+			audioPlayer.hide();
             
             // Load level data
             currentLevel = await levelManager.loadLevel(file);
@@ -666,6 +674,31 @@ async function inspectAsset(file) {
     }
     
 	// ========================================================================
+    // CASE E: Sound Files (DUKE1, DUKE1-B)
+    // ========================================================================
+    if (fileName.startsWith("DUKE1")) {
+        try {
+            uiLog(`Loading Sound Bank: ${file.name}`, "info");
+            updateHeaderStatus(`Sound Board: ${file.name}`);
+
+            // 1. Hide Canvas, Show Data Container
+            previewCanvas.style.display = 'none';
+            document.getElementById('data-view-container').style.display = 'block'; // Ensure container is visible
+            
+            // 2. Hide other controls
+            controlPanel.style.display = 'none';
+            zoomPanel.style.display = 'none';
+            
+            // 3. Render Sounds
+            await audioPlayer.render(file);
+
+        } catch (err) {
+            uiLog(`Audio Error: ${err.message}`, "error");
+        }
+        return;
+    }
+	
+	// ========================================================================
     // CASE B: Data File (KEYS, HIGHS)
     // ========================================================================
     if (fileName.startsWith("KEYS") || fileName.startsWith("HIGHS")) {
@@ -702,6 +735,7 @@ async function inspectAsset(file) {
             // 1. Setup UI
             previewCanvas.style.display = 'block';
             dataViewer.hide();
+			audioPlayer.hide();
             
             // Hide specific controls, keep zoom visible
             controlPanel.style.display = 'none';
@@ -742,6 +776,7 @@ async function inspectAsset(file) {
         updateHeaderStatus(`Viewing ${file.name}`);
 		previewCanvas.style.display = 'block';
 		dataViewer.hide();
+		audioPlayer.hide();
         
         const tiles = await assetManager.loadTileset(file);
         
@@ -899,10 +934,6 @@ folderInput.addEventListener('change', async (e) => {
             link.classList.add('active');
             selectedFilename = file.name;
             
-            if (file.name.toUpperCase().startsWith("DUKE1")) {
-                uiLog(`Audio playback not yet implemented: ${file.name}`, "warning");
-                return;
-            }
             await inspectAsset(file);
         });
         return link;
@@ -1100,6 +1131,12 @@ document.querySelectorAll('input[name="drop-mode"]').forEach(radio => {
 // Background mode handler
 document.getElementById('viz-bg-solid').addEventListener('change', e => {
     useSolidBG = e.target.checked;
+    requestRender();
+});
+
+// Grid Fix handler
+document.getElementById('viz-grid-fix').addEventListener('change', e => {
+    useGridFix = e.target.checked;
     requestRender();
 });
 

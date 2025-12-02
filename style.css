@@ -734,3 +734,67 @@ details[open] summary {
     background: rgba(239, 68, 68, 0.1);
     border-radius: 8px;
 }
+
+/* ========================================================================== */
+/* SOUND PLAYER STYLES                                                        */
+/* ========================================================================== */
+
+.sound-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 15px;
+    width: 100%;
+    max-width: 800px;
+    padding: 20px;
+}
+
+.sound-btn {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    color: var(--accent);
+    padding: 15px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'Consolas', monospace;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-transform: uppercase;
+    box-shadow: var(--shadow);
+}
+
+.sound-btn .icon {
+    font-size: 1.5rem;
+    margin-bottom: 5px;
+}
+
+.sound-btn:hover {
+    background: var(--accent);
+    color: var(--bg-app);
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--accent-dim);
+}
+
+.sound-btn:active {
+    transform: translateY(0);
+}
+
+.volume-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    background: var(--bg-panel);
+    padding: 10px 20px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+}
+
+.volume-controls input[type="range"] {
+    cursor: pointer;
+    accent-color: var(--duke-yellow);
+}

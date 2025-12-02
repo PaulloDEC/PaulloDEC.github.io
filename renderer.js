@@ -58,12 +58,14 @@ export class Renderer {
      * @param {string} spriteMode - Sprite display mode: 'icon', 'shrink', or 'full'
      * @param {boolean} solidBackground - Use solid black instead of checkerboard
      */
-    draw(level, tileset, spriteRegistry, layerConfig, viewport, debugMode, spriteMode, solidBackground) {
+    draw(level, tileset, spriteRegistry, layerConfig, viewport, debugMode, spriteMode, solidBackground, useGridFix) {
         const ctx = this.ctx;
         const zoom = viewport.zoom;
         // Calculate dynamic overlap to ensure exactly 1 screen-pixel of coverage
         // regardless of how far in or out the user has zoomed.
-        const fix = 1 / zoom;
+        // Only apply the dynamic fix if requested
+		const fix = useGridFix ? (1 / zoom) : 0;
+		const size = 16 + fix;
         
         // ====================================================================
         // 1. Setup Canvas and Background
@@ -159,11 +161,7 @@ export class Renderer {
                 // Draw tile if available
                 if (tileID < tileset.length && tileset[tileID]) {
                     // Use dynamic size to overlap and prevent sub-pixel seams
-                    ctx.drawImage(
-                        tileset[tileID], 
-                        posX, posY, 
-                        16 + fix, 16 + fix
-                    );
+                    ctx.drawImage(tileset[tileID], posX, posY, size, size);
                 }
                 // Debug overlay for missing tiles
                 else if (debugMode) {
@@ -222,11 +220,7 @@ export class Renderer {
                     
                     // Draw background tile if found
                     if (bgTileID > 1 && bgTileID < 3000 && tileset[bgTileID]) {
-                        ctx.drawImage(
-                            tileset[bgTileID], 
-                            posX, posY, 
-                            16 + fix, 16 + fix
-                        );
+                        ctx.drawImage(tileset[bgTileID], posX, posY, size, size);
                     }
                 }
                 
