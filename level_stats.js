@@ -16,7 +16,6 @@ export class LevelStats {
         }
         
         this.panel = panel;
-		this.panel.style.display = 'none';
         this.isCollapsed = false;
         
         // Critical Items to look for
@@ -29,13 +28,31 @@ export class LevelStats {
             { id: 0x3033, name: "Access Card" },
             { id: 0x3020, name: "Robohand" },
             { id: 0x3006, name: "Shoes" },
-			{ id: 0x3008, name: "Claws" }
+            { id: 0x3008, name: "Claws" }
         ];
 
         // Useful but non-critical items
         this.OPTIONAL_ITEMS = [
             { id: 0x300F, name: "Raygun Ammo" }
         ];
+
+        // Level Objectives based on specific marker sprites
+        // The ID is the "Trigger" object that implies the objective exists
+        this.OBJECTIVE_DEFINITIONS = {
+            0x3043: "Confront Dr. Proton", // Boss (E1)
+            0x3042: "Confront Dr. Proton", // Boss (E3)
+            0x302B: "Destroy Reactor",     // Blue Reactor
+            0x3011: "Reach the Exit",      // Exit Door
+            0x302F: "Locate Teleporter"    // Teleporter A
+        };
+
+        // Text colors for specific objectives
+        this.OBJECTIVE_COLORS = {
+            "Destroy Reactor": "#55ffff",     // Cyan
+            "Locate Teleporter": "#5555ff",   // Blue
+            "Confront Dr. Proton": "#ff55ff", // Magenta
+            "Reach the Exit": "#ffff55"       // Yellow
+        };
     }
 
     /**
@@ -57,6 +74,7 @@ export class LevelStats {
         
         const foundItems = new Set();
         const foundOptional = new Set();
+        const foundObjectives = new Set(); // Stores strings, not IDs
 
         // 2. Scan Grid
         for (let i = 0; i < level.grid.length; i++) {
@@ -70,6 +88,11 @@ export class LevelStats {
                 foundItems.add(id);
             } else if (this.isOptionalItem(id)) {
                 foundOptional.add(id);
+            }
+
+            // Check for Objectives
+            if (this.OBJECTIVE_DEFINITIONS[id]) {
+                foundObjectives.add(this.OBJECTIVE_DEFINITIONS[id]);
             }
 
             // Count Types
@@ -90,7 +113,7 @@ export class LevelStats {
         }
 
         // 3. Render UI
-        this.renderUI(stats, foundItems, foundOptional, registry, level.width, level.height);
+        this.renderUI(stats, foundItems, foundOptional, foundObjectives, registry, level.width, level.height);
         this.show();
     }
 
@@ -113,7 +136,7 @@ export class LevelStats {
     /**
      * Generates the HTML
      */
-    renderUI(stats, foundItems, foundOptional, registry, w, h) {
+    renderUI(stats, foundItems, foundOptional, foundObjectives, registry, w, h) {
         // Toggle arrow direction
         const arrow = this.isCollapsed ? '▶' : '▼';
         const displayStyle = this.isCollapsed ? 'none' : 'block';
@@ -134,6 +157,32 @@ export class LevelStats {
                 </div>
 
                 <div class="stats-divider"></div>
+                <div class="stats-subtitle">OBJECTIVES:</div>
+                <div class="required-items-list" style="margin-bottom: 12px;">
+        `;
+
+        // Render Objectives
+        if (foundObjectives.size > 0) {
+            // Sort objectives alphabetically or by priority
+            const order = ["Confront Dr. Proton", "Destroy Reactor", "Locate Teleporter", "Reach the Exit"];
+            const sortedObjs = Array.from(foundObjectives).sort((a, b) => {
+                return order.indexOf(a) - order.indexOf(b);
+            });
+
+            sortedObjs.forEach(obj => {
+                const color = this.OBJECTIVE_COLORS[obj] || '#ffffff'; // Default white if undefined
+                
+                html += `
+                    <div class="req-item" style="color: ${color}; font-weight: bold; text-shadow: 0 0 5px rgba(0,0,0,0.5);">
+                        <span>${obj}</span>
+                    </div>
+                `;
+            });
+        } else {
+            html += `<div class="req-item" style="color: #666;">Explore Area</div>`;
+        }
+
+        html += `</div>
                 <div class="stats-subtitle">REQUIRED ITEMS:</div>
                 <div class="required-items-list">
         `;
@@ -185,7 +234,7 @@ export class LevelStats {
 
         this.panel.innerHTML = html;
 
-        // Post-render: Append actual canvas images
+        // Post-render: Append actual canvas images for items
         const attachImages = (itemList, foundSet) => {
             itemList.forEach(item => {
                 if (foundSet.has(item.id)) {
