@@ -374,7 +374,13 @@ export const SPRITE_MAP = {
         file: "OBJECT1",
         index: 40,
         type: "hazard",
-        name: "Blue Reactor"
+        name: "Blue Reactor",
+        // Stack the reactor tile 3 times vertically
+        composition: {
+            width: 1,
+            height: 3,
+            indices: [40, 40, 40]
+        }
     },
     
     "302C": {
