@@ -99,7 +99,7 @@ zoomPanel.innerHTML = `
     <button class="zoom-btn" id="zoom-2x">2x</button>
     <button class="zoom-btn" id="zoom-4x">4x</button>
     <label><input type="checkbox" id="viz-bg-solid"> Black BG</label>
-	<label><input type="checkbox" id="viz-grid-fix" checked> Grid Fix</label>
+	<label><input type="checkbox" id="viz-grid-fix"> Grid Fix</label>
 `;
 mainContent.appendChild(zoomPanel);
 
@@ -129,7 +129,7 @@ let currentSpriteRegistry = {};
 let currentEpisodeExt = "";
 let animationFrameId = null;
 let selectedFilename = null;
-let useGridFix = true; // Default to On
+let useGridFix = false; // Default to Off
 
 // Viewport state for panning and zooming
 let viewport = {
