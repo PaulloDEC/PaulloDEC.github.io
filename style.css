@@ -235,6 +235,12 @@ header {
     border: 1px solid var(--border);
     border-radius: 2px;
     background: #000;
+    cursor: pointer; /* <--- Add this to indicate interactivity */
+    transition: transform 0.1s;
+}
+
+#debug-canvas:active {
+    transform: scale(0.95);
 }
 
 /* ========================================================================== */

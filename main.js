@@ -130,6 +130,7 @@ let currentEpisodeExt = "";
 let animationFrameId = null;
 let selectedFilename = null;
 let useGridFix = false; // Default to Off
+let currentFile = null; // Stores the actual File object for reloading
 
 // Viewport state for panning and zooming
 let viewport = {
@@ -528,6 +529,7 @@ function updateSpriteRegistryImages() {
  * @param {File} file - The file object to inspect
  */
 async function inspectAsset(file) {
+    currentFile = file; // <--- Add this line
     const fileName = file.name.toUpperCase();
     
     // ========================================================================
@@ -1177,6 +1179,80 @@ document.getElementById('viz-bg-solid').addEventListener('change', e => {
 document.getElementById('viz-grid-fix').addEventListener('change', e => {
     useGridFix = e.target.checked;
     requestRender();
+});
+
+// ============================================================================
+// PALETTE EASTER EGG
+// ============================================================================
+
+const paletteInput = document.getElementById('palette-input');
+const debugCanvas = document.getElementById('debug-canvas');
+
+// 1. Click debug bar to trigger upload
+debugCanvas.addEventListener('click', () => {
+    paletteInput.click();
+});
+
+// 2. Handle the file upload
+paletteInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+            // A. Strict Validation
+            // Must be exactly 160x10 (the size of the downloadable debug bar)
+            if (img.width !== 160 || img.height !== 10) {
+                uiLog("Palette Error: Image must be exactly 160x10 PNG.", "error");
+                return;
+            }
+
+            // B. Sample Colors
+            // Draw to an invisible canvas to read pixel data
+            const pCanvas = document.createElement('canvas');
+            pCanvas.width = 160;
+            pCanvas.height = 10;
+            const ctx = pCanvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+
+            const newPalette = [];
+            
+            // There are 16 color blocks, each 10px wide.
+            // We sample the pixel in the horizontal center of each block (x + 5)
+            // at the vertical center (y=5).
+            for (let i = 0; i < 16; i++) {
+                const x = (i * 10) + 5;
+                const pixel = ctx.getImageData(x, 5, 1, 1).data;
+                // pixel is [R, G, B, A]
+                newPalette.push([pixel[0], pixel[1], pixel[2]]);
+            }
+
+            // C. Apply Changes
+            // 1. Update EGA Class
+            EGA.PALETTE = newPalette;
+            
+            // 2. Update Debug Bar UI
+            testEGA(); 
+            
+            // 3. Clear Asset Cache (Force re-decode of tiles)
+            assetManager.clearCache();
+            
+            // 4. Reload current view
+            if (currentFile) {
+                uiLog("Palette updated! Reloading...", "success");
+                inspectAsset(currentFile);
+            } else {
+                uiLog("Palette updated! Load a file to see changes.", "success");
+            }
+        };
+        img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+    
+    // Reset input so we can upload the same file again if needed
+    paletteInput.value = '';
 });
 
 // ============================================================================

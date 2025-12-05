@@ -13,6 +13,14 @@ export class AssetManager {
         this.cache = new Map();
     }
     
+	/**
+     * Clears the tileset cache.
+     * Call this when the EGA Palette changes.
+     */
+    clearCache() {
+        this.cache.clear();
+    }
+	
     /**
      * Loads a tileset file and converts it to ImageData array
      * 
