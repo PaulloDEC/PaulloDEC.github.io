@@ -16,6 +16,7 @@ export class LevelStats {
         }
         
         this.panel = panel;
+        this.panel.style.display = 'none'; // Ensure hidden on startup
         this.isCollapsed = false;
         
         // Critical Items to look for
@@ -155,34 +156,8 @@ export class LevelStats {
                     <div class="stat-row"><span class="label">Health:</span> <span class="val">${stats.health}</span></div>
                     <div class="stat-row"><span class="label">Interactive:</span> <span class="val">${stats.interactive}</span></div>
                 </div>
-
-                <div class="stats-divider"></div>
-                <div class="stats-subtitle">OBJECTIVES:</div>
-                <div class="required-items-list" style="margin-bottom: 12px;">
-        `;
-
-        // Render Objectives
-        if (foundObjectives.size > 0) {
-            // Sort objectives alphabetically or by priority
-            const order = ["Confront Dr. Proton", "Destroy Reactor", "Locate Teleporter", "Reach the Exit"];
-            const sortedObjs = Array.from(foundObjectives).sort((a, b) => {
-                return order.indexOf(a) - order.indexOf(b);
-            });
-
-            sortedObjs.forEach(obj => {
-                const color = this.OBJECTIVE_COLORS[obj] || '#ffffff'; // Default white if undefined
                 
-                html += `
-                    <div class="req-item" style="color: ${color}; font-weight: bold; text-shadow: 0 0 5px rgba(0,0,0,0.5);">
-                        <span>${obj}</span>
-                    </div>
-                `;
-            });
-        } else {
-            html += `<div class="req-item" style="color: #666;">Explore Area</div>`;
-        }
-
-        html += `</div>
+                <div class="stats-divider"></div>
                 <div class="stats-subtitle">REQUIRED ITEMS:</div>
                 <div class="required-items-list">
         `;
@@ -211,22 +186,49 @@ export class LevelStats {
             return listHtml;
         };
 
-        // Append Required Items
+        // 1. Append Required Items
         html += buildItemList(this.REQUIRED_ITEMS, foundItems);
+        html += `</div>`;
 
-        // Append Optional Items (Only if configured)
+        // 2. Append Optional Items
         if (this.OPTIONAL_ITEMS.length > 0) {
             html += `
-                </div>
                 <div class="stats-divider"></div>
                 <div class="stats-subtitle">OPTIONAL ITEMS:</div>
                 <div class="required-items-list">
             `;
             html += buildItemList(this.OPTIONAL_ITEMS, foundOptional);
+            html += `</div>`;
         }
 
+        // 3. Append Objectives (Moved to bottom)
         html += `
-                </div>
+            <div class="stats-divider"></div>
+            <div class="stats-subtitle">OBJECTIVES:</div>
+            <div class="required-items-list" style="margin-bottom: 12px;">
+        `;
+
+        if (foundObjectives.size > 0) {
+            const order = ["Confront Dr. Proton", "Destroy Reactor", "Locate Teleporter", "Reach the Exit"];
+            const sortedObjs = Array.from(foundObjectives).sort((a, b) => {
+                return order.indexOf(a) - order.indexOf(b);
+            });
+
+            sortedObjs.forEach(obj => {
+                const color = this.OBJECTIVE_COLORS[obj] || '#ffffff';
+                html += `
+                    <div class="req-item" style="color: ${color}; font-weight: bold; text-shadow: 0 0 5px rgba(0,0,0,0.5);">
+                        <span>${obj}</span>
+                    </div>
+                `;
+            });
+        } else {
+            html += `<div class="req-item" style="color: #666;">Explore Area</div>`;
+        }
+        html += `</div>`;
+
+        // 4. Footer
+        html += `
                 <div class="stats-divider"></div>
                 <div class="map-dim">Fixed Grid Size: ${w} x ${h}</div>
             </div>
@@ -234,7 +236,7 @@ export class LevelStats {
 
         this.panel.innerHTML = html;
 
-        // Post-render: Append actual canvas images for items
+        // Post-render: Append actual canvas images
         const attachImages = (itemList, foundSet) => {
             itemList.forEach(item => {
                 if (foundSet.has(item.id)) {
