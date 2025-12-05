@@ -209,7 +209,8 @@ export class LevelStats {
         `;
 
         if (foundObjectives.size > 0) {
-            const order = ["Confront Dr. Proton", "Destroy Reactor", "Locate Teleporter", "Reach the Exit"];
+            // Sort objectives by priority: Reactor first, Exits/Bosses last
+            const order = ["Destroy Reactor", "Locate Teleporter", "Confront Dr. Proton", "Reach the Exit"];
             const sortedObjs = Array.from(foundObjectives).sort((a, b) => {
                 return order.indexOf(a) - order.indexOf(b);
             });
@@ -281,3 +282,4 @@ export class LevelStats {
         this.panel.style.display = 'none';
     }
 }
+
