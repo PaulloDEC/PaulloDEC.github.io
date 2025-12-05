@@ -334,9 +334,14 @@ export const SPRITE_MAP = {
     
     "301B": {
         file: "ANIM3",
-        index: 12,
+        index: 16,
         type: "hazard",
-        name: "Fan (L)"
+        name: "Fan (L)",
+        composition: {
+            width: 1,
+            height: 2,
+            indices: [16, 17]
+        }
     },
     
     "301C": {
