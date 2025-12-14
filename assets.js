@@ -331,20 +331,27 @@ export class AssetManager {
              */
             
             if (name.startsWith("SOLID") || name.startsWith("BACK")) {
-                const pixels = imageData.data; // RGBA buffer (Uint8ClampedArray)
-                
-                /**
-                 * Alpha channel is at every 4th position (index 3, 7, 11, ...).
-                 * 
-                 * ImageData format: [R, G, B, A, R, G, B, A, ...]
-                 *                    0  1  2  3  4  5  6  7  ...
-                 * 
-                 * We start at index 3 and increment by 4 each time.
-                 */
-                for (let p = 3; p < pixels.length; p += 4) {
-                    pixels[p] = 255; // Set alpha to 100% (fully opaque)
-                }
-            }
+    /**
+     * Alpha channel is at every 4th position (index 3, 7, 11, ...).
+     * 
+     * ImageData format: [R, G, B, A, R, G, B, A, ...]
+     *                    0  1  2  3  4  5  6  7  ...
+     * 
+     * We start at index 3 and increment by 4 each time.
+     * 
+     * IMPORTANT: We modify a copy and create new ImageData
+     * because some browsers (like Brave) don't properly update
+     * when imageData.data is modified directly.
+     */
+    const pixels = new Uint8ClampedArray(imageData.data); // Create copy
+    
+    for (let p = 3; p < pixels.length; p += 4) {
+        pixels[p] = 255; // Set alpha to 100% (fully opaque)
+    }
+    
+    // Create new ImageData with corrected pixels
+    imageData = new ImageData(pixels, width, height);
+}
             
             /* -------------------------------------------------------------- */
             /* Add Tile to Array                                              */
