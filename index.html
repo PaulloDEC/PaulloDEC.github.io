@@ -7,8 +7,19 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- ====================================================================== -->
+    <!-- HEADER BAR                                                             -->
+    <!-- ====================================================================== -->
+    <!-- 
+        Top navigation bar containing:
+        - Application title with Duke Nukem branding
+        - File selection button and status indicator
+        - Dynamic tile count/map name display
+    -->
     <header>
+        <!-- Left side: Title, file selector, and status -->
         <div class="header-left">
+            <!-- Application title with radioactive symbol and styled subtitle -->
             <h1>
                 ☢️ Duke Nukem 1
                 <span style="font-weight: normal; color: var(--text-muted); font-size: 0.8em;">
@@ -16,65 +27,158 @@
                 </span>
             </h1>
             
+            <!-- Visual separator between title and controls -->
             <span class="header-sep">|</span>
 
+            <!-- Hidden file input for folder selection (triggered by label button) -->
+            <!-- webkitdirectory: Allows selecting entire folders containing game files -->
+            <!-- multiple: Enables selection of multiple files within the folder -->
             <input type="file" id="folder-input" webkitdirectory multiple style="display: none;" />
-			<input type="file" id="palette-input" accept="image/png" style="display: none;" />
             
+            <!-- Hidden file input for custom palette upload (Easter egg feature) -->
+            <!-- Accepts PNG files for custom EGA palette replacement -->
+            <input type="file" id="palette-input" accept="image/png" style="display: none;" />
+            
+            <!-- Styled button that triggers the hidden folder input -->
             <label for="folder-input" class="btn-file-select">Choose Files</label>
             
+            <!-- Status text showing current folder selection state -->
             <span id="file-input-status">No folder selected</span>
         </div>
         
+        <!-- Right side: Dynamic content display (tile count or map name) -->
+        <!-- Updated by JavaScript when assets are loaded or inspected -->
         <div id="tile-count-display">Waiting for Data...</div>
     </header>
 
+    <!-- ====================================================================== -->
+    <!-- MAIN LAYOUT CONTAINER                                                  -->
+    <!-- ====================================================================== -->
+    <!-- 
+        Flexbox wrapper containing the sidebar and main content area.
+        Takes up all remaining vertical space below the header.
+    -->
     <div class="layout-wrapper">
         
+        <!-- ================================================================== -->
+        <!-- SIDEBAR                                                            -->
+        <!-- ================================================================== -->
+        <!-- 
+            Left sidebar containing:
+            1. Asset list panel (shows available game files)
+            2. System log panel (displays application messages)
+            Both panels support collapsing via header clicks.
+        -->
         <aside class="sidebar">
             
+            <!-- ============================================================== -->
+            <!-- ASSET LIST PANEL                                               -->
+            <!-- ============================================================== -->
+            <!-- 
+                Displays clickable list of available game assets.
+                - Uses flex: 2 to take twice the space of the log panel
+                - Contains episode filters for DN1/DN2/DN3 content
+                - Populated dynamically by JavaScript when folder is loaded
+            -->
             <div class="sidebar-section" style="flex: 2;">
+                <!-- Panel header with collapse arrow and episode filters -->
                 <div class="section-header-row">
+                    <!-- Clickable header to collapse/expand panel -->
                     <div class="collapsible-header">
                         <span class="collapse-arrow"></span>
                         <h3>Assets</h3>
                     </div>
                     
+                    <!-- Episode filter checkboxes -->
+                    <!-- Allow users to show/hide files from specific episodes -->
                     <div class="episode-filters">
-                        <label title="Show Episode 1 Files"><input type="checkbox" id="filter-dn1" checked> Ep 1</label>
-                        <label title="Show Episode 2 Files"><input type="checkbox" id="filter-dn2"> Ep 2</label>
-                        <label title="Show Episode 3 Files"><input type="checkbox" id="filter-dn3"> Ep 3</label>
+                        <label title="Show Episode 1 Files">
+                            <input type="checkbox" id="filter-dn1" checked> Ep 1
+                        </label>
+                        <label title="Show Episode 2 Files">
+                            <input type="checkbox" id="filter-dn2"> Ep 2
+                        </label>
+                        <label title="Show Episode 3 Files">
+                            <input type="checkbox" id="filter-dn3"> Ep 3
+                        </label>
                     </div>
                 </div>
                 
+                <!-- Scrollable container for asset list items -->
+                <!-- Populated dynamically by JavaScript with clickable file entries -->
                 <div id="asset-list" class="scroll-box">
+                    <!-- Default placeholder text shown before files are loaded -->
                     <div style="padding: 20px; color: var(--text-muted); text-align: center; font-style: italic;">
                         Select game folder to begin
                     </div>
                 </div>
             </div>
 
+            <!-- ============================================================== -->
+            <!-- SYSTEM LOG PANEL                                               -->
+            <!-- ============================================================== -->
+            <!-- 
+                Displays application status messages and errors.
+                - Uses flex: 1 to take half the space of the asset panel
+                - Contains debug palette visualization canvas
+                - Messages are color-coded by type (info, error, warning, success)
+            -->
             <div class="sidebar-section" style="flex: 1;">
+                <!-- Panel header with collapse arrow and debug palette display -->
                 <div class="log-header">
+                    <!-- Clickable header to collapse/expand panel -->
                     <div class="collapsible-header">
                         <span class="collapse-arrow"></span>
                         <h3>System Log</h3>
                     </div>
+                    <!-- Debug canvas showing current EGA palette (Easter egg: clickable for custom palette upload) -->
                     <canvas id="debug-canvas" width="160" height="10"></canvas>
                 </div>
+                <!-- Scrollable container for log messages -->
+                <!-- Populated dynamically by JavaScript with timestamped log entries -->
                 <div id="app-log" class="scroll-box"></div>
             </div>
 
         </aside>
 
+        <!-- ================================================================== -->
+        <!-- MAIN CONTENT AREA                                                  -->
+        <!-- ================================================================== -->
+        <!-- 
+            Primary display area for:
+            - Canvas rendering (maps, tilesets, sprites, backdrops)
+            - Data viewers (high scores, keyboard configs, credits)
+            - Audio players (sound effects, music)
+            Dynamically switches between canvas and data views.
+        -->
         <main class="main-content">
+            <!-- Canvas element for rendering graphics -->
+            <!-- Sized dynamically by JavaScript to fit the viewport -->
             <canvas id="preview-canvas"></canvas>
+            
+            <!-- Container for non-canvas content (data tables, audio players) -->
+            <!-- Hidden by default; shown when viewing data files -->
             <div id="data-view-container" style="display: none;"></div>
         </main>
     </div>
 
+    <!-- ====================================================================== -->
+    <!-- TOOLTIP OVERLAY                                                        -->
+    <!-- ====================================================================== -->
+    <!-- 
+        Floating tooltip displayed when hovering over canvas.
+        Shows tile coordinates, ID, and sprite name for map tiles.
+        Positioned dynamically by JavaScript based on mouse location.
+    -->
     <div id="tooltip"></div>
 
+    <!-- ====================================================================== -->
+    <!-- JAVASCRIPT MODULE                                                      -->
+    <!-- ====================================================================== -->
+    <!-- 
+        Main application script loaded as ES6 module.
+        Handles all interaction logic, rendering, and file management.
+    -->
     <script type="module" src="main.js"></script>
 </body>
 </html>

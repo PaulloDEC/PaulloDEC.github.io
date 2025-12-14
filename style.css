@@ -1,58 +1,92 @@
 /**
- * Duke Nukem 1 Map Viewer - Stylesheet
- * * Design System:
- * - Dark theme with Duke Nukem-inspired accent colors
- * - Retro-futuristic aesthetic
- * - Pixel-perfect rendering for game graphics
+ * ============================================================================
+ * DUKE NUKEM 1 MAP VIEWER - STYLESHEET
+ * ============================================================================
+ * 
+ * Design Philosophy:
+ * - Dark theme with Duke Nukem-inspired accent colors (yellow and cyan)
+ * - Retro-futuristic aesthetic matching the 1991 DOS game era
+ * - Pixel-perfect rendering for authentic game graphics display
+ * - Consistent component styling for professional UI appearance
+ * 
+ * Architecture:
+ * - CSS Custom Properties (Design Tokens) for easy theming
+ * - Flexbox-based responsive layout
+ * - Modular component styling with clear section organization
+ * - Accessible form controls with custom styling
  */
 
 /* ========================================================================== */
 /* CSS CUSTOM PROPERTIES (DESIGN TOKENS)                                     */
 /* ========================================================================== */
+/**
+ * Centralized design values for consistent theming throughout the application.
+ * All colors, sizes, and effects are defined here for easy maintenance.
+ */
 
 :root {
-    /* Color Palette */
-    --bg-app: #0f172a;           /* Main application background */
-    --bg-panel: #1e293b;         /* Sidebar and header background */
-    --bg-input: #020617;         /* Input fields and log boxes */
+    /* --------------------------------------------------------------------- */
+    /* Color Palette                                                         */
+    /* --------------------------------------------------------------------- */
     
-    --accent: #38bdf8;           /* Primary accent (Interface Blue) */
-    --duke-yellow: #ffcc00;      /* Duke Nukem signature color */
-    --accent-hover: #7dd3fc;     /* Hover state for accents */
-    --accent-dim: rgba(56, 189, 248, 0.1); /* Subtle accent overlay */
+    /* Background Colors */
+    --bg-app: #0f172a;           /* Main application background (dark slate) */
+    --bg-panel: #1e293b;         /* Sidebar and header background (lighter slate) */
+    --bg-input: #020617;         /* Input fields and log boxes (nearly black) */
     
-    --text-main: #f1f5f9;        /* Primary text color */
-    --text-muted: #94a3b8;       /* Secondary/muted text */
+    /* Accent Colors */
+    --accent: #38bdf8;           /* Primary accent color (cyan blue) */
+    --duke-yellow: #ffcc00;      /* Duke Nukem signature yellow */
+    --accent-hover: #7dd3fc;     /* Lighter accent for hover states */
+    --accent-dim: rgba(56, 189, 248, 0.1); /* Transparent accent for overlays */
     
-    --border: #334155;           /* Border color */
+    /* Text Colors */
+    --text-main: #f1f5f9;        /* Primary text color (off-white) */
+    --text-muted: #94a3b8;       /* Secondary/muted text (gray-blue) */
     
-    /* Layout Values */
-    --radius: 12px;              /* Standard border radius */
-    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3); /* Standard shadow */
+    /* UI Elements */
+    --border: #334155;           /* Standard border color (medium slate) */
+    
+    /* --------------------------------------------------------------------- */
+    /* Layout Values                                                         */
+    /* --------------------------------------------------------------------- */
+    
+    --radius: 12px;              /* Standard border radius for rounded corners */
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3); /* Standard drop shadow */
 }
 
 /* ========================================================================== */
 /* GLOBAL RESETS AND BASE STYLES                                             */
 /* ========================================================================== */
+/**
+ * Browser normalization and base HTML element styling.
+ * Ensures consistent appearance across different browsers.
+ */
 
 * {
+    /* Use border-box sizing for more predictable layout calculations */
     box-sizing: border-box;
 }
 
 body {
+    /* Font stack prioritizing modern, readable sans-serif fonts */
     font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
     background-color: var(--bg-app);
     color: var(--text-main);
     margin: 0;
-    height: 100vh;
+    height: 100vh; /* Full viewport height */
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow: hidden; /* Prevent body scrolling (scrolling happens in containers) */
 }
 
 /* ========================================================================== */
 /* TYPOGRAPHY                                                                 */
 /* ========================================================================== */
+/**
+ * Heading styles for consistent text hierarchy.
+ * H1 is used for the main title, H3 for panel headers.
+ */
 
 h1 {
     margin: 0;
@@ -64,7 +98,7 @@ h1 {
     display: flex;
     align-items: center;
     gap: 10px;
-    text-shadow: 0 0 10px rgba(255, 204, 0, 0.2);
+    text-shadow: 0 0 10px rgba(255, 204, 0, 0.2); /* Subtle glow effect */
     white-space: nowrap;
 }
 
@@ -75,16 +109,24 @@ h3 {
     letter-spacing: 1px;
     color: var(--text-muted);
     font-weight: 700;
-    transition: color 0.2s;
+    transition: color 0.2s; /* Smooth color change on hover */
 }
 
 /* ========================================================================== */
 /* LAYOUT STRUCTURE                                                           */
 /* ========================================================================== */
+/**
+ * Main application layout using flexbox.
+ * Structure: Header (fixed) -> Layout Wrapper (flex) -> [Sidebar | Main Content]
+ */
 
 /* -------------------------------------------------------------------------- */
 /* Header Bar                                                                 */
 /* -------------------------------------------------------------------------- */
+/**
+ * Fixed-height top bar containing title, file controls, and status display.
+ * Uses flexbox to distribute space between left controls and right status.
+ */
 
 header {
     background: var(--bg-panel);
@@ -93,33 +135,36 @@ header {
     border-bottom: 1px solid var(--border);
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    flex-shrink: 0;
+    justify-content: space-between; /* Push left and right sections apart */
+    flex-shrink: 0; /* Prevent header from shrinking */
     box-shadow: var(--shadow);
-    z-index: 20;
+    z-index: 20; /* Keep header above other content */
 }
 
 .header-left {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 15px; /* Spacing between title, separator, and controls */
 }
 
 .header-sep {
+    /* Visual separator character between title and controls */
     color: var(--border);
     font-size: 1.2rem;
-    user-select: none;
+    user-select: none; /* Prevent text selection */
 }
 
 /* Header Status Display */
 #tile-count-display {
+    /* Monospace font for technical information display */
     font-family: 'Consolas', monospace;
     font-size: 0.85rem;
     color: var(--text-muted);
 }
 
-/* Emphasize map name in header */
+/* Emphasize map name in header status */
 #tile-count-display strong {
+    /* Map names shown in Duke yellow for prominence */
     color: var(--duke-yellow);
     font-weight: 700;
     font-size: 1rem;
@@ -129,16 +174,24 @@ header {
 /* -------------------------------------------------------------------------- */
 /* Main Layout Wrapper                                                        */
 /* -------------------------------------------------------------------------- */
+/**
+ * Container for sidebar and main content area.
+ * Flexes to fill remaining vertical space below header.
+ */
 
 .layout-wrapper {
     display: flex;
-    flex: 1;
-    overflow: hidden;
+    flex: 1; /* Take all remaining space */
+    overflow: hidden; /* Prevent wrapper scrolling */
 }
 
 /* -------------------------------------------------------------------------- */
 /* Sidebar                                                                    */
 /* -------------------------------------------------------------------------- */
+/**
+ * Left sidebar containing asset list, controls, and system log.
+ * Fixed width with vertical flex layout for stacked panels.
+ */
 
 .sidebar {
     width: 320px;
@@ -147,8 +200,8 @@ header {
     display: flex;
     flex-direction: column;
     padding: 20px;
-    gap: 20px;
-    flex-shrink: 0;
+    gap: 20px; /* Spacing between sidebar sections */
+    flex-shrink: 0; /* Maintain fixed width */
     z-index: 10;
     transition: all 0.2s;
 }
@@ -156,46 +209,71 @@ header {
 .sidebar-section {
     display: flex;
     flex-direction: column;
-    min-height: 0; /* Allow flex children to shrink */
-    transition: flex 0.3s ease;
+    min-height: 0; /* Allow flex children to shrink properly */
+    transition: flex 0.3s ease; /* Smooth collapse animation */
 }
 
-/* COLLAPSED STATE LOGIC */
-/* When collapsed, override inline flex styles to shrink, and hide content */
+/* --------------------------------------------------------------------- */
+/* Collapsed State Logic                                                 */
+/* --------------------------------------------------------------------- */
+/**
+ * When a sidebar section is collapsed:
+ * - Overrides inline flex styles to shrink to minimum size
+ * - Hides content while keeping header visible
+ * - Rotates collapse arrow to indicate state
+ */
+
 .sidebar-section.collapsed {
-    flex: 0 0 auto !important; 
+    flex: 0 0 auto !important; /* Override inline flex values */
 }
 
 .sidebar-section.collapsed .scroll-box,
 .sidebar-section.collapsed .control-box {
-    display: none;
+    display: none; /* Hide panel content when collapsed */
 }
 
 .sidebar-section.collapsed .collapse-arrow {
-    transform: rotate(-90deg);
+    transform: rotate(-90deg); /* Point arrow right when collapsed */
 }
 
-/* Header Interactions */
+/* --------------------------------------------------------------------- */
+/* Header Interactions                                                   */
+/* --------------------------------------------------------------------- */
+/**
+ * Collapsible panel headers with hover effects.
+ * Clicking the header toggles the collapsed state.
+ */
+
 .collapsible-header {
     display: flex;
     align-items: center;
     cursor: pointer;
-    user-select: none;
+    user-select: none; /* Prevent text selection during clicks */
 }
 
 .collapsible-header:hover h3 {
+    /* Brighten header text on hover */
     color: var(--text-main);
 }
 
 .collapsible-header:hover .collapse-arrow {
+    /* Brighten arrow on hover */
     border-top-color: var(--text-main);
 }
 
-/* Triangle Arrow using CSS borders */
+/* --------------------------------------------------------------------- */
+/* Collapse Arrow (CSS Triangle)                                         */
+/* --------------------------------------------------------------------- */
+/**
+ * Triangle arrow created using CSS borders.
+ * Points down when expanded, right when collapsed.
+ */
+
 .collapse-arrow {
     display: inline-block;
     width: 0;
     height: 0;
+    /* Create downward-pointing triangle using border trick */
     border-left: 4px solid transparent;
     border-right: 4px solid transparent;
     border-top: 5px solid var(--text-muted);
@@ -203,17 +281,24 @@ header {
     transition: transform 0.2s, border-color 0.2s;
 }
 
-/* Header row for sections (Assets title + Filters) */
+/* --------------------------------------------------------------------- */
+/* Section Headers and Filters                                           */
+/* --------------------------------------------------------------------- */
+/**
+ * Composite header row for the Assets panel.
+ * Contains collapsible header on left and episode filters on right.
+ */
+
 .section-header-row {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-between; /* Push header and filters to opposite sides */
     align-items: center;
-    margin-bottom: 8px; /* Standard spacing above the list */
+    margin-bottom: 8px; /* Standard spacing above the content */
 }
 
 .episode-filters {
     display: flex;
-    gap: 12px; /* Reduce horizontal distance */
+    gap: 12px; /* Spacing between filter checkboxes */
     align-items: center;
 }
 
@@ -224,32 +309,50 @@ header {
     gap: 6px;
 }
 
+/* --------------------------------------------------------------------- */
+/* Log Panel Header                                                      */
+/* --------------------------------------------------------------------- */
+/**
+ * Header for system log panel.
+ * Contains collapsible header and debug palette visualization.
+ */
+
 .log-header {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-between; /* Push header and debug canvas to opposite sides */
     align-items: center;
     margin-bottom: 8px;
 }
 
 #debug-canvas {
+    /* Small canvas displaying EGA color palette */
     border: 1px solid var(--border);
     border-radius: 2px;
     background: #000;
-    cursor: pointer; /* <--- Add this to indicate interactivity */
+    cursor: pointer; /* Indicates clickability (Easter egg: custom palette upload) */
     transition: transform 0.1s;
 }
 
 #debug-canvas:active {
+    /* Subtle press effect */
     transform: scale(0.95);
 }
 
 /* ========================================================================== */
 /* FORM ELEMENTS                                                              */
 /* ========================================================================== */
+/**
+ * Custom-styled form controls matching the application theme.
+ * All inputs use consistent colors, sizing, and interaction states.
+ */
 
 /* -------------------------------------------------------------------------- */
 /* File Input Button (Styled Label)                                           */
 /* -------------------------------------------------------------------------- */
+/**
+ * The actual file input is hidden; this label acts as a styled button.
+ * Clicking the label triggers the hidden file input.
+ */
 
 .btn-file-select {
     background: var(--bg-input);
@@ -260,30 +363,35 @@ header {
     font-size: 0.85rem;
     cursor: pointer;
     transition: all 0.2s;
-    user-select: none;
+    user-select: none; /* Prevent text selection */
 }
 
 .btn-file-select:hover {
+    /* Highlight on hover */
     border-color: var(--accent);
     color: var(--text-main);
     background: var(--bg-panel);
 }
 
 .btn-file-select:active {
+    /* Invert colors on click for tactile feedback */
     background: var(--accent);
     color: var(--bg-app);
 }
 
-/* Text status next to button */
+/* Text status displayed next to file selection button */
 #file-input-status {
     font-size: 0.85rem;
     color: var(--text-muted);
-    margin-left: 0px; /* Spacing requested */
+    margin-left: 0px;
 }
 
 /* -------------------------------------------------------------------------- */
 /* Number Input                                                               */
 /* -------------------------------------------------------------------------- */
+/**
+ * Styled number inputs for zoom controls and other numeric parameters.
+ */
 
 input[type="number"] {
     background: var(--bg-input);
@@ -297,11 +405,15 @@ input[type="number"] {
 /* -------------------------------------------------------------------------- */
 /* Labels                                                                     */
 /* -------------------------------------------------------------------------- */
+/**
+ * Label styling for checkboxes and radio buttons.
+ * Uses flexbox to align checkbox and text.
+ */
 
 label {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 8px; /* Space between checkbox and text */
     font-size: 0.85rem;
     color: var(--text-main);
     cursor: pointer;
@@ -311,10 +423,14 @@ label {
 /* -------------------------------------------------------------------------- */
 /* Checkboxes and Radio Buttons                                               */
 /* -------------------------------------------------------------------------- */
+/**
+ * Custom-styled checkboxes and radio buttons replacing browser defaults.
+ * Uses appearance: none to remove default styling, then adds custom appearance.
+ */
 
 input[type="checkbox"],
 input[type="radio"] {
-    appearance: none;
+    appearance: none; /* Remove browser default styling */
     width: 16px;
     height: 16px;
     background: var(--bg-input);
@@ -329,14 +445,14 @@ input[type="radio"] {
     border-radius: 50%;
 }
 
-/* Checked state */
+/* Checked state - fill with accent color */
 input[type="checkbox"]:checked,
 input[type="radio"]:checked {
     background: var(--accent);
     border-color: var(--accent);
 }
 
-/* Checkmark for checkboxes */
+/* Checkmark symbol for checked checkboxes */
 input[type="checkbox"]:checked::after {
     content: '✓';
     font-size: 10px;
@@ -344,11 +460,11 @@ input[type="checkbox"]:checked::after {
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%); /* Center the checkmark */
     font-weight: bold;
 }
 
-/* Dot for radio buttons */
+/* Dot indicator for checked radio buttons */
 input[type="radio"]:checked::after {
     content: '';
     width: 6px;
@@ -358,73 +474,91 @@ input[type="radio"]:checked::after {
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%); /* Center the dot */
 }
 
 /* ========================================================================== */
 /* SCROLLABLE CONTAINERS                                                      */
 /* ========================================================================== */
+/**
+ * Standard scrollable container used for asset list and system log.
+ * Consistent styling with rounded corners and custom scrollbar.
+ */
 
 .scroll-box {
     background: var(--bg-input);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    overflow-y: auto;
-    flex: 1;
+    overflow-y: auto; /* Enable vertical scrolling */
+    flex: 1; /* Take all available vertical space */
     padding: 10px;
-    font-family: 'Consolas', 'Monaco', monospace;
+    font-family: 'Consolas', 'Monaco', monospace; /* Monospace for technical content */
     font-size: 0.8rem;
 }
 
 /* ========================================================================== */
 /* LOG ENTRIES                                                                */
 /* ========================================================================== */
+/**
+ * Styling for system log messages with color-coded severity levels.
+ * Each log type has a distinct color for quick visual parsing.
+ */
 
 .log-entry {
     margin-bottom: 4px;
-    border-bottom: 1px solid #1e293b;
+    border-bottom: 1px solid #1e293b; /* Subtle separator between entries */
     padding-bottom: 2px;
 }
 
 .log-error {
+    /* Red for errors */
     color: #ef4444;
 }
 
 .log-success {
+    /* Duke yellow for success messages */
     color: var(--duke-yellow);
     font-weight: bold;
 }
 
 .log-info {
+    /* Muted gray for informational messages */
     color: var(--text-muted);
 }
 
 .log-warning {
+    /* Orange for warnings */
     color: #f59e0b;
 }
 
 /* ========================================================================== */
 /* FILE LIST (COLLAPSIBLE DETAILS)                                           */
 /* ========================================================================== */
+/**
+ * HTML <details> elements used for collapsible file category groups.
+ * Styled to match application theme with hover effects.
+ */
 
 details {
     margin-bottom: 8px;
     border-radius: 6px;
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(255, 255, 255, 0.03); /* Subtle background when closed */
     border: 1px solid transparent;
 }
 
 details[open] {
+    /* Add border and stronger background when expanded */
     border-color: var(--border);
     background: var(--bg-input);
 }
 
 summary {
+    /* Clickable header for collapsible group */
     padding: 8px 12px;
     cursor: pointer;
     font-weight: 600;
     color: var(--text-muted);
-    outline: none;
+    outline: none; /* Remove browser default focus outline */
     display: flex;
     justify-content: space-between;
     border-radius: 6px;
@@ -432,26 +566,33 @@ summary {
 }
 
 summary:hover {
+    /* Highlight on hover */
     color: var(--accent);
     background: var(--accent-dim);
 }
 
 details[open] summary {
+    /* Style for expanded state */
     border-bottom: 1px solid var(--border);
-    border-radius: 6px 6px 0 0;
+    border-radius: 6px 6px 0 0; /* Rounded top corners only */
     color: var(--accent);
 }
 
 .group-content {
+    /* Container for file links inside expanded details */
     padding: 5px;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 2px; /* Small spacing between file links */
 }
 
 /* -------------------------------------------------------------------------- */
 /* File Links                                                                 */
 /* -------------------------------------------------------------------------- */
+/**
+ * Individual file entries within asset list.
+ * Clickable links with hover and active states.
+ */
 
 .file-link {
     padding: 4px 10px;
@@ -463,65 +604,83 @@ details[open] summary {
 }
 
 .file-link:hover {
+    /* Highlight on hover */
     background: var(--accent-dim);
     color: var(--accent);
 }
 
-/* Active/selected file */
+/* Active/selected file indicator */
 .file-link.active {
+    /* Current file shown with strong highlight */
     background: var(--accent);
     color: var(--bg-app);
     font-weight: bold;
-    box-shadow: 0 0 10px var(--accent-dim);
+    box-shadow: 0 0 10px var(--accent-dim); /* Subtle glow effect */
 }
 
 /* ========================================================================== */
 /* MAIN VIEWER AREA                                                           */
 /* ========================================================================== */
+/**
+ * Primary content area displaying canvas or data views.
+ * Black background with grid pattern and grab cursor for panning.
+ */
 
 .main-content {
-    flex: 1;
+    flex: 1; /* Take all remaining horizontal space */
     background: #000;
     position: relative;
     overflow: hidden;
-    cursor: grab;
+    cursor: grab; /* Indicate draggability */
     
-    /* Subtle grid pattern */
+    /* Subtle grid pattern for visual interest */
     background-image: radial-gradient(#222 1px, transparent 1px);
     background-size: 20px 20px;
 }
 
 .main-content:active {
+    /* Change cursor when actively dragging */
     cursor: grabbing;
 }
 
 /* ========================================================================== */
 /* CANVAS ELEMENTS                                                            */
 /* ========================================================================== */
+/**
+ * Canvas styling for pixel-perfect rendering of game graphics.
+ */
 
 #preview-canvas {
     position: absolute;
     top: 0;
     left: 0;
-    transform-origin: 0 0;
-    image-rendering: pixelated; /* Crisp pixel art */
-    box-shadow: 0 0 100px rgba(56, 189, 248, 0.1);
+    transform-origin: 0 0; /* Set transform origin for zoom transformations */
+    image-rendering: pixelated; /* Crisp pixel art without smoothing */
+    box-shadow: 0 0 100px rgba(56, 189, 248, 0.1); /* Subtle cyan glow */
 }
 
 #debug-canvas {
     display: block;
     position: static;
-    image-rendering: pixelated;
-    /* Dimensions are handled by width/height attributes */
+    image-rendering: pixelated; /* Crisp rendering for color blocks */
+    /* Dimensions are set via width/height HTML attributes */
 }
 
 /* ========================================================================== */
 /* FLOATING UI ELEMENTS                                                       */
 /* ========================================================================== */
+/**
+ * UI elements that float over the main canvas area.
+ * Includes zoom controls and tooltip.
+ */
 
 /* -------------------------------------------------------------------------- */
 /* Zoom Controls                                                              */
 /* -------------------------------------------------------------------------- */
+/**
+ * Floating panel with zoom presets and display options.
+ * Positioned in top-right corner of main content area.
+ */
 
 .zoom-controls {
     position: absolute;
@@ -535,10 +694,11 @@ details[open] summary {
     border: 1px solid var(--border);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
-    z-index: 100;
+    z-index: 100; /* Float above canvas */
 }
 
 .zoom-btn {
+    /* Individual zoom level buttons (Fit, 1x, 2x, 4x) */
     background: var(--bg-input);
     color: var(--text-main);
     border: 1px solid var(--border);
@@ -551,17 +711,19 @@ details[open] summary {
 }
 
 .zoom-btn:hover {
+    /* Highlight on hover */
     border-color: var(--accent);
     color: var(--accent);
     box-shadow: 0 0 8px var(--accent-dim);
 }
 
 .zoom-btn:active {
+    /* Invert colors on click */
     background: var(--accent);
     color: var(--bg-app);
 }
 
-/* Checkbox labels within zoom controls */
+/* Checkbox labels within zoom controls panel */
 .zoom-controls label {
     font-size: 0.75rem;
     color: #aaa;
@@ -571,7 +733,7 @@ details[open] summary {
     cursor: pointer;
     margin-top: 5px;
     padding-top: 5px;
-    border-top: 1px solid #444;
+    border-top: 1px solid #444; /* Separator above checkboxes */
 }
 
 .zoom-controls label:hover {
@@ -581,51 +743,64 @@ details[open] summary {
 /* -------------------------------------------------------------------------- */
 /* Tooltip                                                                    */
 /* -------------------------------------------------------------------------- */
+/**
+ * Floating tooltip showing tile information on hover.
+ * Displays tile coordinates, ID, and sprite name.
+ */
 
 #tooltip {
-    position: fixed;
-    background: rgba(15, 23, 42, 0.95);
+    position: fixed; /* Fixed positioning relative to viewport */
+    background: rgba(15, 23, 42, 0.95); /* Semi-transparent dark background */
     border: 1px solid var(--accent);
     color: var(--accent);
     padding: 8px 12px;
     border-radius: 6px;
     font-family: 'Consolas', monospace;
     font-size: 0.8rem;
-    pointer-events: none;
-    display: none;
-    z-index: 1000;
-    white-space: pre-line;
+    pointer-events: none; /* Don't interfere with mouse events */
+    display: none; /* Hidden by default */
+    z-index: 1000; /* Always on top */
+    white-space: pre-line; /* Preserve line breaks in text */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px); /* Blur background behind tooltip */
 }
 
 /* ========================================================================== */
 /* CONTROL PANELS                                                             */
 /* ========================================================================== */
+/**
+ * Control panel styling for layer visibility and sprite display options.
+ * Matches the visual style of asset list and log panels.
+ */
 
-/* New styled container for controls matching Asset/Log boxes */
 .control-box {
+    /* Container matching scroll-box styling */
     display: flex;
     flex-direction: column;
-    padding: 0 15px 7px 15px; /* Side padding only */
+    padding: 0 15px 7px 15px; /* Side padding only, no top padding */
     background: var(--bg-input);
     border: 1px solid var(--border);
     border-radius: var(--radius);
 }
 
 .control-group {
+    /* Individual control sections (e.g., "Visibility Layers") */
     padding: 10px 0;
     margin: 0;
-    /* Borders handled below via :not(:first-child) */
+    /* Borders handled by :not(:first-child) selector below */
 }
 
-/* Border Strategy: Add border to TOP of elements, skipping the first one.
-   This prevents dangling borders on the bottom of the last element */
+/**
+ * Border Strategy:
+ * Add border to TOP of elements, skipping the first one.
+ * This prevents a dangling border at the bottom of the last element.
+ */
 .control-group:not(:first-child) {
     border-top: 1px solid var(--border);
 }
 
 .control-group-label {
+    /* Section labels within control groups */
     font-size: 0.7rem;
     text-transform: uppercase;
     color: var(--text-muted);
@@ -634,41 +809,54 @@ details[open] summary {
 }
 
 .checkbox-grid {
+    /* Grid layout for checkboxes in layer visibility controls */
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr; /* Two equal columns */
     gap: 8px;
 }
 
 /* ========================================================================== */
 /* SCROLLBAR STYLING                                                          */
 /* ========================================================================== */
+/**
+ * Custom scrollbar appearance matching application theme.
+ * Webkit-specific (Chrome, Safari, Edge).
+ */
 
 ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 8px;  /* Vertical scrollbar width */
+    height: 8px; /* Horizontal scrollbar height */
 }
 
 ::-webkit-scrollbar-track {
+    /* Background of scrollbar track */
     background: var(--bg-app);
 }
 
 ::-webkit-scrollbar-thumb {
+    /* Draggable scrollbar handle */
     background: var(--border);
     border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
+    /* Brighten on hover */
     background: var(--text-muted);
 }
 
 /* ========================================================================== */
 /* DATA VIEWER STYLES                                                         */
 /* ========================================================================== */
+/**
+ * Styling for non-canvas data displays (high scores, keyboard configs, etc.).
+ * Uses centered table layout with consistent theming.
+ */
 
 #data-view-container {
+    /* Container for data tables and special viewers */
     width: 100%;
     height: 100%;
-    overflow-y: auto;
+    overflow-y: auto; /* Enable vertical scrolling */
     padding: 40px;
     display: flex;
     flex-direction: column;
@@ -677,19 +865,21 @@ details[open] summary {
 }
 
 .data-table {
+    /* Styled table for structured data display */
     width: 100%;
-    max-width: 600px;
+    max-width: 600px; /* Prevent overly wide tables */
     border-collapse: collapse;
     background: var(--bg-panel);
     border: 1px solid var(--border);
     border-radius: 8px;
-    overflow: hidden;
+    overflow: hidden; /* Clip table corners to rounded border */
     box-shadow: var(--shadow);
     margin-top: 20px;
 }
 
 .data-table th {
-    background: rgba(56, 189, 248, 0.1);
+    /* Table header cells */
+    background: rgba(56, 189, 248, 0.1); /* Subtle accent tint */
     color: var(--accent);
     padding: 12px;
     text-align: left;
@@ -700,54 +890,63 @@ details[open] summary {
 }
 
 .data-table td {
+    /* Table data cells */
     padding: 12px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05); /* Very subtle row separator */
     font-size: 0.9rem;
 }
 
 .data-table tr:last-child td {
+    /* Remove bottom border from last row */
     border-bottom: none;
 }
 
 .data-table tr:hover {
+    /* Subtle highlight on row hover */
     background: rgba(255, 255, 255, 0.02);
 }
 
-/* Monospace font for Hex and Scores */
+/* Monospace font for hex values and numeric scores */
 .data-table .mono {
     font-family: 'Consolas', 'Monaco', monospace;
     color: var(--text-muted);
 }
 
-/* Specific styling for Score column */
+/* Specific styling for score column in high scores table */
 .data-table .score {
     color: var(--duke-yellow);
     text-align: right;
     padding-right: 30px;
 }
 
-/* Rank 1 highlight */
+/* Special highlight for rank 1 (first place) in high scores */
 .rank-1 td {
-    background: rgba(255, 204, 0, 0.1);
+    background: rgba(255, 204, 0, 0.1); /* Yellow tint */
     font-weight: bold;
     color: white;
 }
 
 .data-error {
+    /* Error message styling for failed data loads */
     color: #ef4444;
     padding: 20px;
     border: 1px solid #ef4444;
-    background: rgba(239, 68, 68, 0.1);
+    background: rgba(239, 68, 68, 0.1); /* Red tint */
     border-radius: 8px;
 }
 
 /* ========================================================================== */
 /* SOUND PLAYER STYLES                                                        */
 /* ========================================================================== */
+/**
+ * Grid layout for PC Speaker sound effect buttons.
+ * Each button represents one playable sound file.
+ */
 
 .sound-grid {
+    /* Responsive grid of sound buttons */
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); /* Auto-fill columns */
     gap: 15px;
     width: 100%;
     max-width: 800px;
@@ -755,6 +954,7 @@ details[open] summary {
 }
 
 .sound-btn {
+    /* Individual sound effect button */
     background: var(--bg-panel);
     border: 1px solid var(--border);
     color: var(--accent);
@@ -773,48 +973,57 @@ details[open] summary {
 }
 
 .sound-btn .icon {
+    /* Speaker emoji icon on sound buttons */
     font-size: 1.5rem;
     margin-bottom: 5px;
 }
 
 .sound-btn:hover {
+    /* Prominent hover effect */
     background: var(--accent);
     color: var(--bg-app);
     border-color: var(--accent);
-    transform: translateY(-2px);
+    transform: translateY(-2px); /* Lift effect */
     box-shadow: 0 4px 12px var(--accent-dim);
 }
 
 .sound-btn:active {
+    /* Reset lift on click */
     transform: translateY(0);
 }
 
 .volume-controls {
+    /* Volume slider container */
     display: flex;
     align-items: center;
     gap: 15px;
     margin-bottom: 20px;
     background: var(--bg-panel);
     padding: 10px 20px;
-    border-radius: 20px;
+    border-radius: 20px; /* Pill shape */
     border: 1px solid var(--border);
 }
 
 .volume-controls input[type="range"] {
+    /* Volume slider styling */
     cursor: pointer;
-    accent-color: var(--duke-yellow);
+    accent-color: var(--duke-yellow); /* Use Duke yellow for slider thumb */
 }
 
 /* ========================================================================== */
 /* LEVEL STATISTICS PANEL                                                     */
 /* ========================================================================== */
+/**
+ * Floating panel showing level statistics (enemies, bonuses, dimensions).
+ * Positioned in top-left corner over the map canvas.
+ */
 
 .stats-panel {
     position: absolute;
     top: 20px;
     left: 20px;
     width: 200px;
-    background: rgba(30, 41, 59, 0.95); /* Matches --bg-panel with opacity */
+    background: rgba(30, 41, 59, 0.95); /* Semi-transparent panel background */
     border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 10px;
@@ -822,12 +1031,13 @@ details[open] summary {
     font-family: 'Consolas', monospace;
     font-size: 0.8rem;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-    z-index: 100;
-    backdrop-filter: blur(4px);
-    transition: height 0.2s;
+    z-index: 100; /* Float above canvas */
+    backdrop-filter: blur(4px); /* Blur canvas behind panel */
+    transition: height 0.2s; /* Smooth collapse animation */
 }
 
 .stats-header {
+    /* Clickable header to collapse/expand stats panel */
     cursor: pointer;
     user-select: none;
     color: var(--duke-yellow);
@@ -838,41 +1048,49 @@ details[open] summary {
 }
 
 .stats-arrow {
+    /* Arrow indicator for collapse state */
     font-size: 0.7rem;
     width: 12px;
 }
 
 .stats-content {
+    /* Container for stats data rows */
     margin-top: 8px;
 }
 
 .stats-grid {
+    /* Vertical stack of stat rows */
     display: flex;
     flex-direction: column;
     gap: 4px;
 }
 
 .stat-row {
+    /* Individual statistic row (label: value) */
     display: flex;
     justify-content: space-between;
 }
 
 .stat-row .label {
+    /* Stat label (e.g., "Enemies", "Bonuses") */
     color: var(--text-muted);
 }
 
 .stat-row .val {
+    /* Stat value */
     font-weight: bold;
     color: var(--accent);
 }
 
 .stats-divider {
+    /* Horizontal line separator between stat sections */
     height: 1px;
     background: var(--border);
     margin: 8px 0;
 }
 
 .stats-subtitle {
+    /* Section subtitle within stats panel */
     color: var(--text-muted);
     margin-bottom: 6px;
     text-transform: uppercase;
@@ -880,18 +1098,21 @@ details[open] summary {
 }
 
 .required-items-list {
+    /* List of required collectibles for level completion */
     display: flex;
     flex-direction: column;
     gap: 6px;
 }
 
 .req-item {
+    /* Individual required item row (icon + name) */
     display: flex;
     align-items: center;
     gap: 10px;
 }
 
 .req-icon-container {
+    /* Container for item sprite icon */
     width: 16px;
     height: 16px;
     display: flex;
@@ -900,6 +1121,7 @@ details[open] summary {
 }
 
 .map-dim {
+    /* Map dimensions display (width x height) */
     text-align: center;
     color: #666;
     font-size: 0.75rem;
