@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Duke Nukem 2 Asset Viewer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="header-left">
+            <h1>
+                ☢️ Duke Nukem 2
+                <span style="font-weight: normal; color: var(--text-muted); font-size: 0.8em;">
+                    Asset Viewer
+                </span>
+            </h1>
+            
+            <span class="header-sep">|</span>
+
+            <input type="file" id="folder-input" accept=".cmp" style="display: none;" />
+			<input type="file" id="palette-input" accept="image/png" style="display: none;" />
+            
+            <label for="folder-input" class="btn-file-select">Choose Files</label>
+            
+            <span id="file-input-status">No folder selected</span>
+        </div>
+        
+        <div id="tile-count-display">Waiting for Data...</div>
+    </header>
+
+    <div class="layout-wrapper">
+        
+        <aside class="sidebar">
+            
+            <div class="sidebar-section" style="flex: 2;">
+                <div class="section-header-row">
+                    <div class="collapsible-header">
+                        <span class="collapse-arrow"></span>
+                        <h3>Assets</h3>
+                    </div>
+                    
+                    <div class="episode-filters">
+                        <label title="Show Episode 1 Levels"><input type="checkbox" id="filter-ep1" checked> Ep 1</label>
+                        <label title="Show Episode 2 Levels"><input type="checkbox" id="filter-ep2"> Ep 2</label>
+                        <label title="Show Episode 3 Levels"><input type="checkbox" id="filter-ep3"> Ep 3</label>
+						<label title="Show Episode 4 Levels"><input type="checkbox" id="filter-ep4"> Ep 4</label>
+                    </div>
+                </div>
+                
+                <div id="asset-list" class="scroll-box">
+                    <div style="padding: 20px; color: var(--text-muted); text-align: center; font-style: italic;">
+                        Select game folder to begin
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section" style="flex: 1;">
+                <div class="log-header">
+                    <div class="collapsible-header">
+                        <span class="collapse-arrow"></span>
+                        <h3>System Log</h3>
+                    </div>
+                    <canvas id="debug-canvas" width="160" height="10"></canvas>
+                </div>
+                <div id="app-log" class="scroll-box"></div>
+            </div>
+
+        </aside>
+
+        <main class="main-content">
+            <canvas id="preview-canvas"></canvas>
+            <div id="data-view-container" style="display: none;"></div>
+        </main>
+    </div>
+
+    <div id="tooltip"></div>
+
+    <script type="module" src="main.js"></script>
+</body>
+</html>

@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Duke Nukem 2 - Sprite Catalog</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            padding: 20px;
+            margin: 0;
+        }
+        h1 {
+            color: #38bdf8;
+            text-align: center;
+        }
+        #controls {
+            background: #2a2a2a;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        input[type="file"] {
+            margin: 10px;
+        }
+        #sprite-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            padding: 10px;
+        }
+        .sprite-card {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 5px;
+            padding: 10px;
+            text-align: center;
+        }
+        .sprite-canvas {
+            background: repeating-conic-gradient(#333 0% 25%, #2a2a2a 0% 50%) 50% / 16px 16px;
+            border: 1px solid #555;
+            margin: 10px auto;
+            display: block;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+        .sprite-info {
+            font-size: 11px;
+            line-height: 1.4;
+        }
+        .sprite-id {
+            color: #38bdf8;
+            font-weight: bold;
+            font-size: 13px;
+        }
+        .sprite-name {
+            color: #fbbf24;
+            margin: 5px 0;
+        }
+        .hotspot-info {
+            color: #10b981;
+            font-size: 10px;
+        }
+        .size-info {
+            color: #888;
+            font-size: 10px;
+        }
+        #status {
+            text-align: center;
+            padding: 20px;
+            color: #888;
+        }
+        .error {
+            color: #ef4444;
+        }
+        .success {
+            color: #10b981;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎮 Duke Nukem 2 - Actor Sprite Catalog</h1>
+    
+    <div id="controls">
+        <div>
+            <label>NUKEM2.CMP: <input type="file" id="cmp-file" accept=".cmp"></label>
+        </div>
+        <div id="status">Select NUKEM2.CMP to begin</div>
+    </div>
+    
+    <div id="sprite-grid"></div>
+
+    <script type="module">
+        import { FileSystem } from './FileSystem.js';
+        import { AssetManager } from './AssetManager.js';
+        import { ActorManager } from './ActorManager.js';
+
+        const fs = new FileSystem();
+        const assets = new AssetManager();
+        const actorManager = new ActorManager(assets);
+        const grid = document.getElementById('sprite-grid');
+        const status = document.getElementById('status');
+
+        // Actor name database from dn2specs.txt
+        const ACTOR_NAMES = {
+            0x0005: "DUKE",
+            0x0006: "DUKE",
+            0x000E: "nuclear waste can, empty",
+            0x0013: "green box - rocket launcher",
+            0x0014: "green box - flame thrower",
+            0x0016: "green box - normal weapon",
+            0x0017: "green box - laser",
+            0x001C: "blue box - health molecule",
+            0x001F: "BADGUY - fast green cat, ->",
+            0x0020: "BADGUY - fast green cat, <-",
+            0x0025: "white box - circuit card",
+            0x0026: "BADGUY - flamethrower",
+            0x0027: "BADGUY - flamethrower",
+            0x002A: "red box - bomb",
+            0x002D: "BONUS - blue globe",
+            0x002E: "BONUS - blue globe",
+            0x002F: "BONUS - blue globe",
+            0x0030: "BONUS - blue globe",
+            0x0031: "BADGUY - bouncing sentry robot",
+            0x0032: "teleport",
+            0x0033: "teleport",
+            0x0035: "white box - rapid fire",
+            0x0036: "rocket launcher turret",
+            0x003A: "BADGUY - bouncing sentry robot",
+            0x003E: "BADGUY - bomb dropping spaceship",
+            0x0040: "bouncing spike ball",
+            0x0042: "electric current door",
+            0x0043: "BADGUY - green slime ball",
+            0x0044: "BADGUY - green slime container",
+            0x004B: "nuclear waste can, green slime inside",
+            0x004E: "BADGUY - snake",
+            0x004F: "camera - on ceiling",
+            0x0050: "camera - on floor",
+            0x0051: "BADGUY - green hanging suction plant",
+            0x0052: "TRIGGER - appears only in med/hard difficulty",
+            0x0053: "TRIGGER - appears only in hard difficulty",
+            0x0057: "Duke's Ship",
+            0x005D: "force shield - need cloaking device",
+            0x005F: "rocket - falls over and explodes",
+            0x0061: "BADGUY - cross walker",
+            0x0062: "BADGUY - eyeball bomber plant",
+            0x0065: "BADGUY - BOSS Episode 2",
+            0x0066: "explosive charge",
+            0x0067: "explosive charge",
+            0x0068: "explosive charge",
+            0x006A: "explosive charge",
+            0x0072: "white box - cloaking device",
+            0x0073: "BADGUY - sentry robot generator",
+            0x0074: "explosive charge",
+            0x0075: "pipe dripping green stuff",
+            0x0077: "circuit card door",
+            0x0078: "circuit card keyhole",
+            0x0079: "white box blue key",
+            0x007A: "blue key keyhole",
+            0x0080: "auto-open vertical door",
+            0x0081: "keyhole mounting pole",
+            0x0082: "vertical fan",
+            0x0083: "swivel gun",
+            0x0084: "sliding floors by ladders",
+            0x0085: "sector marker",
+            0x0086: "BADGUY - skeleton",
+            0x0089: "explosive charge",
+            0x008A: "explosive charge",
+            0x008B: "exit",
+            0x008C: "swivel gun mounting post",
+            0x008E: "explosive charge",
+            0x008F: "explosive charge",
+            0x0090: "rocket",
+            0x0094: "blue box - empty",
+            0x0096: "BADGUY - metal crunch jaws",
+            0x0097: "BADGUY - floating split laser ball",
+            0x009A: "BADGUY - spider",
+            0x009B: "blue box - N",
+            0x009C: "blue box - U",
+            0x009D: "blue box - K",
+            0x009E: "blue box - E",
+            0x009F: "BADGUY - blue guard",
+            0x00A0: "blue box - video game cartridge",
+            0x00A1: "white box - empty",
+            0x00A2: "green box - empty",
+            0x00A3: "red box - empty",
+            0x00A4: "blue box - empty",
+            0x00A8: "red box - cola",
+            0x00AB: "BADGUY - blue guard",
+            0x00AC: "blue box - sunglasses",
+            0x00AD: "blue box - phone",
+            0x00AE: "red box - 6 pack cola",
+            0x00B0: "BADGUY - green ugly bird",
+            0x00B5: "blue box - boom box",
+            0x00B6: "BADGUY - blue guard",
+            0x00B7: "blue box - TV",
+            0x00B8: "blue box - camera",
+            0x00B9: "blue box - PC",
+            0x00BA: "blue box - CD",
+            0x00BB: "blue box - M",
+            0x00BC: "rotating floor spikes",
+            0x00BD: "BADGUY - leaping gargoyle",
+            0x00BE: "BADGUY - stone statue",
+            0x00C8: "BADGUY - BOSS Episode 1",
+            0x00C9: "red box - turkey",
+            0x00CB: "BADGUY - bird",
+            0x00D0: "floating exit sign",
+            0x00D1: "rocket elevator",
+            0x00D2: "message box",
+            0x00D4: "lava surface",
+            0x00D5: "BADGUY - flying message ship 'YOUR BRAIN IS OURS'",
+            0x00D6: "BADGUY - flying message ship 'BRING BACK THE BRAIN'",
+            0x00D7: "BADGUY - flying message ship 'LIVE FROM RIGEL IT'S SATURDAY NIGHT'",
+            0x00D8: "BADGUY - flying message ship 'DIE'",
+            0x00D9: "BADGUY - blue guard",
+            0x00DB: "smasher",
+            0x00DC: "BADGUY - flying message ship 'YOU CANNOT ESCAPE US YOU WILL GET YOUR BRAIN SUCKED'",
+            0x00DD: "water depths",
+            0x00DE: "lava fall",
+            0x00DF: "lava fall",
+            0x00E0: "water fall",
+            0x00E1: "water fall",
+            0x00E3: "water drip",
+            0x00E4: "water fall splash",
+            0x00E5: "water fall bubble",
+            0x00E6: "water fall",
+            0x00E7: "lava riser",
+            0x00E9: "water surface",
+            0x00EA: "water surface bubble",
+            0x00EB: "green slime liquid",
+            0x00EC: "radar antenna",
+            0x00ED: "message box",
+            0x00EF: "special hint globe",
+            0x00F0: "hint machine",
+            0x00F1: "TRIGGER - generates windblown spiders when touched",
+            0x00F4: "BADGUY - small unicycle",
+            0x00F6: "flame jet",
+            0x00F7: "flame jet",
+            0x00F8: "flame jet",
+            0x00F9: "flame jet",
+            0x00FD: "BADGUY - caged claw monster, active",
+            0x00FE: "flashpot",
+            0x0101: "water on floor",
+            0x0102: "water on floor",
+            0x0105: "caged claw monster, inactive",
+            0x0106: "fire on floor",
+            0x0107: "fire on floor",
+            0x0109: "BADGUY - BOSS Episode 3",
+            0x010F: "BADGUY - small flying ship",
+            0x0110: "BADGUY - small flying ship",
+            0x0111: "BADGUY - small flying ship",
+            0x0112: "blue box - T shirt",
+            0x0113: "blue box - videocassette",
+            0x0117: "BADGUY - BOSS Episode 4",
+            0x0128: "floating arrow",
+            0x012B: "BADGUY - swamp monster",
+            0x0160: "blue box - video"
+        };
+
+        function getActorName(id) {
+            return ACTOR_NAMES[id] || "Unknown";
+        }
+
+        document.getElementById('cmp-file').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            try {
+                status.textContent = 'Loading archive...';
+                await fs.loadCMP(file);
+                
+                // Load palette
+                const palData = fs.getFile("GAMEPAL.PAL");
+                if (palData) {
+                    assets.loadPalette(palData);
+                    status.textContent = 'Palette loaded ✓';
+                }
+                
+                // Load actor data
+                const actInfo = fs.getFile("ACTRINFO.MNI");
+                const actGraph = fs.getFile("ACTORS.MNI");
+                
+                if (!actInfo || !actGraph) {
+                    status.innerHTML = '<span class="error">Missing ACTRINFO.MNI or ACTORS.MNI</span>';
+                    return;
+                }
+                
+                actorManager.loadInfo(actInfo);
+                actorManager.loadGraphics(actGraph);
+                
+                status.textContent = `Generating sprites for ${actorManager.numActors} actors...`;
+                
+                // Generate all sprites
+                await generateCatalog();
+                
+            } catch (err) {
+                status.innerHTML = `<span class="error">Error: ${err.message}</span>`;
+                console.error(err);
+            }
+        });
+
+        async function generateCatalog() {
+            grid.innerHTML = '';
+            let successCount = 0;
+            
+            for (let actorId = 0; actorId < actorManager.numActors; actorId++) {
+                try {
+                    // TEST: Load sprite from actorId - 1 to check for off-by-one error
+                    const graphicsId = actorId - 1;
+                    if (graphicsId < 0) continue;
+                    
+                    const spriteData = await actorManager.getSpriteBitmap(graphicsId, 0);
+                    
+                    if (!spriteData) continue;
+                    
+                    // Create card
+                    const card = document.createElement('div');
+                    card.className = 'sprite-card';
+                    
+                    // Create canvas
+                    const canvas = document.createElement('canvas');
+                    canvas.className = 'sprite-canvas';
+                    canvas.width = spriteData.bitmap.width;
+                    canvas.height = spriteData.bitmap.height;
+                    
+                    const ctx = canvas.getContext('2d');
+                    ctx.imageSmoothingEnabled = false;
+                    ctx.drawImage(spriteData.bitmap, 0, 0);
+                    
+                    // Info section
+                    const info = document.createElement('div');
+                    info.className = 'sprite-info';
+                    
+                    const idHex = actorId.toString(16).toUpperCase().padStart(4, '0');
+                    const actorName = getActorName(actorId);
+                    
+                    info.innerHTML = `
+                        <div class="sprite-id">Actor ${actorId} (0x${idHex}) <span style="color:#888;font-size:10px;">[gfx from ${graphicsId}]</span></div>
+                        <div class="sprite-name">${actorName}</div>
+                        <div class="size-info">${spriteData.bitmap.width}×${spriteData.bitmap.height}px</div>
+                        <div class="hotspot-info">Hotspot: (${spriteData.hotspotX}, ${spriteData.hotspotY})</div>
+                    `;
+                    
+                    card.appendChild(canvas);
+                    card.appendChild(info);
+                    grid.appendChild(card);
+                    
+                    successCount++;
+                    
+                    // Update status periodically
+                    if (successCount % 10 === 0) {
+                        status.innerHTML = `<span class="success">Generated ${successCount} sprites...</span>`;
+                    }
+                    
+                } catch (err) {
+                    console.warn(`Failed to load actor ${actorId}:`, err);
+                }
+            }
+            
+            status.innerHTML = `<span class="success">✓ Catalog complete: ${successCount} sprites generated</span>`;
+        }
+    </script>
+</body>
+</html>
