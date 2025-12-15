@@ -91,18 +91,15 @@ export class AudioPlayer {
          */
         this.PIT_FREQUENCY = 1193180; // 1.19318 MHz
         
-        /**
-         * Game update rate for PC Speaker.
-         * 
-         * Duke Nukem 1 updates the PC Speaker frequency approximately
-         * 140-145 times per second. This is the rate at which new
-         * frequency divisors are sent to the hardware.
-         * 
-         * This is much slower than the PIT clock - the PIT generates
-         * the actual audio waveform, while this rate controls how
-         * often the frequency changes.
-         */
-        this.UPDATE_RATE = 140; // Hz
+		/**
+		 * Game update rate for PC Speaker.
+		 * 
+		 * Duke Nukem 1 updates the PC Speaker frequency approximately
+		 * 145 times per second (more precisely than the original 140 Hz
+		 * estimate). This is the rate at which new frequency divisors 
+		 * are sent to the hardware.
+		 */
+		this.UPDATE_RATE = 145; // Hz (accurate to Duke Nukem 1)
         
         /**
          * Duration of each tone in the sequence.
@@ -543,26 +540,29 @@ export class AudioPlayer {
         }
         
         /* ------------------------------------------------------------------ */
-        /* Setup Release Envelope                                             */
-        /* ------------------------------------------------------------------ */
-        
-        /**
-         * Calculate total duration and schedule fade-out.
-         * 
-         * Release envelope (2ms fadeout at end) prevents the audible
-         * pop that would otherwise occur when the oscillator stops.
-         */
-        const totalDuration = divisors.length * this.TONE_DURATION;
-        
-        envelopeGain.gain.setValueAtTime(1.0, now + totalDuration - 0.002);
-        envelopeGain.gain.linearRampToValueAtTime(0, now + totalDuration);
-        
-        /* ------------------------------------------------------------------ */
-        /* Start and Schedule Stop                                            */
-        /* ------------------------------------------------------------------ */
-        
-        osc.start(now);
-        osc.stop(now + totalDuration);
+		/* Setup Release Envelope                                             */
+		/* ------------------------------------------------------------------ */
+
+		/**
+		 * Calculate total duration and schedule fade-out.
+		 * 
+		 * The release envelope (2ms fadeout) is added AFTER the sound
+		 * completes to prevent cutting off the audio content while still
+		 * eliminating the pop that would occur when the oscillator stops.
+		 */
+		const totalDuration = divisors.length * this.TONE_DURATION;
+		const totalDurationWithRelease = totalDuration + 0.002; // Add 2ms for release
+
+		// Start release envelope at the END of audio content
+		envelopeGain.gain.setValueAtTime(1.0, now + totalDuration);
+		envelopeGain.gain.linearRampToValueAtTime(0, now + totalDurationWithRelease);
+
+		/* ------------------------------------------------------------------ */
+		/* Start and Schedule Stop                                            */
+		/* ------------------------------------------------------------------ */
+
+		osc.start(now);
+		osc.stop(now + totalDurationWithRelease); // Stop after release completes
         
         /* ------------------------------------------------------------------ */
         /* Cleanup Handler                                                    */
