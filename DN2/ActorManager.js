@@ -325,6 +325,14 @@ export class ActorManager {
         const TILE_SIZE = 8;
         const BYTES_PER_TILE = 40; 
         
+		// --- DEFINED OVERRIDES ---
+        // offset: How many bytes to shift the read pointer.
+        // -16 effectively "undoes" the 64KB boundary skip for this section,
+        // making it behave like your original "dumb" linear reader.
+        const OVERRIDES = [
+            { start: 2180, end: 2376, offset: -16 }
+        ];
+		
         // We use a safe estimate for total tiles, but we might skip some
         const totalTiles = Math.floor(this.graphicsData.length / BYTES_PER_TILE);
         const rows = Math.ceil(totalTiles / columns);
