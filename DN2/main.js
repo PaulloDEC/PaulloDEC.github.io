@@ -290,6 +290,13 @@ function updateUIState() {
     if (layerToggles) {
         layerToggles.style.display = (appState.viewMode === "map") ? "flex" : "none";
     }
+	
+	// NEW: Show View Mode checkboxes ONLY for Actor Sheet
+    const viewToggles = document.querySelector(".view-toggles");
+    if (viewToggles) {
+        // Use 'flex' so the radio buttons sit next to each other
+        viewToggles.style.display = (appState.assetType === "actors") ? "flex" : "none";
+    }
 
     // Show music controls if music is playing or paused
     const hasMusic = musicPlayer.isPlaying || musicPlayer.isPaused;
@@ -342,33 +349,78 @@ function initControls() {
     // ─────────────────────────────────────────────────────────────────────────
     // ZOOM CONTROLS (Top-Right Panel)
     // ─────────────────────────────────────────────────────────────────────────
-    // Provides buttons to change zoom level and toggle map/sprite layers
-
     if (!document.querySelector('.zoom-controls')) {
         const div = document.createElement('div');
         div.className = 'zoom-controls';
+        
         div.innerHTML = `
             <button class="zoom-btn" id="zoom-fit">Fit</button>
             <button class="zoom-btn" id="zoom-1x">1x</button>
             <button class="zoom-btn" id="zoom-2x">2x</button>
             <button class="zoom-btn" id="zoom-4x">4x</button>
+            
             <div class="layer-toggles">
-            <label>
-                <input type="checkbox" id="chk-map" checked> Map
-            </label>
-            <label>
-                <input type="checkbox" id="chk-sprites" checked> Sprites
-            </label>
+                <label><input type="checkbox" id="chk-map" checked> Map</label>
+                <label><input type="checkbox" id="chk-sprites" checked> Sprites</label>
+            </div>
+
+            <div class="view-toggles" style="
+                display: none; 
+                flex-direction: column; 
+                align-items: center; /* This centers the items horizontally */
+                width: 100%; 
+                margin-top: 8px; 
+                padding-top: 8px; 
+                border-top: 1px solid #444; /* Single separator line at the top */
+                gap: 4px; /* Tight spacing like the Level View */
+            ">
+                <label style="
+                    display: flex; 
+                    align-items: center; 
+                    cursor: pointer; 
+                    color: #ccc; 
+                    font-size: 12px; /* Small font matching Level View */
+                    width: 90px; /* Fixed width ensures distinct click areas are aligned */
+                ">
+                    <input type="radio" name="viewMode" value="uniform" checked style="margin-right: 6px; accent-color: #d35400;"> Grid View
+                </label>
+                
+                <label style="
+                    display: flex; 
+                    align-items: center; 
+                    cursor: pointer; 
+                    color: #ccc; 
+                    font-size: 12px; 
+                    width: 90px;
+                ">
+                    <input type="radio" name="viewMode" value="tiered" style="margin-right: 6px; accent-color: #d35400;"> Bucket View
+                </label>
             </div>
         `;
         container.appendChild(div);
         
+        // Existing Zoom Handlers
         document.getElementById('zoom-fit').onclick = handleFitZoom; 
         document.getElementById('zoom-1x').onclick = () => viewport.zoom = 1.0;
         document.getElementById('zoom-2x').onclick = () => viewport.zoom = 2.0;
         document.getElementById('zoom-4x').onclick = () => viewport.zoom = 4.0;
         document.getElementById('chk-map').onchange = (e) => appState.layers.showMap = e.target.checked;
         document.getElementById('chk-sprites').onchange = (e) => appState.layers.showSprites = e.target.checked;
+
+        // View Mode Handler
+        document.querySelectorAll('input[name="viewMode"]').forEach(radio => {
+            radio.addEventListener('change', async (e) => {
+                if (appState.assetType === 'actors') {
+                    console.log("Switching view mode:", e.target.value);
+                    const result = await appState.actorManager.generateSpriteSheet(e.target.value);
+                    
+                    if (result && result.image) {
+                        appState.currentAsset = result;
+                        handleFitZoom(); 
+                    }
+                }
+            });
+        });
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -514,7 +566,8 @@ async function loadLevel(filename) {
         toggleControls('zoom');
 
         appState.viewMode = 'map';
-        appState.currentMap = mapParser.parse(levelData);
+        appState.assetType = null;
+		appState.currentMap = mapParser.parse(levelData);
         
         const czoneName = appState.currentMap.czone;
         const rawZone = fs.getFile(czoneName);
@@ -565,6 +618,9 @@ async function loadLevel(filename) {
 
 async function loadAsset(filename) {
     console.log(`Loading Asset: ${filename}`);
+	
+	appState.assetType = null;
+	
 	try {
         const upper = filename.toUpperCase();
         const rawFile = fs.getFile(filename);
@@ -671,21 +727,24 @@ async function loadAsset(filename) {
 
         if (upper === "ACTORS.MNI") {
             appState.viewMode = 'asset';
-            const result = await actorManager.generateSpriteSheet();
+            appState.assetType = 'actors'; // <--- NEW FLAG
+
+            // Reset radio button UI to 'uniform' so it matches the data
+            const radio = document.querySelector('input[name="viewMode"][value="uniform"]');
+            if(radio) radio.checked = true;
+
+            // Generate with default 'uniform' mode
+            const result = await actorManager.generateSpriteSheet('uniform');
             if (result && result.image) {
                 appState.currentAsset = result; 
                 handleFitZoom();
             }
             logMessage(`Displaying Sprites: ${filename}`, 'success');
-			updateHeaderStatus(`👾 Actor Sprites: <strong>${actorManager.getActorCount()} Types</strong>`);
-			
-			// --- Reset View to Canvas ---
-			resetMainView();
-		
-			// Show Zoom controls
-			toggleControls('zoom');
-			
-			updateUIState();
+            updateHeaderStatus(`👾 Actor Sprites: <strong>${actorManager.getActorCount()} Types</strong>`);
+            
+            resetMainView();
+            toggleControls('zoom');
+            updateUIState();
         } 
         
         // ─────────────────────────────────────────────────────────────────────

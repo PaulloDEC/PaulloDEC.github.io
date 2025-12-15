@@ -29,6 +29,29 @@ export class ActorManager {
         console.log(`ACTORS.MNI loaded: ${this.graphicsData.length} bytes`);
     }
 
+    getActorTable() {
+        if (!this.infoData) return [];
+
+        const actors = [];
+        for (let i = 0; i < this.numActors; i++) {
+            const tableOffset = 2 + (i * 2);
+            if (tableOffset + 2 > this.infoData.byteLength) break;
+
+            const wordOffset = this.infoData.getUint16(tableOffset, true);
+            const actorOffset = wordOffset * 2;
+
+            if (actorOffset !== 0 && actorOffset < this.infoData.byteLength) {
+                const numFrames = this.infoData.getUint16(actorOffset, true);
+                actors.push({
+                    id: i,
+                    offset: actorOffset,
+                    numFrames: numFrames
+                });
+            }
+        }
+        return actors;
+    }
+
     async getSpriteBitmap(actorId, frameIndex = 0) {
         if (!this.infoData || !this.graphicsData) return null;
         const cacheKey = `${actorId}_${frameIndex}`;
@@ -96,22 +119,50 @@ export class ActorManager {
 
     /**
      * Generates a "Contact Sheet" with a layout map for hit detection.
+     * @param {string} viewMode - 'uniform' (all cells same size) or 'tiered' (bucketed by size)
      */
-    async generateSpriteSheet() {
+    async generateSpriteSheet(viewMode = 'uniform') {
         if (!this.infoData || !this.graphicsData) return null;
 
-        // 1. Gather all sprites
+        const validActors = this.getActorTable();
         const entries = [];
-        for (let i = 0; i < 302; i++) {
-            const spriteObj = await this.getSpriteBitmap(i, 0);
+        
+        for (const actor of validActors) {
+            const spriteObj = await this.getSpriteBitmap(actor.id, 0);
             if (spriteObj) {
-                entries.push({ id: i, bmp: spriteObj.bitmap });
+                entries.push({ id: actor.id, bmp: spriteObj.bitmap });
             }
         }
 
-        // 2. Setup Layout
-        const cellSize = 64;
-        const cols = 10;
+        if (entries.length === 0) return null;
+
+        if (viewMode === 'tiered') {
+            return this._generateTieredSheet(entries);
+        } else {
+            return this._generateUniformSheet(entries);
+        }
+    }
+
+    /**
+     * STANDARD VIEW: Finds the single largest sprite dimension and forces all cells to match.
+     * Good for alignment, bad for space efficiency.
+     */
+    async _generateUniformSheet(entries) {
+        let maxW = 0; 
+        let maxH = 0;
+        entries.forEach(e => {
+            if (e.bmp.width > maxW) maxW = e.bmp.width;
+            if (e.bmp.height > maxH) maxH = e.bmp.height;
+        });
+
+        const padding = 10;
+        const cellSize = Math.max(maxW, maxH) + padding;
+        const targetRatio = 16 / 9;
+        
+        let cols = Math.ceil(Math.sqrt(entries.length * targetRatio));
+        if (cols < 1) cols = 1;
+        if (cols > entries.length) cols = entries.length;
+
         const rows = Math.ceil(entries.length / cols);
         
         const canvas = document.createElement('canvas');
@@ -119,13 +170,10 @@ export class ActorManager {
         canvas.height = rows * cellSize;
         const ctx = canvas.getContext('2d');
         
-        // Draw background
         ctx.fillStyle = "#1a1a1a";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // 3. Draw Items and build Layout Map
         const layout = [];
-
         for (let i = 0; i < entries.length; i++) {
             const item = entries[i];
             const col = i % cols;
@@ -133,36 +181,130 @@ export class ActorManager {
             const x = col * cellSize;
             const y = row * cellSize;
             
-            // Draw subtle cell border
             ctx.strokeStyle = "#333";
             ctx.strokeRect(x, y, cellSize, cellSize);
             
-            // Center sprite
-            const bmp = item.bmp;
-            const drawW = Math.min(bmp.width, cellSize - 4);
-            const drawH = Math.min(bmp.height, cellSize - 4);
-            const dx = x + (cellSize - drawW) / 2;
-            const dy = y + (cellSize - drawH) / 2;
+            const dx = x + (cellSize - item.bmp.width) / 2;
+            const dy = y + (cellSize - item.bmp.height) / 2;
+            ctx.drawImage(item.bmp, dx, dy);
             
-            ctx.drawImage(bmp, dx, dy);
-            
-            // Register Hitbox (Full Cell)
-            layout.push({
-                id: item.id,
-                x: x,
-                y: y,
-                width: cellSize,
-                height: cellSize
-            });
+            layout.push({ id: item.id, x, y, width: cellSize, height: cellSize });
         }
 
-        const finalImage = await createImageBitmap(canvas);
-        
-        // Return BOTH the image and the hit-map
-        return {
-            image: finalImage,
-            layout: layout
+        return { image: await createImageBitmap(canvas), layout };
+    }
+
+    /**
+     * TIERED VIEW: Splits sprites into Small, Medium, and Large buckets.
+     * Generates three separate grids and stacks them vertically.
+     */
+    async _generateTieredSheet(entries) {
+        const buckets = {
+            small:  { items: [], cellSize: 0, maxDim: 32 },
+            medium: { items: [], cellSize: 0, maxDim: 96 },
+            large:  { items: [], cellSize: 0, maxDim: 9999 } // Catch-all
         };
+
+        // 1. Sort entries into buckets
+        entries.forEach(e => {
+            const size = Math.max(e.bmp.width, e.bmp.height);
+            if (size <= buckets.small.maxDim) buckets.small.items.push(e);
+            else if (size <= buckets.medium.maxDim) buckets.medium.items.push(e);
+            else buckets.large.items.push(e);
+        });
+
+        // 2. Calculate Layouts for each bucket
+        const sections = [];
+        const targetRatio = 16 / 9;
+        const padding = 10;
+        const sectionGap = 40; // Space between tables
+        let totalHeight = 0;
+        let maxWidth = 0;
+
+        for (const key of ['small', 'medium', 'large']) {
+            const bucket = buckets[key];
+            if (bucket.items.length === 0) continue;
+
+            // Find max size specifically for this bucket
+            let localMax = 0;
+            bucket.items.forEach(e => localMax = Math.max(localMax, e.bmp.width, e.bmp.height));
+            bucket.cellSize = localMax + padding;
+
+            // Calculate grid
+            let cols = Math.ceil(Math.sqrt(bucket.items.length * targetRatio));
+            if (cols < 1) cols = 1;
+            const rows = Math.ceil(bucket.items.length / cols);
+            
+            const sectionWidth = cols * bucket.cellSize;
+            const sectionHeight = rows * bucket.cellSize;
+
+            sections.push({
+                key,
+                cols,
+                rows,
+                width: sectionWidth,
+                height: sectionHeight,
+                cellSize: bucket.cellSize,
+                items: bucket.items,
+                yOffset: totalHeight + (totalHeight > 0 ? sectionGap : 0) // Add gap if not first
+            });
+
+            if (sectionWidth > maxWidth) maxWidth = sectionWidth;
+            totalHeight += sectionHeight + (totalHeight > 0 ? sectionGap : 0);
+        }
+
+        // Add header space
+        const headerHeight = 30;
+        totalHeight += (sections.length * headerHeight); 
+        
+        // 3. Draw Stacked
+        const canvas = document.createElement('canvas');
+        canvas.width = maxWidth;
+        canvas.height = totalHeight;
+        const ctx = canvas.getContext('2d');
+
+        ctx.fillStyle = "#1a1a1a";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const layout = [];
+        let currentY = 0;
+
+        for (const section of sections) {
+            // Draw Header
+            ctx.fillStyle = "#ffcc00";
+            ctx.font = "bold 16px sans-serif";
+            ctx.fillText(section.key.toUpperCase() + ` (${section.items.length})`, 10, currentY + 20);
+            currentY += headerHeight;
+
+            // Draw Grid
+            for (let i = 0; i < section.items.length; i++) {
+                const item = section.items[i];
+                const col = i % section.cols;
+                const row = Math.floor(i / section.cols);
+                const x = col * section.cellSize;
+                const y = currentY + (row * section.cellSize);
+                
+                // Draw Cell Border
+                ctx.strokeStyle = "#333";
+                ctx.strokeRect(x, y, section.cellSize, section.cellSize);
+                
+                // Draw Sprite
+                const dx = x + (section.cellSize - item.bmp.width) / 2;
+                const dy = y + (section.cellSize - item.bmp.height) / 2;
+                ctx.drawImage(item.bmp, dx, dy);
+
+                layout.push({
+                    id: item.id,
+                    x: x,
+                    y: y,
+                    width: section.cellSize,
+                    height: section.cellSize
+                });
+            }
+            currentY += section.height + sectionGap;
+        }
+
+        return { image: await createImageBitmap(canvas), layout };
     }
     
     getActorCount() {

@@ -645,7 +645,6 @@ details[open] summary {
     pointer-events: none;
     display: none;
     z-index: 1000;
-    white-space: pre-line;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(4px);
 }
@@ -1148,4 +1147,3 @@ details[open] summary {
     border-color: var(--duke-yellow);
     background: rgba(255, 204, 0, 0.05);
 }
-

@@ -19,14 +19,14 @@ export class RenderEngine {
         if (!this.tooltip) {
             this.tooltip = document.createElement('div');
             this.tooltip.id = 'tooltip';
-            this.tooltip.style.cssText = `position:fixed;background:rgba(15,23,42,0.95);border:1px solid #38bdf8;color:#f1f5f9;padding:8px 12px;border-radius:6px;font-family:monospace;font-size:12px;pointer-events:none;z-index:10000;display:none;white-space:pre-line;box-shadow:0 4px 12px rgba(0,0,0,0.5);`;
+            this.tooltip.style.cssText = `position:fixed;background:rgba(15,23,42,0.95);border:1px solid #38bdf8;color:#f1f5f9;padding:8px 12px;border-radius:6px;font-family:monospace;font-size:12px;pointer-events:none;z-index:10000;display:none;box-shadow:0 4px 12px rgba(0,0,0,0.5);`;
             document.body.appendChild(this.tooltip);
         }
         this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
         this.canvas.addEventListener('mouseleave', () => { this.tooltip.style.display = 'none'; });
     }
 
-    handleMouseMove(e) {
+		handleMouseMove(e) {
         const rect = this.canvas.getBoundingClientRect();
         const mouseX = e.clientX - rect.left;
         const mouseY = e.clientY - rect.top;
@@ -52,10 +52,11 @@ export class RenderEngine {
                     hotspotHtml = `<span style="color:#f90">Hotspot: ${sprite.hotspotX}, ${sprite.hotspotY}</span>`;
                 }
 
+                // UPDATED STYLES HERE:
                 html += `
-                    <div style="margin-top: 6px;">
-                        <span style="color:#38bdf8; font-weight:bold;">${info.name}</span>
-                        <div style="color:#94a3b8; font-size:11px;">
+                    <div style="margin-top: 8px;">
+                        <span style="color:#38bdf8; font-weight:bold; display:block; margin-bottom:3px;">${info.name}</span>
+                        <div style="color:#94a3b8; font-size:11px; line-height:1.5;">
                             ID: ${actor.id} (0x${hexId})<br>
                             ${locationHtml}
                             ${hotspotHtml}
