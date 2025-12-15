@@ -614,7 +614,8 @@ details[open] summary {
 }
 
 /* Layer toggle container (Map/Sprites checkboxes) */
-.layer-toggles {
+.layer-toggles,
+.view-toggles {
     display: flex;
     flex-direction: column;
     gap: 0;
@@ -623,7 +624,8 @@ details[open] summary {
     border-top: 1px solid #444;
 }
 
-.layer-toggles label {
+.layer-toggles label,
+.view-toggles label {
     margin-top: 0;
     padding-top: 0;
     border-top: none;
