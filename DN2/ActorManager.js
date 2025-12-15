@@ -331,7 +331,7 @@ export class ActorManager {
         // -16 effectively "undoes" the 64KB boundary skip for this section,
         // making it behave like your original "dumb" linear reader.
         const OVERRIDES = [
-            { start: 2180, end: 2376, offset: -16 }
+            { start: 2180, end: 3276, offset: -16 }
         ];
 
         const totalTiles = Math.floor(this.graphicsData.length / BYTES_PER_TILE);
