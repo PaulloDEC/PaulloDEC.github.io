@@ -317,7 +317,8 @@ export class ActorManager {
     }
 
     /**
-     * RAW VIEW (Smart): Highlights 64KB segment boundaries
+     * RAW VIEW (Smart with Manual Overrides)
+     * Handles 64KB boundaries automatically, but allows specific ranges to break the rules.
      */
     async generateRawTileSheet(columns = 32) {
         if (!this.graphicsData) return null;
@@ -325,15 +326,14 @@ export class ActorManager {
         const TILE_SIZE = 8;
         const BYTES_PER_TILE = 40; 
         
-		// --- DEFINED OVERRIDES ---
+        // --- DEFINED OVERRIDES ---
         // offset: How many bytes to shift the read pointer.
         // -16 effectively "undoes" the 64KB boundary skip for this section,
         // making it behave like your original "dumb" linear reader.
         const OVERRIDES = [
             { start: 2180, end: 2376, offset: -16 }
         ];
-		
-        // We use a safe estimate for total tiles, but we might skip some
+
         const totalTiles = Math.floor(this.graphicsData.length / BYTES_PER_TILE);
         const rows = Math.ceil(totalTiles / columns);
 
@@ -342,72 +342,75 @@ export class ActorManager {
         canvas.height = rows * TILE_SIZE;
         const ctx = canvas.getContext('2d');
 
+        // Dark background
         ctx.fillStyle = "#1a1a1a";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         const layout = [];
-
-        // Track our current byte position manually
         let currentByteOffset = 0;
         
-        // We will iterate by grid slots, but pull data from currentByteOffset
         for (let i = 0; i < totalTiles; i++) {
             const col = i % columns;
             const row = Math.floor(i / columns);
             const x = col * TILE_SIZE;
             const y = row * TILE_SIZE;
 
-            // 1. BOUNDARY CHECK
-            // Check if reading 40 bytes here would cross a 64KB (65536) boundary
+            // 1. BOUNDARY CHECK (Automatic 64KB Fix)
             const startSegment = Math.floor(currentByteOffset / 65536);
             const endSegment = Math.floor((currentByteOffset + BYTES_PER_TILE - 1) / 65536);
 
+            // We normally skip 64KB boundaries, but we should double check if 
+            // the NEXT tile is inside an override that might want to ignore this.
             if (startSegment !== endSegment) {
-                // We are crossing a boundary!
-                // 1. Draw a marker so the user sees the gap
-                ctx.fillStyle = "#FF0000"; // Red for danger
+                 // Draw Red Marker for Gap
+                ctx.fillStyle = "#FF0000"; 
                 ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
                 
-                // 2. Align our reader to the start of the NEXT segment
-                // This skips the 'padding' bytes that were left over
+                // Align to next segment (The "Smart Fix")
                 currentByteOffset = endSegment * 65536;
                 
-                // 3. Register this slot in layout as a "Gap"
-                layout.push({
-                    id: -1, // Special ID for gap
-                    type: "SEGMENT_GAP",
-                    x: x, y: y, width: TILE_SIZE, height: TILE_SIZE
-                });
-                
-                // Do not increment i? 
-                // Actually, we want to consume this visual "slot" in the grid for the red box,
-                // but we haven't consumed valid data. 
-                // The loop continues, using the NEW currentByteOffset for the NEXT tile.
+                layout.push({ id: -1, type: "SEGMENT_GAP", x, y, width: TILE_SIZE, height: TILE_SIZE });
                 continue;
             }
 
-            // Standard Draw
-            if (currentByteOffset + BYTES_PER_TILE > this.graphicsData.length) break;
+            // 2. CHECK FOR OVERRIDES
+            let activeOffset = 0;
+            const override = OVERRIDES.find(o => i >= o.start && i <= o.end);
+            if (override) {
+                activeOffset = override.offset;
+            }
 
-            const tileData = this.graphicsData.subarray(currentByteOffset, currentByteOffset + BYTES_PER_TILE);
+            // 3. CALCULATE FINAL READ POSITION
+            const readOffset = currentByteOffset + activeOffset;
+
+            // Safety check
+            if (readOffset < 0 || readOffset + BYTES_PER_TILE > this.graphicsData.length) {
+                currentByteOffset += BYTES_PER_TILE;
+                continue;
+            }
+
+            const tileData = this.graphicsData.subarray(readOffset, readOffset + BYTES_PER_TILE);
+            
+            // Decode
             const imgData = this.assets.decodeTile(tileData, 0, true);
 
             if (imgData) {
                 const bmp = await createImageBitmap(imgData);
                 ctx.drawImage(bmp, x, y);
+                
+                // Optional: Highlight overridden sections slightly so you know they are special?
+                // if (override) {
+                //     ctx.strokeStyle = "rgba(0, 255, 0, 0.5)";
+                //     ctx.strokeRect(x, y, TILE_SIZE, TILE_SIZE);
+                // }
 
-                layout.push({
-                    id: i, // Grid Index
-                    offset: currentByteOffset, // Useful for debugging
-                    x, y, width: TILE_SIZE, height: TILE_SIZE
-                });
+                layout.push({ id: i, x, y, width: TILE_SIZE, height: TILE_SIZE });
             }
             
-            // Advance the reader
+            // Advance the reader normally for the next loop
             currentByteOffset += BYTES_PER_TILE;
         }
 
-        console.log(`Generated Raw Sheet with Segments`);
         return { image: await createImageBitmap(canvas), layout };
     }
     
