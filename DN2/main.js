@@ -372,6 +372,10 @@ function initControls() {
             <label>
                 <input type="radio" name="viewMode" value="tiered"> Bucket
             </label>
+			
+			<label>
+				<input type="radio" name="viewMode" value="raw"> Raw
+			</label>
         </div>
         `;
         container.appendChild(div);

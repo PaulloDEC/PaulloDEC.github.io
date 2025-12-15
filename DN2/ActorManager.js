@@ -119,11 +119,18 @@ export class ActorManager {
 
     /**
      * Generates a "Contact Sheet" with a layout map for hit detection.
-     * @param {string} viewMode - 'uniform' (all cells same size) or 'tiered' (bucketed by size)
+     * @param {string} viewMode - 'uniform', 'tiered', or 'raw'
      */
     async generateSpriteSheet(viewMode = 'uniform') {
+        // 1. INTERCEPT: If Raw mode, skip actor logic and return immediately
+        if (viewMode === 'raw') {
+            // Ensure you added the generateRawTileSheet method from the previous step
+            return this.generateRawTileSheet(); 
+        }
+
         if (!this.infoData || !this.graphicsData) return null;
 
+        // 2. STANDARD: Load actors only if we are in uniform or tiered mode
         const validActors = this.getActorTable();
         const entries = [];
         
@@ -252,6 +259,71 @@ export class ActorManager {
             if (sectionWidth > maxWidth) maxWidth = sectionWidth;
             totalHeight += sectionHeight + (totalHeight > 0 ? sectionGap : 0);
         }
+
+		/**
+     * RAW VIEW: Dumps every 8x8 tile in the graphics file into a single grid.
+     * Useful for seeing the raw components before they are assembled into actors.
+     * @param {number} columns - How many tiles wide the sheet should be (default 32 tiles / 256px)
+     */
+    async generateRawTileSheet(columns = 32) {
+        if (!this.graphicsData) return null;
+
+        const TILE_SIZE = 8;
+        const BYTES_PER_TILE = 40; // Derived from your getSpriteBitmap logic
+
+        // Calculate total available tiles based on file size
+        const totalTiles = Math.floor(this.graphicsData.length / BYTES_PER_TILE);
+        const rows = Math.ceil(totalTiles / columns);
+
+        // Create canvas big enough to hold everything
+        const canvas = document.createElement('canvas');
+        canvas.width = columns * TILE_SIZE;
+        canvas.height = rows * TILE_SIZE;
+        const ctx = canvas.getContext('2d');
+
+        // Optional: Dark background to make transparency obvious
+        ctx.fillStyle = "#1a1a1a";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const layout = [];
+
+        for (let i = 0; i < totalTiles; i++) {
+            // Calculate Position
+            const col = i % columns;
+            const row = Math.floor(i / columns);
+            const x = col * TILE_SIZE;
+            const y = row * TILE_SIZE;
+
+            // Extract the specific 40-byte chunk for this tile
+            const offset = i * BYTES_PER_TILE;
+            
+            // Safety check to ensure we don't read past buffer
+            if (offset + BYTES_PER_TILE > this.graphicsData.length) break;
+
+            const tileData = this.graphicsData.subarray(offset, offset + BYTES_PER_TILE);
+
+            // Decode the tile
+            // We pass '0' as the index because tileData contains only one tile
+            const imgData = this.assets.decodeTile(tileData, 0, true);
+
+            if (imgData) {
+                const bmp = await createImageBitmap(imgData);
+                ctx.drawImage(bmp, x, y);
+
+                // Add to layout for hit detection (hovering over a tile tells you its index)
+                layout.push({
+                    id: i, // This is the Raw Tile ID
+                    x: x,
+                    y: y,
+                    width: TILE_SIZE,
+                    height: TILE_SIZE
+                });
+            }
+        }
+
+        console.log(`Generated Raw Sheet: ${totalTiles} tiles, ${canvas.width}x${canvas.height}`);
+        return { image: await createImageBitmap(canvas), layout };
+    }
 
         // Add header space
         const headerHeight = 30;
