@@ -366,11 +366,11 @@ function initControls() {
 
             <div class="view-toggles layer-toggles" style="display: none;">
             <label>
-                <input type="radio" name="viewMode" value="uniform" checked> Grid View
+                <input type="radio" name="viewMode" value="uniform" checked> Grid
             </label>
             
             <label>
-                <input type="radio" name="viewMode" value="tiered"> Bucket View
+                <input type="radio" name="viewMode" value="tiered"> Bucket
             </label>
         </div>
         `;
