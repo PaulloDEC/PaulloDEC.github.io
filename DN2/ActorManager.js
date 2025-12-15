@@ -260,7 +260,63 @@ export class ActorManager {
             totalHeight += sectionHeight + (totalHeight > 0 ? sectionGap : 0);
         }
 
-		/**
+        // --- CUT generateRawTileSheet FROM HERE ---
+
+        // Add header space
+        const headerHeight = 30;
+        totalHeight += (sections.length * headerHeight); 
+        
+        // 3. Draw Stacked
+        const canvas = document.createElement('canvas');
+        canvas.width = maxWidth;
+        canvas.height = totalHeight;
+        const ctx = canvas.getContext('2d');
+
+        ctx.fillStyle = "#1a1a1a";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const layout = [];
+        let currentY = 0;
+
+        for (const section of sections) {
+            // Draw Header
+            ctx.fillStyle = "#ffcc00";
+            ctx.font = "bold 16px sans-serif";
+            ctx.fillText(section.key.toUpperCase() + ` (${section.items.length})`, 10, currentY + 20);
+            currentY += headerHeight;
+
+            // Draw Grid
+            for (let i = 0; i < section.items.length; i++) {
+                const item = section.items[i];
+                const col = i % section.cols;
+                const row = Math.floor(i / section.cols);
+                const x = col * section.cellSize;
+                const y = currentY + (row * section.cellSize);
+                
+                // Draw Cell Border
+                ctx.strokeStyle = "#333";
+                ctx.strokeRect(x, y, section.cellSize, section.cellSize);
+                
+                // Draw Sprite
+                const dx = x + (section.cellSize - item.bmp.width) / 2;
+                const dy = y + (section.cellSize - item.bmp.height) / 2;
+                ctx.drawImage(item.bmp, dx, dy);
+
+                layout.push({
+                    id: item.id,
+                    x: x,
+                    y: y,
+                    width: section.cellSize,
+                    height: section.cellSize
+                });
+            }
+            currentY += section.height + sectionGap;
+        }
+
+        return { image: await createImageBitmap(canvas), layout };
+    }
+
+    /**
      * RAW VIEW: Dumps every 8x8 tile in the graphics file into a single grid.
      * Useful for seeing the raw components before they are assembled into actors.
      * @param {number} columns - How many tiles wide the sheet should be (default 32 tiles / 256px)
@@ -322,60 +378,6 @@ export class ActorManager {
         }
 
         console.log(`Generated Raw Sheet: ${totalTiles} tiles, ${canvas.width}x${canvas.height}`);
-        return { image: await createImageBitmap(canvas), layout };
-    }
-
-        // Add header space
-        const headerHeight = 30;
-        totalHeight += (sections.length * headerHeight); 
-        
-        // 3. Draw Stacked
-        const canvas = document.createElement('canvas');
-        canvas.width = maxWidth;
-        canvas.height = totalHeight;
-        const ctx = canvas.getContext('2d');
-
-        ctx.fillStyle = "#1a1a1a";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        const layout = [];
-        let currentY = 0;
-
-        for (const section of sections) {
-            // Draw Header
-            ctx.fillStyle = "#ffcc00";
-            ctx.font = "bold 16px sans-serif";
-            ctx.fillText(section.key.toUpperCase() + ` (${section.items.length})`, 10, currentY + 20);
-            currentY += headerHeight;
-
-            // Draw Grid
-            for (let i = 0; i < section.items.length; i++) {
-                const item = section.items[i];
-                const col = i % section.cols;
-                const row = Math.floor(i / section.cols);
-                const x = col * section.cellSize;
-                const y = currentY + (row * section.cellSize);
-                
-                // Draw Cell Border
-                ctx.strokeStyle = "#333";
-                ctx.strokeRect(x, y, section.cellSize, section.cellSize);
-                
-                // Draw Sprite
-                const dx = x + (section.cellSize - item.bmp.width) / 2;
-                const dy = y + (section.cellSize - item.bmp.height) / 2;
-                ctx.drawImage(item.bmp, dx, dy);
-
-                layout.push({
-                    id: item.id,
-                    x: x,
-                    y: y,
-                    width: section.cellSize,
-                    height: section.cellSize
-                });
-            }
-            currentY += section.height + sectionGap;
-        }
-
         return { image: await createImageBitmap(canvas), layout };
     }
     
