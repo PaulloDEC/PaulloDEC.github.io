@@ -364,38 +364,15 @@ function initControls() {
                 <label><input type="checkbox" id="chk-sprites" checked> Sprites</label>
             </div>
 
-            <div class="view-toggles" style="
-                display: none; 
-                flex-direction: column; 
-                align-items: center; /* This centers the items horizontally */
-                width: 100%; 
-                margin-top: 8px; 
-                padding-top: 8px; 
-                border-top: 1px solid #444; /* Single separator line at the top */
-                gap: 4px; /* Tight spacing like the Level View */
-            ">
-                <label style="
-                    display: flex; 
-                    align-items: center; 
-                    cursor: pointer; 
-                    color: #ccc; 
-                    font-size: 12px; /* Small font matching Level View */
-                    width: 90px; /* Fixed width ensures distinct click areas are aligned */
-                ">
-                    <input type="radio" name="viewMode" value="uniform" checked style="margin-right: 6px; accent-color: #d35400;"> Grid View
-                </label>
-                
-                <label style="
-                    display: flex; 
-                    align-items: center; 
-                    cursor: pointer; 
-                    color: #ccc; 
-                    font-size: 12px; 
-                    width: 90px;
-                ">
-                    <input type="radio" name="viewMode" value="tiered" style="margin-right: 6px; accent-color: #d35400;"> Bucket View
-                </label>
-            </div>
+            <div class="view-toggles layer-toggles" style="display: none;">
+            <label>
+                <input type="radio" name="viewMode" value="uniform" checked> Grid View
+            </label>
+            
+            <label>
+                <input type="radio" name="viewMode" value="tiered"> Bucket View
+            </label>
+        </div>
         `;
         container.appendChild(div);
         
