@@ -331,7 +331,7 @@ export class ActorManager {
         // -16 effectively "undoes" the 64KB boundary skip for this section,
         // making it behave like your original "dumb" linear reader.
         const OVERRIDES = [
-            { start: 2179, end: 3276, offset: -16 }
+            { start: 2179, end: 3276, offset: -16 },
 			{ start: 17874, end: 17985, offset: -16 }
         ];
 
