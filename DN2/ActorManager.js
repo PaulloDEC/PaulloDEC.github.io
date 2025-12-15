@@ -317,67 +317,89 @@ export class ActorManager {
     }
 
     /**
-     * RAW VIEW: Dumps every 8x8 tile in the graphics file into a single grid.
-     * Useful for seeing the raw components before they are assembled into actors.
-     * @param {number} columns - How many tiles wide the sheet should be (default 32 tiles / 256px)
+     * RAW VIEW (Smart): Highlights 64KB segment boundaries
      */
     async generateRawTileSheet(columns = 32) {
         if (!this.graphicsData) return null;
 
         const TILE_SIZE = 8;
-        const BYTES_PER_TILE = 40; // Derived from your getSpriteBitmap logic
-
-        // Calculate total available tiles based on file size
+        const BYTES_PER_TILE = 40; 
+        
+        // We use a safe estimate for total tiles, but we might skip some
         const totalTiles = Math.floor(this.graphicsData.length / BYTES_PER_TILE);
         const rows = Math.ceil(totalTiles / columns);
 
-        // Create canvas big enough to hold everything
         const canvas = document.createElement('canvas');
         canvas.width = columns * TILE_SIZE;
         canvas.height = rows * TILE_SIZE;
         const ctx = canvas.getContext('2d');
 
-        // Optional: Dark background to make transparency obvious
         ctx.fillStyle = "#1a1a1a";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         const layout = [];
 
+        // Track our current byte position manually
+        let currentByteOffset = 0;
+        
+        // We will iterate by grid slots, but pull data from currentByteOffset
         for (let i = 0; i < totalTiles; i++) {
-            // Calculate Position
             const col = i % columns;
             const row = Math.floor(i / columns);
             const x = col * TILE_SIZE;
             const y = row * TILE_SIZE;
 
-            // Extract the specific 40-byte chunk for this tile
-            const offset = i * BYTES_PER_TILE;
-            
-            // Safety check to ensure we don't read past buffer
-            if (offset + BYTES_PER_TILE > this.graphicsData.length) break;
+            // 1. BOUNDARY CHECK
+            // Check if reading 40 bytes here would cross a 64KB (65536) boundary
+            const startSegment = Math.floor(currentByteOffset / 65536);
+            const endSegment = Math.floor((currentByteOffset + BYTES_PER_TILE - 1) / 65536);
 
-            const tileData = this.graphicsData.subarray(offset, offset + BYTES_PER_TILE);
+            if (startSegment !== endSegment) {
+                // We are crossing a boundary!
+                // 1. Draw a marker so the user sees the gap
+                ctx.fillStyle = "#FF0000"; // Red for danger
+                ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+                
+                // 2. Align our reader to the start of the NEXT segment
+                // This skips the 'padding' bytes that were left over
+                currentByteOffset = endSegment * 65536;
+                
+                // 3. Register this slot in layout as a "Gap"
+                layout.push({
+                    id: -1, // Special ID for gap
+                    type: "SEGMENT_GAP",
+                    x: x, y: y, width: TILE_SIZE, height: TILE_SIZE
+                });
+                
+                // Do not increment i? 
+                // Actually, we want to consume this visual "slot" in the grid for the red box,
+                // but we haven't consumed valid data. 
+                // The loop continues, using the NEW currentByteOffset for the NEXT tile.
+                continue;
+            }
 
-            // Decode the tile
-            // We pass '0' as the index because tileData contains only one tile
+            // Standard Draw
+            if (currentByteOffset + BYTES_PER_TILE > this.graphicsData.length) break;
+
+            const tileData = this.graphicsData.subarray(currentByteOffset, currentByteOffset + BYTES_PER_TILE);
             const imgData = this.assets.decodeTile(tileData, 0, true);
 
             if (imgData) {
                 const bmp = await createImageBitmap(imgData);
                 ctx.drawImage(bmp, x, y);
 
-                // Add to layout for hit detection (hovering over a tile tells you its index)
                 layout.push({
-                    id: i, // This is the Raw Tile ID
-                    x: x,
-                    y: y,
-                    width: TILE_SIZE,
-                    height: TILE_SIZE
+                    id: i, // Grid Index
+                    offset: currentByteOffset, // Useful for debugging
+                    x, y, width: TILE_SIZE, height: TILE_SIZE
                 });
             }
+            
+            // Advance the reader
+            currentByteOffset += BYTES_PER_TILE;
         }
 
-        console.log(`Generated Raw Sheet: ${totalTiles} tiles, ${canvas.width}x${canvas.height}`);
+        console.log(`Generated Raw Sheet with Segments`);
         return { image: await createImageBitmap(canvas), layout };
     }
     
