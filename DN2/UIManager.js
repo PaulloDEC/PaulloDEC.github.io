@@ -65,23 +65,27 @@ export class UIManager {
         // It starts with `files.forEach(f => { ...`
         
         files.forEach(f => {
-            const upper = f.toUpperCase();
-            if (/^L\d\.MNI$/i.test(upper)) categories["Levels (Episode 1)"].push(f);
-            else if (/^M\d\.MNI$/i.test(upper)) categories["Levels (Episode 2)"].push(f);
-            else if (/^N\d\.MNI$/i.test(upper)) categories["Levels (Episode 3)"].push(f);
-            else if (/^O\d\.MNI$/i.test(upper)) categories["Levels (Episode 4)"].push(f);
-            else if (upper.includes('CZONE')) categories["Tilesets"].push(f);
-            else if (upper.startsWith('BACKDRP') || upper.startsWith('DROP') || upper.startsWith('STATUS')) categories["Backdrops"].push(f);
-            else if (upper === 'ACTORS.MNI' || upper === 'ACTRINFO.MNI') categories["Actor Data"].push(f);
-            else if (upper.startsWith('FONT') || upper.startsWith('ALF') || upper.startsWith('NUM') || upper.startsWith('BOXES') || upper.startsWith('MAIN') || upper.startsWith('CREDITS') || upper.startsWith('HIGHS') || upper.startsWith('HUD')) categories["User Interface"].push(f);
-            else if (upper.startsWith('TITLE') || upper.startsWith('LOGO') || upper.startsWith('RIGEL') || upper.startsWith('BONUS') || upper.startsWith('APOGEE') || upper.startsWith('GAMEOVER') || upper === 'BONUSSCN.MNI' || upper.startsWith('END') || upper === 'HINTS.MNI' || upper.startsWith('HY') || upper.startsWith('ITEMS') || upper.startsWith('KEYBOARD') || upper.startsWith('LOAD') || upper === 'MESSAGE.MNI' || (upper.startsWith('ORDER') && upper !== 'ORDERTXT.MNI') || upper.startsWith('PRIZES') || upper === 'STORY.MNI' || upper.startsWith('WEAPONS')) categories["Screens & Logos"].push(f);
-            else if (upper.endsWith('.IMF')) categories["Music"].push(f);
-            else if (upper === 'AUDIOHED.MNI' || upper === 'AUDIOT.MNI') categories["SFX (AdLib/PC Speaker)"].push(f);
-            else if (upper.startsWith('SB_') || upper.startsWith('INTRO')) categories["SFX (Digitised)"].push(f);
-            else if (upper.startsWith('DEMO')) categories["Demos"].push(f);
-			else if (upper === 'LCR.MNI' || upper.endsWith ('.PAL')) categories["Palettes"].push(f);
-            else categories["Misc"].push(f);
-        });
+			const upper = f.toUpperCase();
+			
+			// Skip files you don't want in any category
+			if (upper === 'ACTRINFO.MNI') return;
+			
+			if (/^L\d\.MNI$/i.test(upper)) categories["Levels (Episode 1)"].push(f);
+			else if (/^M\d\.MNI$/i.test(upper)) categories["Levels (Episode 2)"].push(f);
+			else if (/^N\d\.MNI$/i.test(upper)) categories["Levels (Episode 3)"].push(f);
+			else if (/^O\d\.MNI$/i.test(upper)) categories["Levels (Episode 4)"].push(f);
+			else if (upper.includes('CZONE')) categories["Tilesets"].push(f);
+			else if (upper.startsWith('BACKDRP') || upper.startsWith('DROP') || upper.startsWith('STATUS')) categories["Backdrops"].push(f);
+			else if (upper === 'ACTORS.MNI') categories["Actor Data"].push(f);  // Removed ACTRINFO.MNI from here
+			else if (upper.startsWith('FONT') || upper.startsWith('ALF') || upper.startsWith('NUM') || upper.startsWith('BOXES') || upper.startsWith('MAIN') || upper.startsWith('CREDITS') || upper.startsWith('HIGHS') || upper.startsWith('HUD')) categories["User Interface"].push(f);
+			else if (upper.startsWith('TITLE') || upper.startsWith('LOGO') || upper.startsWith('RIGEL') || upper.startsWith('BONUS') || upper.startsWith('APOGEE') || upper.startsWith('GAMEOVER') || upper === 'BONUSSCN.MNI' || upper.startsWith('END') || upper === 'HINTS.MNI' || upper.startsWith('HY') || upper.startsWith('ITEMS') || upper.startsWith('KEYBOARD') || upper.startsWith('LOAD') || upper === 'MESSAGE.MNI' || (upper.startsWith('ORDER') && upper !== 'ORDERTXT.MNI') || upper.startsWith('PRIZES') || upper === 'STORY.MNI' || upper.startsWith('WEAPONS')) categories["Screens & Logos"].push(f);
+			else if (upper.endsWith('.IMF')) categories["Music"].push(f);
+			else if (upper === 'AUDIOHED.MNI' || upper === 'AUDIOT.MNI') categories["SFX (AdLib/PC Speaker)"].push(f);
+			else if (upper.startsWith('SB_') || upper.startsWith('INTRO')) categories["SFX (Digitised)"].push(f);
+			else if (upper.startsWith('DEMO')) categories["Demos"].push(f);
+			else if (upper === 'LCR.MNI' || upper.endsWith('.PAL')) categories["Palettes"].push(f);
+			else categories["Misc"].push(f);
+		});
 
         // Render Categories
         for (const [title, items] of Object.entries(categories)) {
