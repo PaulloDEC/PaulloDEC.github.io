@@ -328,8 +328,10 @@ export class ActorManager {
         // ADD PALETTE IDs HERE
         const OVERRIDES = [
             { start: 2179, end: 3276, offset: -16, palette: 0 },
-			{ start: 17874, end: 17985, offset: -16, palette: 0 },
-			{ start: 15719, end: 15910, offset: -16, palette: 3 }
+			{ start: 15335, end: 15910, palette: 4 }, // Overlaid on the newscast backdrop during the intro
+			{ start: 15911, end: 16629, palette: 1 }, // Overlaid on black, scenes of Duke being interrogated
+			{ start: 16630, end: 16989, palette: 2 }, // Overlaid on black, scenes of Duke's molar and escape
+			{ start: 17874, end: 17985, palette: 4 }  // Overlaid on the newscast backdrop during the intro
         ];
 
         const totalTiles = Math.floor(this.graphicsData.length / BYTES_PER_TILE);

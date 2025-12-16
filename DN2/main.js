@@ -886,25 +886,29 @@ async function handleFileSelection(file) {
         logMessage(`Found ${fileList.length} assets.`);
         
         // --- NEW PALETTE LOADING LOGIC ---
-        // Load the 3 specific game palettes into their slots
-        const pal0 = fs.getFile("GAMEPAL.PAL");
-        const pal1 = fs.getFile("STORY2.PAL");
-        const pal2 = fs.getFile("STORY3.PAL");
+		// Load the 3 specific game palettes into their slots
+		const pal0 = fs.getFile("GAMEPAL.PAL");
+		const pal1 = fs.getFile("STORY2.PAL");
+		const pal2 = fs.getFile("STORY3.PAL");
 		const pal3 = fs.getFile("LCR.MNI");
+		const pal4 = fs.getFile("STORY.MNI");  // NEW: Get STORY.MNI
 
-        // Load Main Palette (Slot 0)
-        if (pal0) {
-            assets.loadPalette(pal0, 0);
-            displayPaletteBar(pal0); // Keep the debug bar showing the main palette
-        }
+		// Load Main Palette (Slot 0)
+		if (pal0) {
+			assets.loadPalette(pal0, 0);
+			displayPaletteBar(pal0); // Keep the debug bar showing the main palette
+		}
 
-        // Load Story Palettes (Slots 1 & 2)
-        if (pal1) assets.loadPalette(pal1, 1);
-        if (pal2) assets.loadPalette(pal2, 2);
-        // ---------------------------------
-		
+		// Load Story Palettes (Slots 1 & 2)
+		if (pal1) assets.loadPalette(pal1, 1);
+		if (pal2) assets.loadPalette(pal2, 2);
+		// ---------------------------------
+
 		// Load Intro/VGA Palette (Slot 3)
-        if (pal3) assets.loadPalette(pal3, 3);
+		if (pal3) assets.loadPalette(pal3, 3);
+
+		// Load STORY.MNI embedded palette (Slot 4) - NEW!
+		if (pal4) assets.loadPalette(pal4, 4);
 		
         const actInfo = fs.getFile("ACTRINFO.MNI");
         const actGraph = fs.getFile("ACTORS.MNI");

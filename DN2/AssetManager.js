@@ -12,6 +12,7 @@ export class AssetManager {
             [], // Slot 1: STORY2
             [], // Slot 2: STORY3
             [], // Slot 3: LCR (Intro/VGA)
+			[], // Slot 4: STORY.MNI embedded palette
         ];
         
         // Fill with placeholder grayscale to prevent crashes
@@ -35,20 +36,25 @@ export class AssetManager {
         let palData = data;
 
         // Detect format based on size
-        if (data.length === 48) {
-            colorCount = 16;
-        } else if (data.length === 768) {
-            colorCount = 256; 
-        } else if (data.length === 64768) {
-            // FIX: LCR.MNI contains 84 palettes. 
-            // We want Palette #1 (Main), which is at the START of the file.
-            console.log("Detected LCR.MNI (Animation Container). Loading Palette #1...");
-            palData = data.subarray(0, 768); 
-            colorCount = 256;
-        } else {
-            console.warn(`Invalid palette size: ${data.length} bytes.`);
-            return;
-        }
+		if (data.length === 48) {
+			colorCount = 16;
+		} else if (data.length === 768) {
+			colorCount = 256; 
+		} else if (data.length === 64768) {
+			// FIX: LCR.MNI contains 84 palettes. 
+			// We want Palette #1 (Main), which is at the START of the file.
+			console.log("Detected LCR.MNI (Animation Container). Loading Palette #1...");
+			palData = data.subarray(0, 768); 
+			colorCount = 256;
+		} else if (data.length === 32048) {
+			// Fullscreen image with embedded palette (STORY.MNI)
+			console.log("Detected fullscreen image with embedded palette (32048 bytes)");
+			palData = data.subarray(32000, 32048); // Last 48 bytes
+			colorCount = 16;
+		} else {
+			console.warn(`Invalid palette size: ${data.length} bytes.`);
+			return;
+		}
         
         const newPal = [];
         for (let i = 0; i < colorCount; i++) {
