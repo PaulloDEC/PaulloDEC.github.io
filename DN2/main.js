@@ -783,39 +783,46 @@ async function loadAsset(filename) {
 			updateUIState();
 		}
 		
-		// ─────────────────────────────────────────────────────────────────────
-	// PALETTE FILE HANDLER (.PAL)
 	// ─────────────────────────────────────────────────────────────────────
-	// Displays Duke Nukem 2 palette files as color bars and grids
-
-	else if (upper.endsWith(".PAL")) {
-		appState.viewMode = 'data';
+    // PALETTE FILE HANDLER (.PAL & LCR.MNI)
+    // ─────────────────────────────────────────────────────────────────────
+    // Displays Duke Nukem 2 palette files as color bars and grids
+    else if (upper.endsWith(".PAL") || upper === "LCR.MNI") {
+        appState.viewMode = 'data';
     
-		if (rawFile && rawFile.length === 48) {
-			// Create the palette viewer UI
-			const viewerElement = paletteViewer.createViewer(rawFile, filename);
+        // Allow 48, 768, OR 64768 bytes
+        if (rawFile && (rawFile.length === 48 || rawFile.length === 768 || rawFile.length === 64768)) {
+            
+            // Create the palette viewer UI
+            const viewerElement = paletteViewer.createViewer(rawFile, filename);
         
-			// Display in data view container
-			const container = document.getElementById('data-view-container');
-			const canvas = document.getElementById('preview-canvas');
+            // Display in data view container
+            const container = document.getElementById('data-view-container');
+            const canvas = document.getElementById('preview-canvas');
         
-			if (container && canvas) {
-				canvas.style.display = 'none';
-				container.style.display = 'block';
-				container.innerHTML = '';
-				container.appendChild(viewerElement);
-			}
+            if (container && canvas) {
+                canvas.style.display = 'none';
+                container.style.display = 'block';
+                container.innerHTML = '';
+                container.appendChild(viewerElement);
+            }
         
-			logMessage(`Displaying Palette: ${filename}`, 'success');
-			updateHeaderStatus(`🎨 Palette: <strong>${filename}</strong> (16 colors)`);
+            logMessage(`Displaying Palette: ${filename}`, 'success');
+            
+            // Customize header status based on file type
+            if (rawFile.length === 48) {
+                updateHeaderStatus(`🎨 Palette: <strong>${filename}</strong> (16 colors)`);
+            } else {
+                updateHeaderStatus(`🎨 Palette: <strong>${filename}</strong> (256 colors)`);
+            }
         
-			// Hide zoom controls for palette view
-			toggleControls('none');
-			updateUIState();
-		} else {
-			logMessage(`Invalid palette file: ${filename} (expected 48 bytes)`, 'error');
-		}
-	}
+            // Hide zoom controls for palette view
+            toggleControls('none');
+            updateUIState();
+        } else {
+            logMessage(`Invalid palette file: ${filename} (Size mismatch)`, 'error');
+        }
+    }
 		
     } catch (err) {
         console.error(err);
@@ -870,9 +877,6 @@ document.body.addEventListener('drop', (e) => {
 // ─────────────────────────────────────────────────────────────────────────
 // FILE SELECTION PROCESSOR
 // ─────────────────────────────────────────────────────────────────────────
-// Main function that processes a selected CMP archive file.
-// This extracts all the files, loads the palette and actor data, and
-// populates the file list in the sidebar.
 async function handleFileSelection(file) {
     try {
         console.log(`Processing ${file.name}...`);
@@ -881,9 +885,26 @@ async function handleFileSelection(file) {
         logMessage(`${file.name} successfully loaded.`, 'success');
         logMessage(`Found ${fileList.length} assets.`);
         
-        const palData = fs.getFile("GAMEPAL.PAL");
-        if (palData) assets.loadPalette(palData);
-        if (palData) displayPaletteBar(palData);
+        // --- NEW PALETTE LOADING LOGIC ---
+        // Load the 3 specific game palettes into their slots
+        const pal0 = fs.getFile("GAMEPAL.PAL");
+        const pal1 = fs.getFile("STORY2.PAL");
+        const pal2 = fs.getFile("STORY3.PAL");
+		const pal3 = fs.getFile("LCR.MNI");
+
+        // Load Main Palette (Slot 0)
+        if (pal0) {
+            assets.loadPalette(pal0, 0);
+            displayPaletteBar(pal0); // Keep the debug bar showing the main palette
+        }
+
+        // Load Story Palettes (Slots 1 & 2)
+        if (pal1) assets.loadPalette(pal1, 1);
+        if (pal2) assets.loadPalette(pal2, 2);
+        // ---------------------------------
+		
+		// Load Intro/VGA Palette (Slot 3)
+        if (pal3) assets.loadPalette(pal3, 3);
 		
         const actInfo = fs.getFile("ACTRINFO.MNI");
         const actGraph = fs.getFile("ACTORS.MNI");

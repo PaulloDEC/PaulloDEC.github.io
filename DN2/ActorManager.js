@@ -317,8 +317,7 @@ export class ActorManager {
     }
 
     /**
-     * RAW VIEW (Smart with Manual Overrides)
-     * Handles 64KB boundaries automatically, but allows specific ranges to break the rules.
+     * RAW VIEW (Smart with Manual Overrides & Palette Swapping)
      */
     async generateRawTileSheet(columns = 32) {
         if (!this.graphicsData) return null;
@@ -326,13 +325,11 @@ export class ActorManager {
         const TILE_SIZE = 8;
         const BYTES_PER_TILE = 40; 
         
-        // --- DEFINED OVERRIDES ---
-        // offset: How many bytes to shift the read pointer.
-        // -16 effectively "undoes" the 64KB boundary skip for this section,
-        // making it behave like your original "dumb" linear reader.
+        // ADD PALETTE IDs HERE
         const OVERRIDES = [
-            { start: 2179, end: 3276, offset: -16 },
-			{ start: 17874, end: 17985, offset: -16 }
+            { start: 2179, end: 3276, offset: -16, palette: 0 },
+			{ start: 17874, end: 17985, offset: -16, palette: 0 },
+			{ start: 15719, end: 15910, offset: -16, palette: 3 }
         ];
 
         const totalTiles = Math.floor(this.graphicsData.length / BYTES_PER_TILE);
@@ -343,7 +340,6 @@ export class ActorManager {
         canvas.height = rows * TILE_SIZE;
         const ctx = canvas.getContext('2d');
 
-        // Dark background
         ctx.fillStyle = "#1a1a1a";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -356,35 +352,30 @@ export class ActorManager {
             const x = col * TILE_SIZE;
             const y = row * TILE_SIZE;
 
-            // 1. BOUNDARY CHECK (Automatic 64KB Fix)
+            // 1. BOUNDARY CHECK
             const startSegment = Math.floor(currentByteOffset / 65536);
             const endSegment = Math.floor((currentByteOffset + BYTES_PER_TILE - 1) / 65536);
 
-            // We normally skip 64KB boundaries, but we should double check if 
-            // the NEXT tile is inside an override that might want to ignore this.
             if (startSegment !== endSegment) {
-                 // Draw Red Marker for Gap
                 ctx.fillStyle = "#FF0000"; 
                 ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
-                
-                // Align to next segment (The "Smart Fix")
                 currentByteOffset = endSegment * 65536;
-                
                 layout.push({ id: -1, type: "SEGMENT_GAP", x, y, width: TILE_SIZE, height: TILE_SIZE });
                 continue;
             }
 
             // 2. CHECK FOR OVERRIDES
             let activeOffset = 0;
+            let activePalette = 0; // Default to 0
+
             const override = OVERRIDES.find(o => i >= o.start && i <= o.end);
             if (override) {
-                activeOffset = override.offset;
+                if (override.offset !== undefined) activeOffset = override.offset;
+                if (override.palette !== undefined) activePalette = override.palette;
             }
 
-            // 3. CALCULATE FINAL READ POSITION
             const readOffset = currentByteOffset + activeOffset;
 
-            // Safety check
             if (readOffset < 0 || readOffset + BYTES_PER_TILE > this.graphicsData.length) {
                 currentByteOffset += BYTES_PER_TILE;
                 continue;
@@ -392,23 +383,15 @@ export class ActorManager {
 
             const tileData = this.graphicsData.subarray(readOffset, readOffset + BYTES_PER_TILE);
             
-            // Decode
-            const imgData = this.assets.decodeTile(tileData, 0, true);
+            // 3. PASS activePalette TO DECODER
+            const imgData = this.assets.decodeTile(tileData, 0, true, activePalette);
 
             if (imgData) {
                 const bmp = await createImageBitmap(imgData);
                 ctx.drawImage(bmp, x, y);
-                
-                // Optional: Highlight overridden sections slightly so you know they are special?
-                // if (override) {
-                //     ctx.strokeStyle = "rgba(0, 255, 0, 0.5)";
-                //     ctx.strokeRect(x, y, TILE_SIZE, TILE_SIZE);
-                // }
-
                 layout.push({ id: i, x, y, width: TILE_SIZE, height: TILE_SIZE });
             }
             
-            // Advance the reader normally for the next loop
             currentByteOffset += BYTES_PER_TILE;
         }
 

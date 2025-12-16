@@ -1,33 +1,73 @@
 /**
  * AssetManager.js
  * Handles Palette parsing, Graphic decoding, and Sheet Generation.
- * Updated: Correct Planar Logic for CZONE Solid Tiles.
+ * Updated: Support for LCR.MNI (768-byte / 256-color palettes).
  */
 
 export class AssetManager {
     constructor() {
-        this.palette = [];
-        for (let i = 0; i < 16; i++) {
-            this.palette.push([i * 16, i * 16, i * 16]);
+        // Initialize 4 slots: 0=Game, 1=Story2, 2=Story3, 3=LCR (Intro)
+        this.palettes = [
+            [], // Slot 0: GAMEPAL (Default)
+            [], // Slot 1: STORY2
+            [], // Slot 2: STORY3
+            [], // Slot 3: LCR (Intro/VGA)
+        ];
+        
+        // Fill with placeholder grayscale to prevent crashes
+        for (let p = 0; p < 4; p++) {
+            for (let i = 0; i < 256; i++) { // expanded to 256 safe slots
+                this.palettes[p].push([i, i, i]);
+            }
         }
     }
 
-    loadPalette(buffer) {
+    /**
+     * Loads a palette file into a specific slot.
+     */
+    loadPalette(buffer, slot = 0) {
         let data;
         if (buffer instanceof Uint8Array) data = buffer;
         else if (buffer instanceof ArrayBuffer) data = new Uint8Array(buffer);
         else return;
         
-        if (data.length !== 48) return;
+        let colorCount = 0;
+        let palData = data;
+
+        // Detect format based on size
+        if (data.length === 48) {
+            colorCount = 16;
+        } else if (data.length === 768) {
+            colorCount = 256; 
+        } else if (data.length === 64768) {
+            // FIX: LCR.MNI contains 84 palettes. 
+            // We want Palette #1 (Main), which is at the START of the file.
+            console.log("Detected LCR.MNI (Animation Container). Loading Palette #1...");
+            palData = data.subarray(0, 768); 
+            colorCount = 256;
+        } else {
+            console.warn(`Invalid palette size: ${data.length} bytes.`);
+            return;
+        }
         
         const newPal = [];
-        for (let i = 0; i < 16; i++) {
-            let r = Math.min(255, Math.floor((data[i * 3] * 15 / 16) * 256 / 63));
-            let g = Math.min(255, Math.floor((data[i * 3 + 1] * 15 / 16) * 256 / 63));
-            let b = Math.min(255, Math.floor((data[i * 3 + 2] * 15 / 16) * 256 / 63));
-            newPal.push([r, g, b]);
+        for (let i = 0; i < colorCount; i++) {
+            // Read 6-bit VGA values (0-63)
+            const r6 = palData[i * 3];
+            const g6 = palData[i * 3 + 1];
+            const b6 = palData[i * 3 + 2];
+
+            // Convert to 8-bit RGB (0-255)
+            // Note: Masking & 0x3F is safer, but Palette #1 is likely clean.
+            const r8 = Math.floor((r6 * 255) / 63);
+            const g8 = Math.floor((g6 * 255) / 63);
+            const b8 = Math.floor((b6 * 255) / 63);
+
+            newPal.push([r8, g8, b8]);
         }
-        this.palette = newPal;
+        
+        this.palettes[slot] = newPal;
+        console.log(`Loaded ${colorCount}-color Palette into Slot ${slot}`);
     }
 
     // --- DECODERS ---
@@ -66,50 +106,25 @@ export class AssetManager {
         return mask;
     }
 
-    decodeTile(data, tileIndex, mode) {
+    /**
+     * Decodes a single 8x8 tile based on the provided mode.
+     * Supports Palette Swapping via paletteId (0, 1, 2, 3).
+     */
+    decodeTile(data, tileIndex, mode, paletteId = 0) {
         const TILE_SIZE = 8;
         const pixels = new Uint8ClampedArray(TILE_SIZE * TILE_SIZE * 4);
         
-        // --- MODE A: SOLID GLOBAL (Map Tiles / CZONE Solid) ---
-        // This expects 'data' to be the entire solid block (32000 bytes).
-        // Planes are separated by 8000 bytes (1000 tiles * 8 bytes/plane).
-        if (mode === 'solid_global' || mode === false) {
-            const PLANE_SIZE = 8000; 
-            const tileOffsetInPlane = tileIndex * 8; 
-            const pBlue = tileOffsetInPlane;
-            const pGreen = PLANE_SIZE + tileOffsetInPlane;
-            const pRed = (PLANE_SIZE * 2) + tileOffsetInPlane;
-            const pInt = (PLANE_SIZE * 3) + tileOffsetInPlane;
+        // Select the requested palette, fallback to Slot 0 if invalid
+        const activePalette = this.palettes[paletteId] || this.palettes[0];
 
-            if (pInt + 8 > data.length) return null;
-
-            let pxIdx = 0;
-            for (let y = 0; y < 8; y++) {
-                const bBlue = data[pBlue + y];
-                const bGreen = data[pGreen + y];
-                const bRed = data[pRed + y];
-                const bInt = data[pInt + y];
-
-                for (let x = 0; x < 8; x++) {
-                    const bit = 7 - x;
-                    const colorIndex = 
-                        (((bInt >> bit) & 1) << 3) |
-                        (((bRed >> bit) & 1) << 2) |
-                        (((bGreen >> bit) & 1) << 1) |
-                        ((bBlue >> bit) & 1);
-                    this.writePixel(pixels, pxIdx++, colorIndex);
-                }
-            }
-        } 
-        // --- MODE A2: SOLID CZONE (CZONE Solid Tiles - Scanline-interleaved planar) ---
-        else if (mode === 'solid_czone') {
-            const bytesPerTile = 32; // 8 scanlines × 4 planes per scanline
+        // --- MODE A2: SOLID CZONE (Scanline-interleaved planar) ---
+        if (mode === 'solid_czone') {
+            const bytesPerTile = 32; 
             const offset = tileIndex * bytesPerTile;
             if (offset + bytesPerTile > data.length) return null;
 
             let pxIdx = 0;
             for (let y = 0; y < 8; y++) {
-                // Planes are interleaved per scanline: BGRB BGRB...
                 const scanlineOffset = offset + (y * 4);
                 const bBlue  = data[scanlineOffset + 0];
                 const bGreen = data[scanlineOffset + 1];
@@ -123,11 +138,12 @@ export class AssetManager {
                         (((bRed >> bit) & 1) << 2) |
                         (((bGreen >> bit) & 1) << 1) |
                         ((bBlue >> bit) & 1);
-                    this.writePixel(pixels, pxIdx++, colorIndex);
+                    
+                    this.writePixel(pixels, pxIdx++, colorIndex, activePalette);
                 }
             }
         } 
-        // --- MODE B: MASKED (Actors / CZONE Masked) ---
+        // --- MODE B: MASKED ---
         else if (mode === 'masked' || mode === true) {
             const bytesPerTile = 40;
             const offset = tileIndex * bytesPerTile;
@@ -139,15 +155,15 @@ export class AssetManager {
                 const colorRow = this.readEgaColorData(bitIter, TILE_SIZE);
                 for (let col = 0; col < TILE_SIZE; col++) {
                     const idx = (row * TILE_SIZE + col) * 4;
-                    if (maskRow[col] === 1) { // Transparent
+                    if (maskRow[col] === 1) { 
                         pixels[idx] = 0; pixels[idx+1] = 0; pixels[idx+2] = 0; pixels[idx+3] = 0;
                     } else {
-                        this.writePixel(pixels, idx/4, colorRow[col]);
+                        this.writePixel(pixels, idx/4, colorRow[col], activePalette);
                     }
                 }
             }
         }
-        // --- MODE C: SOLID LOCAL (Backdrops) ---
+        // --- MODE C: SOLID LOCAL ---
         else if (mode === 'solid_local') {
             const bytesPerTile = 32;
             const offset = tileIndex * bytesPerTile;
@@ -167,7 +183,8 @@ export class AssetManager {
                         (((p2 >> bit) & 1) << 2) |
                         (((p1 >> bit) & 1) << 1) |
                         ((p0 >> bit) & 1);
-                    this.writePixel(pixels, (y*8 + x), colorIndex);
+                    
+                    this.writePixel(pixels, (y*8 + x), colorIndex, activePalette);
                 }
             }
         }
@@ -175,8 +192,12 @@ export class AssetManager {
         return new ImageData(pixels, TILE_SIZE, TILE_SIZE);
     }
 
+    /**
+     * Writes a pixel to the buffer using the specified palette.
+     */
     writePixel(pixels, index, colorIndex, palette = null) {
-        const pal = palette || this.palette;
+        const pal = palette || this.palettes[0]; 
+        // LCR.MNI has 256 colors, so colorIndex 0-15 will map to the first 16 colors.
         const [r, g, b] = pal[colorIndex] || [0,0,0];
         const i = index * 4;
         pixels[i] = r;
@@ -185,7 +206,7 @@ export class AssetManager {
         pixels[i+3] = 255;
     }
 
-    // ... (Keep decodeFullScreenImage as is) ...
+    // ... (generateTilesetImage, decodeFullScreenImage, generateCZoneSheet remain unchanged) ...
     async decodeFullScreenImage(data) {
         if (data.length !== 32048) return null;
         const WIDTH = 320;
