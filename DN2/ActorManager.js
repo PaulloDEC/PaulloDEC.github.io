@@ -1,14 +1,17 @@
 import { AssetManager } from './AssetManager.js';
-import { getActorInfo } from './SpriteDefinitions.js';
 
 export class ActorManager {
     constructor(assets) {
         this.assets = assets; 
         this.infoData = null; 
         this.graphicsData = null; 
+        this.actorAtlas = null;        // NEW: Actor atlas with metadata
         this.spriteCache = new Map();
+        this.metaframeCache = new Map(); 
         this.numActors = 0;
     }
+
+    // ─── DATA LOADING ────────────────────────────────────────────────────────
 
     loadInfo(buffer) {
         if (buffer instanceof Uint8Array) {
@@ -18,20 +21,62 @@ export class ActorManager {
         } else if (buffer instanceof ArrayBuffer) {
             this.infoData = new DataView(buffer);
         }
+        
         this.numActors = this.infoData.getUint16(0, true);
-        console.log(`ACTRINFO.MNI loaded: ${this.numActors} actors`);
+        console.log(`ACTRINFO.MNI loaded: ${this.numActors} actors (Legacy Header)`);
     }
 
     loadGraphics(buffer) {
         if (buffer instanceof Uint8Array) this.graphicsData = buffer;
         else if (buffer instanceof ArrayBuffer) this.graphicsData = new Uint8Array(buffer);
+        
         this.spriteCache.clear(); 
+        this.metaframeCache.clear();
         console.log(`ACTORS.MNI loaded: ${this.graphicsData.length} bytes`);
     }
 
-    getActorTable() {
-        if (!this.infoData) return [];
+    loadAtlas(jsonData) {
+        if (Array.isArray(jsonData)) {
+            this.actorAtlas = jsonData;
+            
+            // CRITICAL FIX: Clear caches when Atlas is loaded to remove "Palette 0" fallbacks
+            this.spriteCache.clear();
+            this.metaframeCache.clear();
+            
+            console.log(`Actor Atlas loaded: ${jsonData.length} actors. Cache cleared.`);
+        } else {
+            console.error('Invalid atlas data: expected array');
+        }
+    }
 
+    // ─── HELPERS ─────────────────────────────────────────────────────────────
+
+    getActorCount() {
+        return this.actorAtlas ? this.actorAtlas.length : this.numActors;
+    }
+
+    getActorPalette(actorNum) {
+        if (!this.actorAtlas) return 0;
+        const actor = this.actorAtlas.find(a => a.actorNum === actorNum);
+        return actor ? (Number(actor.palette) || 0) : 0;
+    }
+
+    getActorMetadata(actorNum) {
+        if (!this.actorAtlas) return null;
+        return this.actorAtlas.find(a => a.actorNum === actorNum);
+    }
+
+    getActorTable() {
+        if (this.actorAtlas) {
+            return this.actorAtlas.map(a => ({
+                id: a.actorNum,
+                name: a.name,
+                numFrames: a.numFrames,
+                offset: 0 
+            }));
+        }
+
+        if (!this.infoData) return [];
         const actors = [];
         for (let i = 0; i < this.numActors; i++) {
             const tableOffset = 2 + (i * 2);
@@ -42,60 +87,48 @@ export class ActorManager {
 
             if (actorOffset !== 0 && actorOffset < this.infoData.byteLength) {
                 const numFrames = this.infoData.getUint16(actorOffset, true);
-                actors.push({
-                    id: i,
-                    offset: actorOffset,
-                    numFrames: numFrames
-                });
+                actors.push({ id: i, offset: actorOffset, numFrames });
             }
         }
         return actors;
     }
 
-    async getSpriteBitmap(actorId, frameIndex = 0) {
-        if (!this.infoData || !this.graphicsData) return null;
-        const cacheKey = `${actorId}_${frameIndex}`;
-        if (this.spriteCache.has(cacheKey)) return this.spriteCache.get(cacheKey);
+    // ─── CORE SPRITE RETRIEVAL ───────────────────────────────────────────────
 
-        const info = getActorInfo(actorId);
-        const lookupIndex = info.gfxId !== undefined ? info.gfxId : -1;
+    async getSpriteBitmapDirect(actorNum, frameIndex = 0) {
+        if (!this.graphicsData || !this.actorAtlas) return null;
 
-        if (lookupIndex < 0 || lookupIndex >= this.numActors) return null;
+        const cacheKey = `${actorNum}_${frameIndex}`;
+        if (this.spriteCache.has(cacheKey)) {
+            return this.spriteCache.get(cacheKey);
+        }
 
-        const tableOffset = 2 + (lookupIndex * 2);
-        if (tableOffset + 2 > this.infoData.byteLength) return null;
+        const actor = this.actorAtlas.find(a => a.actorNum === actorNum);
+        if (!actor) return null;
+
+        if (!actor.frames || frameIndex >= actor.frames.length) return null;
+        const frame = actor.frames[frameIndex];
         
-        const wordOffset = this.infoData.getUint16(tableOffset, true);
-        const actorOffset = wordOffset * 2;
-        if (actorOffset === 0 || actorOffset >= this.infoData.byteLength) return null;
+        if (frame.widthTiles === 0 || frame.heightTiles === 0) return null;
+        if (frame.widthTiles > 20 || frame.heightTiles > 20) return null; 
 
-        const numFrames = this.infoData.getUint16(actorOffset, true);
-        if (numFrames === 0 || frameIndex >= numFrames) return null;
+        const totalSize = frame.widthTiles * frame.heightTiles * 40; 
+        if (frame.dataOffset + totalSize > this.graphicsData.length) return null;
 
-        const frameInfoOffset = actorOffset + 4 + (frameIndex * 16);
-        if (frameInfoOffset + 16 > this.infoData.byteLength) return null;
-
-        const hotspotX = this.infoData.getInt16(frameInfoOffset + 0, true);
-        const hotspotY = this.infoData.getInt16(frameInfoOffset + 2, true);
-        const heightTiles = this.infoData.getUint16(frameInfoOffset + 4, true);
-        const widthTiles = this.infoData.getUint16(frameInfoOffset + 6, true);
-        const dataOffset = this.infoData.getUint32(frameInfoOffset + 8, true);
-
-        if (widthTiles === 0 || heightTiles === 0 || widthTiles > 20 || heightTiles > 20) return null;
-        const totalSize = widthTiles * heightTiles * 40;
-        if (dataOffset + totalSize > this.graphicsData.length) return null; 
-
+        const paletteId = Number(actor.palette) || 0;
+        
         const TILE_SIZE = 8;
         const canvas = document.createElement('canvas');
-        canvas.width = widthTiles * TILE_SIZE;
-        canvas.height = heightTiles * TILE_SIZE;
+        canvas.width = frame.widthTiles * TILE_SIZE;
+        canvas.height = frame.heightTiles * TILE_SIZE;
         const ctx = canvas.getContext('2d');
 
-        const spriteData = this.graphicsData.subarray(dataOffset, dataOffset + totalSize);
+        const spriteData = this.graphicsData.subarray(frame.dataOffset, frame.dataOffset + totalSize);
+        
         let tileIdx = 0;
-        for (let y = 0; y < heightTiles; y++) {
-            for (let x = 0; x < widthTiles; x++) {
-                const imgData = this.assets.decodeTile(spriteData, tileIdx, true);
+        for (let y = 0; y < frame.heightTiles; y++) {
+            for (let x = 0; x < frame.widthTiles; x++) {
+                const imgData = this.assets.decodeTile(spriteData, tileIdx, true, paletteId);
                 if (imgData) {
                     const bmp = await createImageBitmap(imgData);
                     ctx.drawImage(bmp, x * TILE_SIZE, y * TILE_SIZE);
@@ -105,58 +138,117 @@ export class ActorManager {
         }
 
         const finalBmp = await createImageBitmap(canvas);
-        const spriteData_obj = { bitmap: finalBmp, hotspotX, hotspotY };
-        this.spriteCache.set(cacheKey, spriteData_obj);
-        return spriteData_obj;
+        const result = { 
+            bitmap: finalBmp, 
+            hotspotX: frame.hotspotX || 0, 
+            hotspotY: frame.hotspotY || 0 
+        };
+
+        this.spriteCache.set(cacheKey, result);
+        return result;
     }
 
-    getSpriteSync(actorId, frameIndex = 0) {
-        const cacheKey = `${actorId}_${frameIndex}`;
-        return this.spriteCache.get(cacheKey) || null;
+    async getSpriteBitmap(actorId, frameIndex = 0) {
+        if (this.actorAtlas) {
+            return this.getSpriteBitmapDirect(actorId, frameIndex);
+        }
+        return null;
     }
-    
-    requestSprite(actorId) { this.getSpriteBitmap(actorId); }
 
-    /**
-     * Generates a "Contact Sheet" with a layout map for hit detection.
-     * @param {string} viewMode - 'uniform', 'tiered', or 'raw'
-     */
+    async getMetaframeBitmap(actorNum) {
+        if (this.metaframeCache.has(actorNum)) {
+            return this.metaframeCache.get(actorNum);
+        }
+
+        if (!this.actorAtlas) return null;
+
+        const actor = this.actorAtlas.find(a => a.actorNum === actorNum);
+        if (!actor) return null;
+
+        if (!actor.metaframe || !actor.metaframe.layers || actor.metaframe.layers.length === 0) {
+            return await this.getSpriteBitmapDirect(actorNum, 0);
+        }
+
+        const metaframe = actor.metaframe;
+        const layerBitmaps = [];
+        
+        for (const layer of metaframe.layers) {
+            const frameBmp = await this.getSpriteBitmapDirect(actorNum, layer.frameIndex);
+            if (frameBmp) {
+                layerBitmaps.push({
+                    bitmap: frameBmp.bitmap,
+                    offsetX: layer.offsetX,
+                    offsetY: layer.offsetY
+                });
+            }
+        }
+
+        if (layerBitmaps.length === 0) return null;
+
+        let minX = 0, minY = 0, maxX = 0, maxY = 0;
+        layerBitmaps.forEach(layer => {
+            minX = Math.min(minX, layer.offsetX);
+            minY = Math.min(minY, layer.offsetY);
+            maxX = Math.max(maxX, layer.offsetX + layer.bitmap.width);
+            maxY = Math.max(maxY, layer.offsetY + layer.bitmap.height);
+        });
+
+        const totalWidth = maxX - minX;
+        const totalHeight = maxY - minY;
+
+        const canvas = document.createElement('canvas');
+        canvas.width = totalWidth;
+        canvas.height = totalHeight;
+        const ctx = canvas.getContext('2d');
+
+        layerBitmaps.forEach(layer => {
+            ctx.drawImage(layer.bitmap, layer.offsetX - minX, layer.offsetY - minY);
+        });
+
+        const finalBmp = await createImageBitmap(canvas);
+        const result = { 
+            bitmap: finalBmp, 
+            hotspotX: metaframe.hotspotX || 0, 
+            hotspotY: metaframe.hotspotY || 0 
+        };
+        
+        this.metaframeCache.set(actorNum, result);
+        return result;
+    }
+
+    // ─── GENERATORS ──────────────────────────────────────────────────────────
+
     async generateSpriteSheet(viewMode = 'uniform') {
-        // 1. INTERCEPT: If Raw mode, skip actor logic and return immediately
         if (viewMode === 'raw') {
-            // Ensure you added the generateRawTileSheet method from the previous step
             return this.generateRawTileSheet(); 
         }
 
-        if (!this.infoData || !this.graphicsData) return null;
+        if (!this.graphicsData || !this.actorAtlas) return null;
 
-        // 2. STANDARD: Load actors only if we are in uniform or tiered mode
-        const validActors = this.getActorTable();
         const entries = [];
         
-        for (const actor of validActors) {
-            const spriteObj = await this.getSpriteBitmap(actor.id, 0);
-            if (spriteObj) {
-                entries.push({ id: actor.id, bmp: spriteObj.bitmap });
+        for (const actor of this.actorAtlas) {
+            const metaframeBmp = await this.getMetaframeBitmap(actor.actorNum);
+            if (metaframeBmp) {
+                entries.push({ 
+                    id: actor.actorNum, 
+                    bmp: metaframeBmp.bitmap,
+                    name: actor.name // Pass name to sheet generator
+                });
             }
         }
 
         if (entries.length === 0) return null;
 
-        if (viewMode === 'tiered') {
+        if (viewMode === 'tiered' || viewMode === 'metaframe') {
             return this._generateTieredSheet(entries);
         } else {
             return this._generateUniformSheet(entries);
         }
     }
 
-    /**
-     * STANDARD VIEW: Finds the single largest sprite dimension and forces all cells to match.
-     * Good for alignment, bad for space efficiency.
-     */
     async _generateUniformSheet(entries) {
-        let maxW = 0; 
-        let maxH = 0;
+        let maxW = 0, maxH = 0;
         entries.forEach(e => {
             if (e.bmp.width > maxW) maxW = e.bmp.width;
             if (e.bmp.height > maxH) maxH = e.bmp.height;
@@ -168,8 +260,6 @@ export class ActorManager {
         
         let cols = Math.ceil(Math.sqrt(entries.length * targetRatio));
         if (cols < 1) cols = 1;
-        if (cols > entries.length) cols = entries.length;
-
         const rows = Math.ceil(entries.length / cols);
         
         const canvas = document.createElement('canvas');
@@ -195,24 +285,26 @@ export class ActorManager {
             const dy = y + (cellSize - item.bmp.height) / 2;
             ctx.drawImage(item.bmp, dx, dy);
             
-            layout.push({ id: item.id, x, y, width: cellSize, height: cellSize });
+            // FIX: Include name in layout
+            layout.push({ 
+                id: item.id, 
+                name: item.name, 
+                x, y, 
+                width: cellSize, 
+                height: cellSize 
+            });
         }
 
         return { image: await createImageBitmap(canvas), layout };
     }
 
-    /**
-     * TIERED VIEW: Splits sprites into Small, Medium, and Large buckets.
-     * Generates three separate grids and stacks them vertically.
-     */
     async _generateTieredSheet(entries) {
         const buckets = {
-            small:  { items: [], cellSize: 0, maxDim: 32 },
-            medium: { items: [], cellSize: 0, maxDim: 96 },
-            large:  { items: [], cellSize: 0, maxDim: 9999 } // Catch-all
+            small:  { items: [], maxDim: 32 },
+            medium: { items: [], maxDim: 96 },
+            large:  { items: [], maxDim: 9999 }
         };
 
-        // 1. Sort entries into buckets
         entries.forEach(e => {
             const size = Math.max(e.bmp.width, e.bmp.height);
             if (size <= buckets.small.maxDim) buckets.small.items.push(e);
@@ -220,11 +312,11 @@ export class ActorManager {
             else buckets.large.items.push(e);
         });
 
-        // 2. Calculate Layouts for each bucket
         const sections = [];
-        const targetRatio = 16 / 9;
         const padding = 10;
-        const sectionGap = 40; // Space between tables
+        const sectionGap = 40;
+        const headerHeight = 30;
+        
         let totalHeight = 0;
         let maxWidth = 0;
 
@@ -232,41 +324,25 @@ export class ActorManager {
             const bucket = buckets[key];
             if (bucket.items.length === 0) continue;
 
-            // Find max size specifically for this bucket
             let localMax = 0;
             bucket.items.forEach(e => localMax = Math.max(localMax, e.bmp.width, e.bmp.height));
-            bucket.cellSize = localMax + padding;
+            const cellSize = localMax + padding;
 
-            // Calculate grid
-            let cols = Math.ceil(Math.sqrt(bucket.items.length * targetRatio));
-            if (cols < 1) cols = 1;
+            const cols = Math.ceil(Math.sqrt(bucket.items.length * (16/9)));
             const rows = Math.ceil(bucket.items.length / cols);
             
-            const sectionWidth = cols * bucket.cellSize;
-            const sectionHeight = rows * bucket.cellSize;
+            const sectionWidth = cols * cellSize;
+            const sectionHeight = rows * cellSize;
 
             sections.push({
-                key,
-                cols,
-                rows,
-                width: sectionWidth,
-                height: sectionHeight,
-                cellSize: bucket.cellSize,
-                items: bucket.items,
-                yOffset: totalHeight + (totalHeight > 0 ? sectionGap : 0) // Add gap if not first
+                key, cols, cellSize, items: bucket.items,
+                width: sectionWidth, height: sectionHeight
             });
 
             if (sectionWidth > maxWidth) maxWidth = sectionWidth;
-            totalHeight += sectionHeight + (totalHeight > 0 ? sectionGap : 0);
+            totalHeight += sectionHeight + sectionGap + headerHeight;
         }
 
-        // --- CUT generateRawTileSheet FROM HERE ---
-
-        // Add header space
-        const headerHeight = 30;
-        totalHeight += (sections.length * headerHeight); 
-        
-        // 3. Draw Stacked
         const canvas = document.createElement('canvas');
         canvas.width = maxWidth;
         canvas.height = totalHeight;
@@ -275,17 +351,15 @@ export class ActorManager {
         ctx.fillStyle = "#1a1a1a";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        const layout = [];
         let currentY = 0;
+        const layout = [];
 
         for (const section of sections) {
-            // Draw Header
             ctx.fillStyle = "#ffcc00";
             ctx.font = "bold 16px sans-serif";
-            ctx.fillText(section.key.toUpperCase() + ` (${section.items.length})`, 10, currentY + 20);
+            ctx.fillText(`${section.key.toUpperCase()} (${section.items.length})`, 10, currentY + 20);
             currentY += headerHeight;
 
-            // Draw Grid
             for (let i = 0; i < section.items.length; i++) {
                 const item = section.items[i];
                 const col = i % section.cols;
@@ -293,21 +367,20 @@ export class ActorManager {
                 const x = col * section.cellSize;
                 const y = currentY + (row * section.cellSize);
                 
-                // Draw Cell Border
                 ctx.strokeStyle = "#333";
                 ctx.strokeRect(x, y, section.cellSize, section.cellSize);
                 
-                // Draw Sprite
                 const dx = x + (section.cellSize - item.bmp.width) / 2;
                 const dy = y + (section.cellSize - item.bmp.height) / 2;
                 ctx.drawImage(item.bmp, dx, dy);
 
-                layout.push({
-                    id: item.id,
-                    x: x,
-                    y: y,
-                    width: section.cellSize,
-                    height: section.cellSize
+                // FIX: Include name in layout
+                layout.push({ 
+                    id: item.id, 
+                    name: item.name,
+                    x, y, 
+                    width: section.cellSize, 
+                    height: section.cellSize 
                 });
             }
             currentY += section.height + sectionGap;
@@ -316,22 +389,18 @@ export class ActorManager {
         return { image: await createImageBitmap(canvas), layout };
     }
 
-    /**
-     * RAW VIEW (Smart with Manual Overrides & Palette Swapping)
-     */
     async generateRawTileSheet(columns = 32) {
         if (!this.graphicsData) return null;
-
+        
         const TILE_SIZE = 8;
         const BYTES_PER_TILE = 40; 
         
-        // ADD PALETTE IDs HERE
         const OVERRIDES = [
             { start: 2179, end: 3276, offset: -16, palette: 0 },
-			{ start: 15335, end: 15910, palette: 4 }, // Overlaid on the newscast backdrop during the intro
-			{ start: 15911, end: 16629, palette: 1 }, // Overlaid on black, scenes of Duke being interrogated
-			{ start: 16630, end: 16989, palette: 2 }, // Overlaid on black, scenes of Duke's molar and escape
-			{ start: 17874, end: 17985, palette: 4 }  // Overlaid on the newscast backdrop during the intro
+            { start: 15335, end: 15910, palette: 4 }, 
+            { start: 15911, end: 16629, palette: 1 }, 
+            { start: 16630, end: 16989, palette: 2 }, 
+            { start: 17874, end: 17985, palette: 4 }  
         ];
 
         const totalTiles = Math.floor(this.graphicsData.length / BYTES_PER_TILE);
@@ -344,63 +413,74 @@ export class ActorManager {
 
         ctx.fillStyle = "#1a1a1a";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-
+        
         const layout = [];
         let currentByteOffset = 0;
-        
+
         for (let i = 0; i < totalTiles; i++) {
-            const col = i % columns;
-            const row = Math.floor(i / columns);
-            const x = col * TILE_SIZE;
-            const y = row * TILE_SIZE;
+             const col = i % columns;
+             const row = Math.floor(i / columns);
+             const x = col * TILE_SIZE;
+             const y = row * TILE_SIZE;
 
-            // 1. BOUNDARY CHECK
-            const startSegment = Math.floor(currentByteOffset / 65536);
-            const endSegment = Math.floor((currentByteOffset + BYTES_PER_TILE - 1) / 65536);
+             const startSegment = Math.floor(currentByteOffset / 65536);
+             const endSegment = Math.floor((currentByteOffset + BYTES_PER_TILE - 1) / 65536);
 
-            if (startSegment !== endSegment) {
-                ctx.fillStyle = "#FF0000"; 
-                ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
-                currentByteOffset = endSegment * 65536;
-                layout.push({ id: -1, type: "SEGMENT_GAP", x, y, width: TILE_SIZE, height: TILE_SIZE });
-                continue;
-            }
+             if (startSegment !== endSegment) {
+                 ctx.fillStyle = "#FF0000"; 
+                 ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+                 currentByteOffset = endSegment * 65536; 
+                 layout.push({ id: -1, type: "SEGMENT_GAP", x, y, width: TILE_SIZE, height: TILE_SIZE });
+                 continue;
+             }
 
-            // 2. CHECK FOR OVERRIDES
-            let activeOffset = 0;
-            let activePalette = 0; // Default to 0
+             let activeOffset = 0;
+             let activePalette = 0; 
 
-            const override = OVERRIDES.find(o => i >= o.start && i <= o.end);
-            if (override) {
-                if (override.offset !== undefined) activeOffset = override.offset;
-                if (override.palette !== undefined) activePalette = override.palette;
-            }
+             const override = OVERRIDES.find(o => i >= o.start && i <= o.end);
+             if (override) {
+                 if (override.offset !== undefined) activeOffset = override.offset;
+                 if (override.palette !== undefined) activePalette = override.palette;
+             }
 
-            const readOffset = currentByteOffset + activeOffset;
+             const readOffset = currentByteOffset + activeOffset;
 
-            if (readOffset < 0 || readOffset + BYTES_PER_TILE > this.graphicsData.length) {
-                currentByteOffset += BYTES_PER_TILE;
-                continue;
-            }
+             if (readOffset < 0 || readOffset + BYTES_PER_TILE > this.graphicsData.length) {
+                 currentByteOffset += BYTES_PER_TILE;
+                 continue;
+             }
 
-            const tileData = this.graphicsData.subarray(readOffset, readOffset + BYTES_PER_TILE);
-            
-            // 3. PASS activePalette TO DECODER
-            const imgData = this.assets.decodeTile(tileData, 0, true, activePalette);
-
-            if (imgData) {
-                const bmp = await createImageBitmap(imgData);
-                ctx.drawImage(bmp, x, y);
-                layout.push({ id: i, x, y, width: TILE_SIZE, height: TILE_SIZE });
-            }
-            
-            currentByteOffset += BYTES_PER_TILE;
+             const tileData = this.graphicsData.subarray(readOffset, readOffset + BYTES_PER_TILE);
+             const imgData = this.assets.decodeTile(tileData, 0, true, activePalette);
+             
+             if(imgData) {
+                 const bmp = await createImageBitmap(imgData);
+                 ctx.drawImage(bmp, x, y);
+                 layout.push({ id: i, x, y, width: TILE_SIZE, height: TILE_SIZE });
+             }
+             
+             currentByteOffset += BYTES_PER_TILE;
         }
-
         return { image: await createImageBitmap(canvas), layout };
     }
     
-    getActorCount() {
-        return this.numActors;
+    requestSprite(actorId) { this.getSpriteBitmap(actorId); }
+    
+    getSpriteSync(actorId, frameIndex = 0) {
+        const cacheKey = `${actorId}_${frameIndex}`;
+        return this.spriteCache.get(cacheKey) || null;
+    }
+
+    getActorForLevel(actorNum) {
+        const actor = this.actorAtlas?.find(a => a.actorNum === actorNum);
+        return {
+            id: actorNum,
+            name: actor?.name || `Actor ${actorNum}`,
+            type: actor?.type || 'unknown',
+            palette: actor?.palette || 0,
+            hasMetaframe: !!(actor?.metaframe && actor?.metaframe.layers),
+            getMetaframe: () => this.getMetaframeBitmap(actorNum),
+            getFrame: (idx) => this.getSpriteBitmap(actorNum, idx)
+        };
     }
 }

@@ -14,7 +14,8 @@ function register(id, name, type, gfxId) {
 // --- GENERATION LOGIC ---
 // We use the Python Gallery logic to determine GfxID
 function getGalleryGfxId(id) {
-    if (id < 200) return id - 1; // Standard offset
+    if (id === 0) return 0;  // Before the existing "if (id < 200)" check
+	if (id < 200) return id - 1; // Standard offset
     if (id === 200) return -1;   // Empty slot
     if (id === 201) return 201;  // EXCEPTION: Red Box Turkey maps 1:1
     if (id >= 202) return id - 1; // Standard offset (Result: 202->201, sharing art)

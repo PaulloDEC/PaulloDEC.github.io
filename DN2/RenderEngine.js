@@ -1,8 +1,8 @@
-import { getActorInfo } from './SpriteDefinitions.js';
-
 export class RenderEngine {
-    constructor(canvas) {
+    // UPDATED: Now accepts actorManager as 2nd argument
+    constructor(canvas, actorManager) {
         this.canvas = canvas;
+        this.actorManager = actorManager; // Store reference for tooltips/alignment
         this.ctx = canvas.getContext('2d', { alpha: false });
         this.setPixelated();
         this.cacheCanvas = document.createElement('canvas');
@@ -26,8 +26,9 @@ export class RenderEngine {
         this.canvas.addEventListener('mouseleave', () => { this.tooltip.style.display = 'none'; });
     }
 
-		handleMouseMove(e) {
-        const rect = this.canvas.getBoundingClientRect();
+    handleMouseMove(e) {
+        
+		const rect = this.canvas.getBoundingClientRect();
         const mouseX = e.clientX - rect.left;
         const mouseY = e.clientY - rect.top;
         const hovered = this.findActorsAtScreenPos(mouseX, mouseY);
@@ -37,9 +38,12 @@ export class RenderEngine {
             
             hovered.forEach(hit => {
                 const actor = hit.actor;
-                const info = getActorInfo(actor.id);
-                const hexId = actor.id.toString(16).toUpperCase().padStart(4, '0');
                 const sprite = hit.sprite;
+                const hexId = actor.id.toString(16).toUpperCase().padStart(4, '0');
+                
+                // UPDATED: Use actorManager for metadata lookup (Atlas)
+                const meta = this.actorManager ? this.actorManager.getActorMetadata(actor.id) : null;
+                const name = meta ? meta.name : "Unknown Actor";
                 
                 // CONDITIONAL FORMATTING
                 let locationHtml = "";
@@ -52,14 +56,18 @@ export class RenderEngine {
                     hotspotHtml = `<span style="color:#f90">Hotspot: ${sprite.hotspotX}, ${sprite.hotspotY}</span>`;
                 }
 
-                // UPDATED STYLES HERE:
+                // Show Palette info if valid
+                let extraInfo = "";
+                if (meta && meta.palette) extraInfo += `Pal: ${meta.palette} `;
+
                 html += `
                     <div style="margin-top: 8px;">
-                        <span style="color:#38bdf8; font-weight:bold; display:block; margin-bottom:3px;">${info.name}</span>
+                        <span style="color:#38bdf8; font-weight:bold; display:block; margin-bottom:3px;">${name}</span>
                         <div style="color:#94a3b8; font-size:11px; line-height:1.5;">
                             ID: ${actor.id} (0x${hexId})<br>
                             ${locationHtml}
                             ${hotspotHtml}
+                            ${extraInfo}
                         </div>
                     </div>
                 `;
@@ -121,8 +129,6 @@ export class RenderEngine {
         ctx.fillStyle = state.useSolidBG ? '#000000' : '#0a0a0a';
         ctx.fillRect(0, 0, width, height);
 
-
-
         // Transform
         const cx = width / 2;
         const cy = height / 2;
@@ -148,7 +154,6 @@ export class RenderEngine {
             // Register Asset Hitboxes
             if (state.currentAsset.layout) {
                 state.currentAsset.layout.forEach(item => {
-                    // Fetch sprite info for hotspot data
                     const sprite = state.actorManager ? state.actorManager.getSpriteSync(item.id) : null;
                     
                     this.actorHitboxes.push({
@@ -167,9 +172,15 @@ export class RenderEngine {
 
     drawActors(ctx, map, actorManager) {
         const TILE_SIZE = 8;
+        // Fallback to this.actorManager if not passed in via state
+        const am = actorManager || this.actorManager;
+
         for (const actor of map.actors) {
             if (actor.id === 0) continue;
-            const sprite = actorManager.getSpriteSync(actor.id);
+            
+            // Use manager to get sprite (Directly or fallback)
+            const sprite = am ? am.getSpriteSync(actor.id) : null;
+            
             if (sprite) {
                 const ax = actor.x * TILE_SIZE;
                 const ay = actor.y * TILE_SIZE;
@@ -181,11 +192,16 @@ export class RenderEngine {
                     dx -= sprite.hotspotX;
                     dy -= sprite.hotspotY;
                 } else {
-                    const info = getActorInfo(actor.id);
-                    if (!info.name.includes("CEILING") && !info.name.includes("TOP")) {
+                    // UPDATED: Use actorManager metadata for alignment checks
+                    // instead of SpriteDefinitions name checks
+                    const meta = am ? am.getActorMetadata(actor.id) : null;
+                    const name = meta ? meta.name : "";
+
+                    // Re-implement the special alignment logic using Atlas names
+                    if (!name.includes("CEILING") && !name.includes("TOP")) {
                         dy = (actor.y + 1) * 8 - sprite.bitmap.height;
                     }
-                    if (info.name.includes("TURRET")) {
+                    if (name.includes("TURRET")) {
                         dx = (actor.x * 8) + 4 - (sprite.bitmap.width / 2);
                     }
                 }
@@ -201,8 +217,8 @@ export class RenderEngine {
                     width: sprite.bitmap.width,
                     height: sprite.bitmap.height
                 });
-            } else {
-                actorManager.requestSprite(actor.id);
+            } else if (am) {
+                am.requestSprite(actor.id);
             }
         }
     }

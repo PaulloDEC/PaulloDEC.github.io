@@ -1,23 +1,26 @@
 /**
  * AssetManager.js
  * Handles Palette parsing, Graphic decoding, and Sheet Generation.
- * Updated: Support for LCR.MNI (768-byte / 256-color palettes).
+ * FEATURES:
+ * - Robust Bit-Stream Decoder (Fixes garbled sprites)
+ * - Multi-Palette Support (Slots 0-4)
+ * - Palette argument in decodeTile for ActorManager
  */
 
 export class AssetManager {
     constructor() {
-        // Initialize 4 slots: 0=Game, 1=Story2, 2=Story3, 3=LCR (Intro)
+        // Initialize 5 slots: 0=Game, 1=Story2, 2=Story3, 3=LCR, 4=Story.mni
         this.palettes = [
             [], // Slot 0: GAMEPAL (Default)
             [], // Slot 1: STORY2
             [], // Slot 2: STORY3
             [], // Slot 3: LCR (Intro/VGA)
-			[], // Slot 4: STORY.MNI embedded palette
+            [], // Slot 4: STORY.MNI embedded palette
         ];
         
-        // Fill with placeholder grayscale to prevent crashes
-        for (let p = 0; p < 4; p++) {
-            for (let i = 0; i < 256; i++) { // expanded to 256 safe slots
+        // Fill with placeholder grayscale to prevent crashes if palettes aren't loaded
+        for (let p = 0; p < 5; p++) {
+            for (let i = 0; i < 256; i++) { 
                 this.palettes[p].push([i, i, i]);
             }
         }
@@ -36,25 +39,24 @@ export class AssetManager {
         let palData = data;
 
         // Detect format based on size
-		if (data.length === 48) {
-			colorCount = 16;
-		} else if (data.length === 768) {
-			colorCount = 256; 
-		} else if (data.length === 64768) {
-			// FIX: LCR.MNI contains 84 palettes. 
-			// We want Palette #1 (Main), which is at the START of the file.
-			console.log("Detected LCR.MNI (Animation Container). Loading Palette #1...");
-			palData = data.subarray(0, 768); 
-			colorCount = 256;
-		} else if (data.length === 32048) {
-			// Fullscreen image with embedded palette (STORY.MNI)
-			console.log("Detected fullscreen image with embedded palette (32048 bytes)");
-			palData = data.subarray(32000, 32048); // Last 48 bytes
-			colorCount = 16;
-		} else {
-			console.warn(`Invalid palette size: ${data.length} bytes.`);
-			return;
-		}
+        if (data.length === 48) {
+            colorCount = 16;
+        } else if (data.length === 768) {
+            colorCount = 256; 
+        } else if (data.length === 64768) {
+            // LCR.MNI contains 84 palettes. Use Palette #1 (Start of file)
+            console.log("Detected LCR.MNI (Animation Container). Loading Palette #1...");
+            palData = data.subarray(0, 768); 
+            colorCount = 256;
+        } else if (data.length === 32048) {
+            // Fullscreen image with embedded palette (STORY.MNI)
+            console.log("Detected fullscreen image with embedded palette.");
+            palData = data.subarray(32000, 32048); // Last 48 bytes
+            colorCount = 16;
+        } else {
+            console.warn(`Invalid palette size: ${data.length} bytes.`);
+            return;
+        }
         
         const newPal = [];
         for (let i = 0; i < colorCount; i++) {
@@ -64,7 +66,6 @@ export class AssetManager {
             const b6 = palData[i * 3 + 2];
 
             // Convert to 8-bit RGB (0-255)
-            // Note: Masking & 0x3F is safer, but Palette #1 is likely clean.
             const r8 = Math.floor((r6 * 255) / 63);
             const g8 = Math.floor((g6 * 255) / 63);
             const b8 = Math.floor((b6 * 255) / 63);
@@ -76,7 +77,7 @@ export class AssetManager {
         console.log(`Loaded ${colorCount}-color Palette into Slot ${slot}`);
     }
 
-    // --- DECODERS ---
+    // ─── DECODING HELPERS (Critical for Correct Geometry) ────────────────────
 
     createBitIterator(data, offset = 0) {
         let byteIndex = offset;
@@ -113,17 +114,17 @@ export class AssetManager {
     }
 
     /**
-     * Decodes a single 8x8 tile based on the provided mode.
-     * Supports Palette Swapping via paletteId (0, 1, 2, 3).
+     * CORE DECODER
+     * Supports Palette Swapping via paletteId (0-4).
      */
     decodeTile(data, tileIndex, mode, paletteId = 0) {
         const TILE_SIZE = 8;
         const pixels = new Uint8ClampedArray(TILE_SIZE * TILE_SIZE * 4);
         
-        // Select the requested palette, fallback to Slot 0 if invalid
+        // 1. Select the requested palette (Safe Access)
         const activePalette = this.palettes[paletteId] || this.palettes[0];
 
-        // --- MODE A2: SOLID CZONE (Scanline-interleaved planar) ---
+        // --- MODE A: SOLID CZONE (Scanline-interleaved planar) ---
         if (mode === 'solid_czone') {
             const bytesPerTile = 32; 
             const offset = tileIndex * bytesPerTile;
@@ -149,7 +150,8 @@ export class AssetManager {
                 }
             }
         } 
-        // --- MODE B: MASKED ---
+        // --- MODE B: MASKED (Actors/Sprites) ---
+        // This uses the complex BitIterator logic to ensure correct geometry
         else if (mode === 'masked' || mode === true) {
             const bytesPerTile = 40;
             const offset = tileIndex * bytesPerTile;
@@ -159,17 +161,22 @@ export class AssetManager {
             for (let row = 0; row < TILE_SIZE; row++) {
                 const maskRow = this.readEgaMaskPlane(bitIter, TILE_SIZE);
                 const colorRow = this.readEgaColorData(bitIter, TILE_SIZE);
+                
                 for (let col = 0; col < TILE_SIZE; col++) {
                     const idx = (row * TILE_SIZE + col) * 4;
+                    
+                    // Mask Bit: 1 = Transparent, 0 = Opaque (or vice versa depending on logic)
+                    // In DN2: Mask 1 usually means "Background shows through" (Transparent)
                     if (maskRow[col] === 1) { 
                         pixels[idx] = 0; pixels[idx+1] = 0; pixels[idx+2] = 0; pixels[idx+3] = 0;
                     } else {
+                        // Apply specific palette here
                         this.writePixel(pixels, idx/4, colorRow[col], activePalette);
                     }
                 }
             }
         }
-        // --- MODE C: SOLID LOCAL ---
+        // --- MODE C: SOLID LOCAL (Standard Backdrops) ---
         else if (mode === 'solid_local') {
             const bytesPerTile = 32;
             const offset = tileIndex * bytesPerTile;
@@ -203,7 +210,6 @@ export class AssetManager {
      */
     writePixel(pixels, index, colorIndex, palette = null) {
         const pal = palette || this.palettes[0]; 
-        // LCR.MNI has 256 colors, so colorIndex 0-15 will map to the first 16 colors.
         const [r, g, b] = pal[colorIndex] || [0,0,0];
         const i = index * 4;
         pixels[i] = r;
@@ -212,13 +218,15 @@ export class AssetManager {
         pixels[i+3] = 255;
     }
 
-    // ... (generateTilesetImage, decodeFullScreenImage, generateCZoneSheet remain unchanged) ...
+    // ─── GENERATORS ──────────────────────────────────────────────────────────
+
     async decodeFullScreenImage(data) {
         if (data.length !== 32048) return null;
         const WIDTH = 320;
         const HEIGHT = 200;
         const PLANE_SIZE = 8000;
         
+        // Extract embedded palette (last 48 bytes)
         const palData = data.subarray(32000, 32048);
         const localPalette = [];
         for (let i = 0; i < 16; i++) {
@@ -259,8 +267,6 @@ export class AssetManager {
         
         let workingData = data;
         
-        // CRITICAL FIX: For 'solid_global', we must pass the large buffer chunk
-        // starting at startOffset, but allowing access to offsets +8000, +16000, etc.
         if (mode === 'solid_global') {
             workingData = data.subarray(startOffset); 
         } else {
@@ -271,7 +277,8 @@ export class AssetManager {
         }
 
         for (let i = 0; i < count; i++) {
-            const imgData = this.decodeTile(workingData, i, mode);
+            // Default palette (0) is fine for tilesets
+            const imgData = this.decodeTile(workingData, i, mode, 0);
             if (imgData) {
                 const bmp = await createImageBitmap(imgData);
                 const x = (i % columns) * TILE_SIZE;
@@ -287,12 +294,8 @@ export class AssetManager {
 
         const COLUMNS = 40;
         const TILE_SIZE = 8;
-        
-        // 1. Solid Tiles (32000 bytes, 1000 tiles)
         const SOLID_OFFSET = 3600;
         const SOLID_COUNT = 1000;
-        
-        // 2. Masked Tiles (6400 bytes, 160 tiles)
         const MASKED_OFFSET = 3600 + 32000;
         const MASKED_COUNT = 160;
         
@@ -305,11 +308,9 @@ export class AssetManager {
         canvas.height = totalRows * TILE_SIZE;
         const ctx = canvas.getContext('2d');
         
-        // Draw Solid Tiles (CZONE Byte-planar format)
-        // Each tile is 32 bytes: 4 planes x 8 bytes per plane
         const solidData = data.subarray(SOLID_OFFSET);
         for (let i = 0; i < SOLID_COUNT; i++) {
-            const img = this.decodeTile(solidData, i, 'solid_czone');
+            const img = this.decodeTile(solidData, i, 'solid_czone', 0);
             if (img) {
                 const bmp = await createImageBitmap(img);
                 const x = (i % COLUMNS) * TILE_SIZE;
@@ -318,11 +319,10 @@ export class AssetManager {
             }
         }
         
-        // Draw Masked Tiles (Masked Local)
         const maskedStartY = (solidRows + 1) * TILE_SIZE;
         const maskedData = data.subarray(MASKED_OFFSET);
         for (let i = 0; i < MASKED_COUNT; i++) {
-            const img = this.decodeTile(maskedData, i, 'masked');
+            const img = this.decodeTile(maskedData, i, 'masked', 0);
             if (img) {
                 const bmp = await createImageBitmap(img);
                 const x = (i % COLUMNS) * TILE_SIZE;
