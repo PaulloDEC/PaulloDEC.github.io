@@ -307,6 +307,11 @@ export class ActorManager {
         const TILE_SIZE = 8;
         const BYTES_PER_TILE = 40; 
         
+        // --- SPLIT VIEW CONFIGURATION ---
+        const NUM_STRIPS = 5;       // Number of side-by-side pieces
+        const STRIP_GAP = 32;       // Pixel gap between pieces
+        // --------------------------------
+
         const OVERRIDES = [
             { start: 2179, end: 3276, offset: -16, palette: 0 },
             { start: 15335, end: 15910, palette: 4 }, 
@@ -316,11 +321,21 @@ export class ActorManager {
         ];
 
         const totalTiles = Math.floor(this.graphicsData.length / BYTES_PER_TILE);
-        const rows = Math.ceil(totalTiles / columns);
+        
+        // 1. Calculate Logical Dimensions (if it were one giant column)
+        const logicalTotalRows = Math.ceil(totalTiles / columns);
+        
+        // 2. Calculate Split Dimensions
+        // Divide the total rows by the number of strips to get height of one strip
+        const rowsPerStrip = Math.ceil(logicalTotalRows / NUM_STRIPS);
+        const stripPixelWidth = columns * TILE_SIZE;
 
         const canvas = document.createElement('canvas');
-        canvas.width = columns * TILE_SIZE;
-        canvas.height = rows * TILE_SIZE;
+        
+        // Calculate total canvas width: (Width * Count) + (Gap * (Count - 1))
+        canvas.width = (stripPixelWidth * NUM_STRIPS) + (STRIP_GAP * (NUM_STRIPS - 1));
+        canvas.height = rowsPerStrip * TILE_SIZE;
+        
         const ctx = canvas.getContext('2d');
 
         ctx.fillStyle = "#1a1a1a";
@@ -330,10 +345,25 @@ export class ActorManager {
         let currentByteOffset = 0;
 
         for (let i = 0; i < totalTiles; i++) {
-             const col = i % columns;
-             const row = Math.floor(i / columns);
-             const x = col * TILE_SIZE;
-             const y = row * TILE_SIZE;
+             // 1. Calculate "Logical" position (as if it were one long strip)
+             const logicalCol = i % columns;
+             const logicalRow = Math.floor(i / columns);
+
+             // 2. Map Logical position to Split Position
+             // Which of the 5 strips are we in?
+             const stripIndex = Math.floor(logicalRow / rowsPerStrip);
+             // Which row within that specific strip?
+             const rowInStrip = logicalRow % rowsPerStrip;
+
+             // Safety break if math slightly exceeds bounds
+             if (stripIndex >= NUM_STRIPS) break;
+
+             // 3. Calculate Final Pixel Coordinates
+             // X = (Strip Offset) + (Column Offset)
+             const x = (stripIndex * (stripPixelWidth + STRIP_GAP)) + (logicalCol * TILE_SIZE);
+             const y = rowInStrip * TILE_SIZE;
+
+             // --- DRAWING LOGIC (Unchanged, just uses new x/y) ---
 
              const startSegment = Math.floor(currentByteOffset / 65536);
              const endSegment = Math.floor((currentByteOffset + BYTES_PER_TILE - 1) / 65536);
