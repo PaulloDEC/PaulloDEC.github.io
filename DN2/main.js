@@ -113,6 +113,17 @@ function updateHeaderStatus(text, temporary = false) {
     });
 });
 
+// Actor detail overlay close handlers
+document.getElementById('actor-detail-close')?.addEventListener('click', () => {
+    document.getElementById('actor-detail-overlay').classList.remove('active');
+});
+
+document.getElementById('actor-detail-overlay')?.addEventListener('click', (e) => {
+    if (e.target.id === 'actor-detail-overlay') {
+        document.getElementById('actor-detail-overlay').classList.remove('active');
+    }
+});
+
 const fs = new FileSystem();
 const assets = new AssetManager();
 const mapParser = new MapParser();
@@ -152,7 +163,10 @@ let appState = {
     actorManager: actorManager,
     layers: { showMap: true, showSprites: true },
     useSolidBG: false,
-    useGridFix: false
+    useGridFix: false,
+    actorViewMode: 'dynamic',  // 'dynamic' or 'raw'
+    actorSortMode: 'default',  // 'default', 'name', 'type', 'size'
+    actorZoom: 1               // 1, 2, or 4
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -263,6 +277,305 @@ function handleFitZoom() {
     }
 }
 
+// ─────────────────────────────────────────────────────────────────────────
+// Actor Controls Helper Functions
+// ─────────────────────────────────────────────────────────────────────────
+
+/**
+ * Update actor controls panel state (enable/disable sort radios)
+ */
+function updateActorControls() {
+    const isRaw = appState.actorViewMode === 'raw';
+    
+    // Disable/enable sort controls
+    ['sort-default', 'sort-name', 'sort-type', 'sort-size'].forEach(id => {
+        const label = document.getElementById(id);
+        if (label) {
+            if (isRaw) {
+                label.classList.add('disabled');
+            } else {
+                label.classList.remove('disabled');
+            }
+        }
+    });
+    
+    // Disable/enable scale controls
+    ['scale-1x', 'scale-2x', 'scale-4x'].forEach(id => {
+        const label = document.getElementById(id);
+        if (label) {
+            if (isRaw) {
+                label.classList.add('disabled');
+            } else {
+                label.classList.remove('disabled');
+            }
+        }
+    });
+}
+
+/**
+ * Update zoom panel buttons based on current actor view mode
+ */
+function updateActorZoomPanel() {
+    const zoomCtrl = document.querySelector('.zoom-controls');
+    if (!zoomCtrl) return;
+
+    // Only rebuild if we're actually in the actor viewer
+    if (appState.assetType !== 'actors') return;
+    
+    const isRaw = appState.actorViewMode === 'raw';
+    
+    // HIDE zoom panel in Dynamic mode - controls are in sidebar
+    if (!isRaw) {
+        zoomCtrl.style.display = 'none';
+        return;
+    }
+
+    // Rebuild zoom buttons based on mode
+    if (isRaw) {
+        // Raw mode: Fit, 1x, 2x, 4x
+        zoomCtrl.innerHTML = `
+            <button class="zoom-btn" id="zoom-fit">Fit</button>
+            <button class="zoom-btn" id="zoom-1x">1x</button>
+            <button class="zoom-btn" id="zoom-2x">2x</button>
+            <button class="zoom-btn" id="zoom-4x">4x</button>
+        `;
+        
+        // Attach handlers for raw mode
+        document.getElementById('zoom-fit').onclick = handleFitZoom;
+        document.getElementById('zoom-1x').onclick = () => viewport.zoom = 1.0;
+        document.getElementById('zoom-2x').onclick = () => viewport.zoom = 2.0;
+        document.getElementById('zoom-4x').onclick = () => viewport.zoom = 4.0;
+    } else {
+        // Dynamic mode: 1x, 2x, 4x only
+        zoomCtrl.innerHTML = `
+            <button class="zoom-btn" id="zoom-1x">1x</button>
+            <button class="zoom-btn" id="zoom-2x">2x</button>
+            <button class="zoom-btn" id="zoom-4x">4x</button>
+        `;
+        
+        // Attach handlers for dynamic mode
+        document.getElementById('zoom-1x').onclick = async () => {
+            appState.actorZoom = 1;
+            await renderActorView();
+        };
+        document.getElementById('zoom-2x').onclick = async () => {
+            appState.actorZoom = 2;
+            await renderActorView();
+        };
+        document.getElementById('zoom-4x').onclick = async () => {
+            appState.actorZoom = 4;
+            await renderActorView();
+        };
+    }
+}
+
+/**
+ * Restore default zoom panel (for maps and other assets)
+ */
+function restoreDefaultZoomPanel() {
+    const zoomCtrl = document.querySelector('.zoom-controls');
+    if (!zoomCtrl) return;
+    
+    zoomCtrl.innerHTML = `
+        <button class="zoom-btn" id="zoom-fit">Fit</button>
+        <button class="zoom-btn" id="zoom-1x">1x</button>
+        <button class="zoom-btn" id="zoom-2x">2x</button>
+        <button class="zoom-btn" id="zoom-4x">4x</button>
+    `;
+    
+    // Attach default handlers (for viewport)
+    document.getElementById('zoom-fit').onclick = handleFitZoom;
+    document.getElementById('zoom-1x').onclick = () => viewport.zoom = 1.0;
+    document.getElementById('zoom-2x').onclick = () => viewport.zoom = 2.0;
+    document.getElementById('zoom-4x').onclick = () => viewport.zoom = 4.0;
+}
+
+/**
+ * Render the actor view (dynamic or raw)
+ */
+async function renderActorView() {
+    const result = await actorManager.generateSpriteSheet(
+        appState.actorViewMode,
+        appState.actorSortMode,
+        appState.actorZoom
+    );
+    
+    if (!result) return;
+    
+    if (appState.actorViewMode === 'dynamic') {
+        renderDynamicActorGrid(result);
+    } else {
+        // Raw mode - use canvas
+        const container = document.getElementById('data-view-container');
+        const canvas = document.getElementById('preview-canvas');
+        container.style.display = 'none';
+        canvas.style.display = 'block';
+        
+        appState.currentAsset = result;
+        handleFitZoom();
+    }
+    
+    updateActorControls();
+    updateUIState();
+    updateActorZoomPanel();
+}
+
+/**
+ * Render dynamic actor grid (DOM-based)
+ */
+function renderDynamicActorGrid(data) {
+    const container = document.getElementById('data-view-container');
+    const canvas = document.getElementById('preview-canvas');
+    
+    // Hide canvas, show DOM container
+    canvas.style.display = 'none';
+    container.style.display = 'block';
+    container.innerHTML = '';
+    
+    // Create grid
+    const grid = document.createElement('div');
+    grid.className = 'actor-grid';
+    grid.style.gridTemplateColumns = `repeat(auto-fill, minmax(${80 * appState.actorZoom}px, 1fr))`;
+    
+    let currentType = null;
+    
+    for (const actor of data.actors) {
+        // Add type header if sorting by type and type changes
+        if (data.sortMode === 'type' && actor.type !== currentType) {
+            currentType = actor.type;
+            const header = document.createElement('div');
+            header.className = 'type-header';
+            const typeLabel = actor.type.charAt(0).toUpperCase() + actor.type.slice(1);
+            header.innerHTML = `<h3>${typeLabel}</h3>`;
+            grid.appendChild(header);
+        }
+        
+        // Create actor cell
+        const cell = createActorCell(actor);
+        grid.appendChild(cell);
+    }
+    
+    container.appendChild(grid);
+}
+
+/**
+ * Show actor detail overlay
+ */
+function showActorDetail(actor) {
+    const overlay = document.getElementById('actor-detail-overlay');
+    const metaframeContainer = document.getElementById('detail-metaframe');
+    const infoContainer = document.getElementById('detail-info');
+    const framesContainer = document.getElementById('detail-frames');
+    
+    // Render metaframe at 2x
+    metaframeContainer.innerHTML = '';
+    const metaCanvas = document.createElement('canvas');
+    metaCanvas.width = actor.metaframe.width * 2;
+    metaCanvas.height = actor.metaframe.height * 2;
+    const ctx = metaCanvas.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(actor.metaframe, 0, 0, metaCanvas.width, metaCanvas.height);
+    metaframeContainer.appendChild(metaCanvas);
+    
+    // Render info
+    infoContainer.innerHTML = `
+        <h2>${actor.name}</h2>
+        <div class="detail-info-row">
+            <span class="detail-info-label">Actor Number:</span>
+            <span class="detail-info-value">#${actor.actorNum}</span>
+        </div>
+        <div class="detail-info-row">
+            <span class="detail-info-label">Type:</span>
+            <span class="detail-info-value">${actor.type}</span>
+        </div>
+        <div class="detail-info-row">
+            <span class="detail-info-label">Palette:</span>
+            <span class="detail-info-value">${actor.palette}</span>
+        </div>
+    `;
+    
+    // Render all frames
+    framesContainer.innerHTML = '';
+    
+    // Get all frames from the atlas
+    const actorData = actorManager.actorAtlas.find(a => a.actorNum === actor.actorNum);
+    if (actorData && actorData.frames) {
+        infoContainer.innerHTML += `
+            <div class="detail-info-row">
+                <span class="detail-info-label">Frame Count:</span>
+                <span class="detail-info-value">${actorData.frames.length}</span>
+            </div>
+        `;
+        
+        // Render each frame
+        actorData.frames.forEach(async (frameData, i) => {
+            const frameBmp = await actorManager.getSpriteBitmap(actor.actorNum, i);
+            if (frameBmp && frameBmp.bitmap) {
+                const frameCanvas = document.createElement('canvas');
+                frameCanvas.width = frameBmp.bitmap.width;
+                frameCanvas.height = frameBmp.bitmap.height;
+                const fctx = frameCanvas.getContext('2d');
+                fctx.drawImage(frameBmp.bitmap, 0, 0);
+                framesContainer.appendChild(frameCanvas);
+            }
+        });
+    }
+    
+    overlay.classList.add('active');
+}
+
+/**
+ * Create an individual actor cell
+ */
+function createActorCell(actor) {
+    const zoom = appState.actorZoom;
+    
+    const cell = document.createElement('div');
+    cell.className = 'actor-cell';
+    
+    // Sprite container
+    const spriteContainer = document.createElement('div');
+    spriteContainer.className = 'actor-sprite';
+    spriteContainer.style.width = `${64 * zoom}px`;
+    spriteContainer.style.height = `${64 * zoom}px`;
+    
+    // Render metaframe canvas
+    const canvas = document.createElement('canvas');
+    canvas.width = actor.metaframe.width * zoom;
+    canvas.height = actor.metaframe.height * zoom;
+    const ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(actor.metaframe, 0, 0, canvas.width, canvas.height);
+    
+    // Check if sprite overflows container
+    if (canvas.width > 64 * zoom || canvas.height > 64 * zoom) {
+        spriteContainer.classList.add('overflow');
+    }
+    
+    spriteContainer.appendChild(canvas);
+    
+    // Name
+    const nameDiv = document.createElement('div');
+    nameDiv.className = 'actor-name';
+    nameDiv.textContent = actor.name;
+    
+    // ID
+    const idDiv = document.createElement('div');
+    idDiv.className = 'actor-id';
+    idDiv.textContent = `#${actor.actorNum}`;
+    
+    cell.appendChild(spriteContainer);
+    cell.appendChild(nameDiv);
+    cell.appendChild(idDiv);
+    
+    // Add click handler
+    cell.addEventListener('click', () => {
+        showActorDetail(actor);
+    });
+
+    return cell;
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // ██╗   ██╗██╗    ███╗   ███╗ █████╗ ███╗   ██╗ █████╗  ██████╗ ███████╗███╗   ███╗███████╗███╗   ██╗████████╗
 // ██║   ██║██║    ████╗ ████║██╔══██╗████╗  ██║██╔══██╗██╔════╝ ██╔════╝████╗ ████║██╔════╝████╗  ██║╚══██╔══╝
@@ -365,19 +678,6 @@ function initControls() {
                 <label><input type="checkbox" id="chk-sprites" checked> Sprites</label>
             </div>
 
-            <div class="view-toggles layer-toggles" style="display: none;">
-            <label>
-                <input type="radio" name="viewMode" value="uniform" checked> Grid
-            </label>
-            
-            <label>
-                <input type="radio" name="viewMode" value="tiered"> Bucket
-            </label>
-			
-			<label>
-				<input type="radio" name="viewMode" value="raw"> Raw
-			</label>
-        </div>
         `;
         container.appendChild(div);
         
@@ -388,22 +688,32 @@ function initControls() {
         document.getElementById('zoom-4x').onclick = () => viewport.zoom = 4.0;
         document.getElementById('chk-map').onchange = (e) => appState.layers.showMap = e.target.checked;
         document.getElementById('chk-sprites').onchange = (e) => appState.layers.showSprites = e.target.checked;
-
-        // View Mode Handler
-        document.querySelectorAll('input[name="viewMode"]').forEach(radio => {
+              
+        // Actor View Mode Handler
+        document.querySelectorAll('input[name="actorView"]').forEach(radio => {
             radio.addEventListener('change', async (e) => {
-                if (appState.assetType === 'actors') {
-                    console.log("Switching view mode:", e.target.value);
-                    const result = await appState.actorManager.generateSpriteSheet(e.target.value);
-                    
-                    if (result && result.image) {
-                        appState.currentAsset = result;
-                        handleFitZoom(); 
-                    }
-                }
+                appState.actorViewMode = e.target.value;
+                await renderActorView();
+            });
+        });
+
+        // Actor Scale Handler
+        document.querySelectorAll('input[name="actorScale"]').forEach(radio => {
+            radio.addEventListener('change', async (e) => {
+                appState.actorZoom = parseInt(e.target.value);
+                await renderActorView();
+            });
+        });
+
+        // Actor Sort Mode Handler
+        document.querySelectorAll('input[name="actorSort"]').forEach(radio => {
+            radio.addEventListener('change', async (e) => {
+                appState.actorSortMode = e.target.value;
+                await renderActorView();
             });
         });
     }
+
 
     // ─────────────────────────────────────────────────────────────────────────
     // MUSIC CONTROLS (Bottom-Center Panel)
@@ -547,6 +857,8 @@ async function loadLevel(filename) {
 		// Show Zoom controls
         toggleControls('zoom');
 
+        restoreDefaultZoomPanel();
+
         appState.viewMode = 'map';
         appState.assetType = null;
 		appState.currentMap = mapParser.parse(levelData);
@@ -640,6 +952,14 @@ async function loadAsset(filename) {
                 updateMusicUI(currentTrackName, false); 
             }
             
+            restoreDefaultZoomPanel();
+
+            // Hide actor controls panel
+            const actorControlsPanel = document.getElementById('actor-controls-section');
+            if (actorControlsPanel) {
+                actorControlsPanel.style.display = 'none';
+            }
+
             // Play the sound effect
             logMessage(`▶️ Playing: ${filename}`, 'success');
 			updateHeaderStatus(`🔊 Playing Sound: <strong>${filename}</strong>`, true);
@@ -669,6 +989,14 @@ async function loadAsset(filename) {
                 
 				updateHeaderStatus(`🎮 Sound Board: <strong>${sounds.length} Sounds</strong>`);
 				
+                restoreDefaultZoomPanel();
+
+                // Hide actor controls panel
+                const actorControlsPanel = document.getElementById('actor-controls-section');
+                if (actorControlsPanel) {
+                    actorControlsPanel.style.display = 'none';
+                }
+
                 // Update UI: Hides Zoom (no visuals), Keeps Music (if playing)
                 updateUIState(); 
             } else {
@@ -692,11 +1020,19 @@ async function loadAsset(filename) {
 			logMessage(`Displaying Image: ${filename}`, 'success');
 			updateHeaderStatus(`🖼️ Viewing Image: <strong>${filename}</strong>`);
 			
+            restoreDefaultZoomPanel();
+
 			// --- Reset View to Canvas ---
 			resetMainView();
 		
 			// Show Zoom controls
 			toggleControls('zoom');
+
+            // Hide actor controls panel
+            const actorControlsPanel = document.getElementById('actor-controls-section');
+            if (actorControlsPanel) {
+                actorControlsPanel.style.display = 'none';
+            }
 			
             updateUIState();
             return;
@@ -709,25 +1045,33 @@ async function loadAsset(filename) {
 
         if (upper === "ACTORS.MNI") {
             appState.viewMode = 'asset';
-            appState.assetType = 'actors'; // <--- NEW FLAG
-
-            // Reset radio button UI to 'uniform' so it matches the data
-            const radio = document.querySelector('input[name="viewMode"][value="uniform"]');
-            if(radio) radio.checked = true;
-
-            // Generate with default 'uniform' mode
-            const result = await actorManager.generateSpriteSheet('uniform');
-            if (result && result.image) {
-                appState.currentAsset = result; 
-                handleFitZoom();
+            appState.assetType = 'actors';
+            appState.actorViewMode = 'dynamic';
+            appState.actorSortMode = 'default';
+            appState.actorZoom = 1;
+            
+            const actorControlsPanel = document.getElementById('actor-controls-section');
+            if (actorControlsPanel) {
+                actorControlsPanel.style.display = 'block';
+                actorControlsPanel.style.flex = '0 0 auto';
+                actorControlsPanel.classList.remove('collapsed');
             }
+            
+            // Reset radio buttons
+            const dynamicRadio = document.querySelector('input[name="actorView"][value="dynamic"]');
+            if (dynamicRadio) dynamicRadio.checked = true;
+            
+            const defaultSortRadio = document.querySelector('input[name="actorSort"][value="default"]');
+            if (defaultSortRadio) defaultSortRadio.checked = true;
+            
             logMessage(`Displaying Sprites: ${filename}`, 'success');
             updateHeaderStatus(`👾 Actor Sprites: <strong>${actorManager.getActorCount()} Types</strong>`);
             
             resetMainView();
             toggleControls('zoom');
-            updateUIState();
-        } 
+            
+            await renderActorView();
+        }
         
         // ─────────────────────────────────────────────────────────────────────
         // CZONE TILESET HANDLER
@@ -752,6 +1096,14 @@ async function loadAsset(filename) {
 			// Show Zoom controls
 			toggleControls('zoom');
 			
+            restoreDefaultZoomPanel();
+
+            // Hide actor controls panel
+            const actorControlsPanel = document.getElementById('actor-controls-section');
+            if (actorControlsPanel) {
+                actorControlsPanel.style.display = 'none';
+            }
+
 			updateUIState();
         }
         
@@ -781,6 +1133,14 @@ async function loadAsset(filename) {
 			// Show Zoom controls
 			toggleControls('zoom');
 			
+            restoreDefaultZoomPanel();
+
+            // Hide actor controls panel
+            const actorControlsPanel = document.getElementById('actor-controls-section');
+            if (actorControlsPanel) {
+                actorControlsPanel.style.display = 'none';
+            }
+
 			updateUIState();
 		}
 		
@@ -820,6 +1180,9 @@ async function loadAsset(filename) {
             // Hide zoom controls for palette view
             toggleControls('none');
             updateUIState();
+
+            restoreDefaultZoomPanel();
+
         } else {
             logMessage(`Invalid palette file: ${filename} (Size mismatch)`, 'error');
         }
