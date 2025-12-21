@@ -171,12 +171,43 @@ header {
 /* COLLAPSED STATE LOGIC */
 /* When collapsed, override inline flex styles to shrink, and hide content */
 .sidebar-section.collapsed {
-    flex: 0 0 auto !important; 
+    flex: 0 0 auto !important; /* CORRECT - like DN1 */
 }
 
-.sidebar-section.collapsed .scroll-box,
+/* UPDATED: Only hide the scroll-box with display: none */
+.sidebar-section.collapsed .scroll-box {
+    display: none !important;
+}
+
+/* NEW: Animate the control box smoothly */
+.control-box {
+    /* Set a max-height large enough to fit your controls */
+    max-height: 300px;
+    opacity: 1;
+    overflow: hidden; /* Essential for height animation */
+    
+    /* Animate height, opacity, and spacing */
+    transition: max-height 0.3s ease, 
+                opacity 0.3s ease, 
+                padding 0.3s ease, 
+                border-color 0.3s ease;
+}
+
+/* The Collapsed State */
 .sidebar-section.collapsed .control-box {
-    display: none;
+    /* Force it to remain technically "visible" so it can animate */
+    display: flex !important; 
+    
+    /* Crush it down to zero */
+    max-height: 0;
+    opacity: 0;
+    
+    /* Remove padding and border so it vanishes completely */
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-top: 0;
+    margin-bottom: 0;    
+    border-color: transparent;
 }
 
 .sidebar-section.collapsed .collapse-arrow {
@@ -501,6 +532,7 @@ details[open] summary {
     position: relative; 
     overflow: hidden;
     cursor: grab;
+    position: relative;
     
     /* Subtle grid pattern */
     background-image: radial-gradient(#1a1a1a 1px, transparent 1px);
@@ -721,7 +753,7 @@ details[open] summary {
     width: 100%;
     height: 100%;
     overflow-y: auto;
-    padding: 40px;
+    padding: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1148,4 +1180,333 @@ details[open] summary {
 .sound-card.playing {
     border-color: var(--duke-yellow);
     background: rgba(255, 204, 0, 0.05);
+}
+
+/* ========================================================================== */
+/* DYNAMIC ACTOR BROWSER                                                      */
+/* ========================================================================== */
+
+/* -------------------------------------------------------------------------- */
+/* Actor Grid Container                                                       */
+/* -------------------------------------------------------------------------- */
+
+.actor-grid {
+    display: grid;
+    gap: 8px;
+    padding: 15px;
+    /* background: var(--bg-app); */
+    height: 100%;
+    overflow-y: auto;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Type Section Headers                                                       */
+/* -------------------------------------------------------------------------- */
+
+.type-header {
+    grid-column: 1 / -1;
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 15px;
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+
+.type-header h3 {
+    color: var(--accent);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+    margin: 0;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Actor Cells                                                                */
+/* -------------------------------------------------------------------------- */
+
+.actor-cell {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.actor-cell:hover {
+    transform: scale(1.03);
+    border-color: var(--accent);
+    box-shadow: 0 0 15px rgba(205, 127, 50, 0.3);
+}
+
+.actor-sprite {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin-bottom: 5px;
+    overflow: hidden;
+}
+
+.actor-sprite canvas {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    position: absolute;
+}
+
+.actor-sprite.overflow::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle, transparent 40%, var(--bg-panel) 100%);
+    pointer-events: none;
+}
+
+.actor-name {
+    font-family: 'Silkscreen', monospace;
+    font-size: 8px;
+    color: var(--text-muted);
+    text-align: center;
+    word-break: break-word;
+    line-height: 1.2;
+    max-height: 20px;
+    overflow: hidden;
+}
+
+.actor-id {
+    font-family: 'Silkscreen', monospace;
+    font-size: 7px;
+    color: #6b5555;
+    margin-top: 2px;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Actor Controls Panel Styling                                               */
+/* -------------------------------------------------------------------------- */
+
+#actor-controls-section .control-box {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px;
+    margin-top: 8px;
+    background: var(--bg-input);
+    border-radius: 6px;
+}
+
+/* Top row with two columns */
+.actor-controls-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.actor-control-column {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* Bottom row with scale controls */
+.actor-scale-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+}
+
+.scale-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+#actor-controls-section h4 {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0 0 6px 0;
+}
+
+#actor-controls-section label {
+    font-size: 0.85rem;
+    color: var(--text-main);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: color 0.2s;
+    padding: 2px 0;
+}
+
+#actor-controls-section label:hover {
+    color: var(--accent);
+}
+
+#actor-controls-section input[type="radio"] {
+    cursor: pointer;
+}
+
+/* Disabled state for sort and scale options in Raw mode */
+#actor-controls-section label.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+#actor-controls-section label.disabled input {
+    cursor: not-allowed;
+}
+
+/* ========================================================================== */
+/* ACTOR DETAIL OVERLAY                                                       */
+/* ========================================================================== */
+
+.actor-detail-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.50);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    padding: 20px;
+    backdrop-filter: blur(4px);
+}
+
+.actor-detail-overlay.active {
+    display: flex;
+}
+
+.actor-detail-panel {
+    background: var(--bg-panel);
+    border: 2px solid var(--accent);
+    border-radius: var(--radius);
+    max-width: 95vw;
+    width: fit-content;
+    min-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 30px;
+    position: relative;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+}
+
+.detail-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #ef4444;
+    color: white;
+    border: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 16px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    transition: all 0.2s;
+}
+
+.detail-close:hover {
+    background: #dc2626;
+}
+
+.detail-header {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 30px;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+    align-items: start;
+}
+
+.detail-metaframe {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    min-height: 200px;
+    min-width: 200px;
+}
+
+.detail-metaframe canvas {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+
+.detail-info {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.detail-info h2 {
+    color: var(--duke-yellow);
+    font-size: 28px;
+    margin-bottom: 10px;
+    text-shadow: 0 0 10px rgba(255, 204, 0, 0.2);
+}
+
+.detail-info-row {
+    display: flex;
+    gap: 10px;
+    font-size: 14px;
+}
+
+.detail-info-label {
+    color: var(--text-muted);
+    min-width: 100px;
+}
+
+.detail-info-value {
+    color: var(--accent);
+    font-weight: bold;
+    font-family: monospace;
+}
+
+.detail-frames {
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.detail-frames h3 {
+    color: var(--accent);
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.75rem;
+}
+
+.detail-frames-container {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.detail-frames-container canvas {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    background: var(--bg-panel);
+    padding: 5px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
 }

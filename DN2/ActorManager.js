@@ -216,185 +216,102 @@ export class ActorManager {
         return result;
     }
 
+    /**
+     * Sort actors based on the specified mode
+     */
+    _sortActors(actors, sortMode) {
+        const sorted = [...actors]; // Make a copy
+        
+        switch(sortMode) {
+            case 'name':
+                return sorted.sort((a, b) => a.name.localeCompare(b.name));
+            
+            case 'type':
+                return sorted.sort((a, b) => {
+                    const typeA = a.type || 'unknown';
+                    const typeB = b.type || 'unknown';
+                    if (typeA === typeB) {
+                        return a.name.localeCompare(b.name);
+                    }
+                    return typeA.localeCompare(typeB);
+                });
+            
+            case 'size':
+                return sorted.sort((a, b) => {
+                    // Calculate sprite area based on first frame
+                    const sizeA = a.frames[0] ? (a.frames[0].widthTiles * a.frames[0].heightTiles) : 0;
+                    const sizeB = b.frames[0] ? (b.frames[0].widthTiles * b.frames[0].heightTiles) : 0;
+                    return sizeB - sizeA; // Largest first
+                });
+            
+            default: // 'default' - by actor number
+                return sorted.sort((a, b) => a.actorNum - b.actorNum);
+        }
+    }
+
+    /**
+     * Generate dynamic view data (returns actor objects instead of canvas)
+     */
+    async generateDynamicView(sortMode = 'default', currentZoom = 1) {
+        if (!this.actorAtlas) return null;
+        
+        // Sort actors
+        const sortedActors = this._sortActors(this.actorAtlas, sortMode);
+        
+        // Build actor data array
+        const actors = [];
+        
+        for (const actor of sortedActors) {
+            const metaframeBmp = await this.getMetaframeBitmap(actor.actorNum);
+            
+            if (metaframeBmp) {
+                actors.push({
+                    actorNum: actor.actorNum,
+                    name: actor.name,
+                    type: actor.type || 'unknown',
+                    palette: actor.palette || 0,
+                    metaframe: metaframeBmp.bitmap,
+                    hotspotX: metaframeBmp.hotspotX,
+                    hotspotY: metaframeBmp.hotspotY
+                });
+            }
+        }
+        
+        return {
+            actors: actors,
+            sortMode: sortMode,
+            zoom: currentZoom
+        };
+    }
+
     // ─── GENERATORS ──────────────────────────────────────────────────────────
 
-    async generateSpriteSheet(viewMode = 'uniform') {
+    async generateSpriteSheet(viewMode = 'dynamic', sortMode = 'default', zoom = 1) {
+        // Dynamic view - return actor data for DOM rendering
+        if (viewMode === 'dynamic') {
+            return this.generateDynamicView(sortMode, zoom);
+        }
+        
+        // Raw view - return canvas as before
         if (viewMode === 'raw') {
-            return this.generateRawTileSheet(); 
+            return this.generateRawTileSheet();
         }
-
-        if (!this.graphicsData || !this.actorAtlas) return null;
-
-        const entries = [];
         
-        for (const actor of this.actorAtlas) {
-            const metaframeBmp = await this.getMetaframeBitmap(actor.actorNum);
-            if (metaframeBmp) {
-                entries.push({ 
-                    id: actor.actorNum, 
-                    bmp: metaframeBmp.bitmap,
-                    name: actor.name // Pass name to sheet generator
-                });
-            }
-        }
-
-        if (entries.length === 0) return null;
-
-        if (viewMode === 'tiered' || viewMode === 'metaframe') {
-            return this._generateTieredSheet(entries);
-        } else {
-            return this._generateUniformSheet(entries);
-        }
+        return null;
     }
-
-    async _generateUniformSheet(entries) {
-        let maxW = 0, maxH = 0;
-        entries.forEach(e => {
-            if (e.bmp.width > maxW) maxW = e.bmp.width;
-            if (e.bmp.height > maxH) maxH = e.bmp.height;
-        });
-
-        const padding = 10;
-        const cellSize = Math.max(maxW, maxH) + padding;
-        const targetRatio = 16 / 9;
-        
-        let cols = Math.ceil(Math.sqrt(entries.length * targetRatio));
-        if (cols < 1) cols = 1;
-        const rows = Math.ceil(entries.length / cols);
-        
-        const canvas = document.createElement('canvas');
-        canvas.width = cols * cellSize;
-        canvas.height = rows * cellSize;
-        const ctx = canvas.getContext('2d');
-        
-        ctx.fillStyle = "#1a1a1a";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        const layout = [];
-        for (let i = 0; i < entries.length; i++) {
-            const item = entries[i];
-            const col = i % cols;
-            const row = Math.floor(i / cols);
-            const x = col * cellSize;
-            const y = row * cellSize;
-            
-            ctx.strokeStyle = "#333";
-            ctx.strokeRect(x, y, cellSize, cellSize);
-            
-            const dx = x + (cellSize - item.bmp.width) / 2;
-            const dy = y + (cellSize - item.bmp.height) / 2;
-            ctx.drawImage(item.bmp, dx, dy);
-            
-            // FIX: Include name in layout
-            layout.push({ 
-                id: item.id, 
-                name: item.name, 
-                x, y, 
-                width: cellSize, 
-                height: cellSize 
-            });
-        }
-
-        return { image: await createImageBitmap(canvas), layout };
-    }
-
-    async _generateTieredSheet(entries) {
-        const buckets = {
-            small:  { items: [], maxDim: 32 },
-            medium: { items: [], maxDim: 96 },
-            large:  { items: [], maxDim: 9999 }
-        };
-
-        entries.forEach(e => {
-            const size = Math.max(e.bmp.width, e.bmp.height);
-            if (size <= buckets.small.maxDim) buckets.small.items.push(e);
-            else if (size <= buckets.medium.maxDim) buckets.medium.items.push(e);
-            else buckets.large.items.push(e);
-        });
-
-        const sections = [];
-        const padding = 10;
-        const sectionGap = 40;
-        const headerHeight = 30;
-        
-        let totalHeight = 0;
-        let maxWidth = 0;
-
-        for (const key of ['small', 'medium', 'large']) {
-            const bucket = buckets[key];
-            if (bucket.items.length === 0) continue;
-
-            let localMax = 0;
-            bucket.items.forEach(e => localMax = Math.max(localMax, e.bmp.width, e.bmp.height));
-            const cellSize = localMax + padding;
-
-            const cols = Math.ceil(Math.sqrt(bucket.items.length * (16/9)));
-            const rows = Math.ceil(bucket.items.length / cols);
-            
-            const sectionWidth = cols * cellSize;
-            const sectionHeight = rows * cellSize;
-
-            sections.push({
-                key, cols, cellSize, items: bucket.items,
-                width: sectionWidth, height: sectionHeight
-            });
-
-            if (sectionWidth > maxWidth) maxWidth = sectionWidth;
-            totalHeight += sectionHeight + sectionGap + headerHeight;
-        }
-
-        const canvas = document.createElement('canvas');
-        canvas.width = maxWidth;
-        canvas.height = totalHeight;
-        const ctx = canvas.getContext('2d');
-
-        ctx.fillStyle = "#1a1a1a";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        let currentY = 0;
-        const layout = [];
-
-        for (const section of sections) {
-            ctx.fillStyle = "#ffcc00";
-            ctx.font = "bold 16px sans-serif";
-            ctx.fillText(`${section.key.toUpperCase()} (${section.items.length})`, 10, currentY + 20);
-            currentY += headerHeight;
-
-            for (let i = 0; i < section.items.length; i++) {
-                const item = section.items[i];
-                const col = i % section.cols;
-                const row = Math.floor(i / section.cols);
-                const x = col * section.cellSize;
-                const y = currentY + (row * section.cellSize);
-                
-                ctx.strokeStyle = "#333";
-                ctx.strokeRect(x, y, section.cellSize, section.cellSize);
-                
-                const dx = x + (section.cellSize - item.bmp.width) / 2;
-                const dy = y + (section.cellSize - item.bmp.height) / 2;
-                ctx.drawImage(item.bmp, dx, dy);
-
-                // FIX: Include name in layout
-                layout.push({ 
-                    id: item.id, 
-                    name: item.name,
-                    x, y, 
-                    width: section.cellSize, 
-                    height: section.cellSize 
-                });
-            }
-            currentY += section.height + sectionGap;
-        }
-
-        return { image: await createImageBitmap(canvas), layout };
-    }
-
+    
+    
     async generateRawTileSheet(columns = 32) {
         if (!this.graphicsData) return null;
         
         const TILE_SIZE = 8;
         const BYTES_PER_TILE = 40; 
         
+        // --- SPLIT VIEW CONFIGURATION ---
+        const NUM_STRIPS = 5;       // Number of side-by-side pieces
+        const STRIP_GAP = 32;       // Pixel gap between pieces
+        // --------------------------------
+
         const OVERRIDES = [
             { start: 2179, end: 3276, offset: -16, palette: 0 },
             { start: 15335, end: 15910, palette: 4 }, 
@@ -404,11 +321,21 @@ export class ActorManager {
         ];
 
         const totalTiles = Math.floor(this.graphicsData.length / BYTES_PER_TILE);
-        const rows = Math.ceil(totalTiles / columns);
+        
+        // 1. Calculate Logical Dimensions (if it were one giant column)
+        const logicalTotalRows = Math.ceil(totalTiles / columns);
+        
+        // 2. Calculate Split Dimensions
+        // Divide the total rows by the number of strips to get height of one strip
+        const rowsPerStrip = Math.ceil(logicalTotalRows / NUM_STRIPS);
+        const stripPixelWidth = columns * TILE_SIZE;
 
         const canvas = document.createElement('canvas');
-        canvas.width = columns * TILE_SIZE;
-        canvas.height = rows * TILE_SIZE;
+        
+        // Calculate total canvas width: (Width * Count) + (Gap * (Count - 1))
+        canvas.width = (stripPixelWidth * NUM_STRIPS) + (STRIP_GAP * (NUM_STRIPS - 1));
+        canvas.height = rowsPerStrip * TILE_SIZE;
+        
         const ctx = canvas.getContext('2d');
 
         ctx.fillStyle = "#1a1a1a";
@@ -418,10 +345,25 @@ export class ActorManager {
         let currentByteOffset = 0;
 
         for (let i = 0; i < totalTiles; i++) {
-             const col = i % columns;
-             const row = Math.floor(i / columns);
-             const x = col * TILE_SIZE;
-             const y = row * TILE_SIZE;
+             // 1. Calculate "Logical" position (as if it were one long strip)
+             const logicalCol = i % columns;
+             const logicalRow = Math.floor(i / columns);
+
+             // 2. Map Logical position to Split Position
+             // Which of the 5 strips are we in?
+             const stripIndex = Math.floor(logicalRow / rowsPerStrip);
+             // Which row within that specific strip?
+             const rowInStrip = logicalRow % rowsPerStrip;
+
+             // Safety break if math slightly exceeds bounds
+             if (stripIndex >= NUM_STRIPS) break;
+
+             // 3. Calculate Final Pixel Coordinates
+             // X = (Strip Offset) + (Column Offset)
+             const x = (stripIndex * (stripPixelWidth + STRIP_GAP)) + (logicalCol * TILE_SIZE);
+             const y = rowInStrip * TILE_SIZE;
+
+             // --- DRAWING LOGIC (Unchanged, just uses new x/y) ---
 
              const startSegment = Math.floor(currentByteOffset / 65536);
              const endSegment = Math.floor((currentByteOffset + BYTES_PER_TILE - 1) / 65536);

@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Duke Nukem 2 Asset Viewer</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Silkscreen&display=swap" rel="stylesheet">
 </head>
 <body>
     <header>
@@ -55,6 +58,43 @@
                 </div>
             </div>
 
+            <!-- Actor Controls Panel (Hidden by default) -->
+            <div class="sidebar-section" id="actor-controls-section" style="display: none;">
+                <div class="collapsible-header">
+                    <span class="collapse-arrow"></span>
+                    <h3>Actor Controls</h3>
+                </div>
+                
+                <div class="control-box">
+                    <!-- Top Row: View Mode and Sort Order side-by-side -->
+                    <div class="actor-controls-row">
+                        <div class="actor-control-column">
+                            <h4>View Mode</h4>
+                            <label><input type="radio" name="actorView" value="dynamic" checked> Dynamic</label>
+                            <label><input type="radio" name="actorView" value="raw"> Raw</label>
+                        </div>
+                        
+                        <div class="actor-control-column">
+                            <h4>Sort Order</h4>
+                            <label id="sort-default"><input type="radio" name="actorSort" value="default" checked> Actor #</label>
+                            <label id="sort-name"><input type="radio" name="actorSort" value="name"> Alphabetical</label>
+                            <label id="sort-type"><input type="radio" name="actorSort" value="type"> Type</label>
+                            <label id="sort-size"><input type="radio" name="actorSort" value="size"> Size</label>
+                        </div>
+                    </div>
+                    
+                    <!-- Bottom Row: Actor Scale -->
+                    <div class="actor-scale-controls">
+                        <h4>Actor Scale</h4>
+                        <div class="scale-buttons">
+                            <label id="scale-1x"><input type="radio" name="actorScale" value="1" checked> 1x</label>
+                            <label id="scale-2x"><input type="radio" name="actorScale" value="2"> 2x</label>
+                            <label id="scale-4x"><input type="radio" name="actorScale" value="4"> 4x</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="sidebar-section" style="flex: 1;">
                 <div class="log-header">
                     <div class="collapsible-header">
@@ -71,11 +111,35 @@
         <main class="main-content">
             <canvas id="preview-canvas"></canvas>
             <div id="data-view-container" style="display: none;"></div>
+            
+            <div class="actor-detail-overlay" id="actor-detail-overlay">
+        <div class="actor-detail-panel">
+            <button class="detail-close" id="actor-detail-close">×</button>
+            
+            <div class="detail-header">
+                <div class="detail-metaframe" id="detail-metaframe">
+                    <!-- Metaframe rendered here -->
+                </div>
+                
+                <div class="detail-info" id="detail-info">
+                    <!-- Actor info here -->
+                </div>
+            </div>
+            
+            <div class="detail-frames">
+                <h3>All Frames</h3>
+                <div class="detail-frames-container" id="detail-frames">
+                    <!-- All frames rendered here -->
+                </div>
+            </div>
+        </div>
+    </div>
+        
         </main>
     </div>
 
     <div id="tooltip"></div>
-
+ 
     <script type="module" src="main.js"></script>
 </body>
 </html>
