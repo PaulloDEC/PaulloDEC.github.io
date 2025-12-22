@@ -80,7 +80,7 @@ export class UIManager {
 			else if (upper.startsWith('FONT') || upper.startsWith('ALF') || upper.startsWith('NUM') || upper.startsWith('BOXES') || upper.startsWith('MAIN') || upper.startsWith('CREDITS') || upper.startsWith('HIGHS') || upper.startsWith('HUD')) categories["User Interface"].push(f);
 			else if (upper.startsWith('TITLE') || upper.startsWith('LOGO') || upper.startsWith('RIGEL') || upper.startsWith('BONUS') || upper.startsWith('APOGEE') || upper.startsWith('GAMEOVER') || upper === 'BONUSSCN.MNI' || upper.startsWith('END') || upper === 'HINTS.MNI' || upper.startsWith('HY') || upper.startsWith('ITEMS') || upper.startsWith('KEYBOARD') || upper.startsWith('LOAD') || upper === 'MESSAGE.MNI' || (upper.startsWith('ORDER') && upper !== 'ORDERTXT.MNI') || upper.startsWith('PRIZES') || upper === 'STORY.MNI' || upper.startsWith('WEAPONS')) categories["Screens & Logos"].push(f);
 			else if (upper.endsWith('.IMF')) categories["Music"].push(f);
-			else if (upper === 'AUDIOHED.MNI' || upper === 'AUDIOT.MNI') categories["SFX (AdLib/PC Speaker)"].push(f);
+			else if (upper === 'AUDIOHED.MNI') categories["SFX (AdLib/PC Speaker)"].push(f);
 			else if (upper.startsWith('SB_') || upper.startsWith('INTRO')) categories["SFX (Digitised)"].push(f);
 			else if (upper.startsWith('DEMO')) categories["Demos"].push(f);
 			else if (upper === 'LCR.MNI' || upper.endsWith('.PAL')) categories["Palettes"].push(f);

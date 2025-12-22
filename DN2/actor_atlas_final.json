@@ -652,7 +652,7 @@
     "type": "player",
     "metaframe": {
       "hotspotX": 0,
-      "hotspotY": 0,
+      "hotspotY": 32,
       "layers": [
         {
           "frameIndex": 0,
@@ -946,7 +946,7 @@
     "type": "player",
     "metaframe": {
       "hotspotX": 0,
-      "hotspotY": 0,
+      "hotspotY": 32,
       "layers": [
         {
           "frameIndex": 0,
@@ -2685,7 +2685,7 @@
     "type": "hazard",
     "metaframe": {
       "hotspotX": 0,
-      "hotspotY": 0,
+      "hotspotY": 24,
       "layers": [
         {
           "frameIndex": 2,
@@ -3995,7 +3995,7 @@
     "type": "hazard",
     "metaframe": {
       "hotspotX": 1,
-      "hotspotY": -2,
+      "hotspotY": 56,
       "layers": [
         {
           "frameIndex": 2,
@@ -6271,7 +6271,7 @@
     "type": "hazard",
     "metaframe": {
       "hotspotX": 0,
-      "hotspotY": 0,
+      "hotspotY": 24,
       "layers": [
         {
           "frameIndex": 1,
@@ -6369,7 +6369,7 @@
     "type": "tech",
     "metaframe": {
       "hotspotX": 0,
-      "hotspotY": 0,
+      "hotspotY": 136,
       "layers": [
         {
           "frameIndex": 1,
@@ -6428,7 +6428,7 @@
     "type": "tech",
     "metaframe": {
       "hotspotX": 0,
-      "hotspotY": 0,
+      "hotspotY": 15,
       "layers": [
         {
           "frameIndex": 0,
@@ -7023,7 +7023,7 @@
         }
       ],
       "hotspotX": 0,
-      "hotspotY": 0
+      "hotspotY": 7
     }
   },
   {
@@ -7141,7 +7141,7 @@
     "palette": 0,
     "type": "enemy",
     "metaframe": {
-      "hotspotX": -2,
+      "hotspotX": 16,
       "hotspotY": 0,
       "layers": [
         {
@@ -8321,10 +8321,10 @@
     "type": "enemy",
     "metaframe": {
       "hotspotX": 0,
-      "hotspotY": 0,
+      "hotspotY": 32,
       "layers": [
         {
-          "frameIndex": 4,
+          "frameIndex": 2,
           "offsetX": 0,
           "offsetY": 0
         }
@@ -8468,7 +8468,7 @@
         }
       ],
       "hotspotX": 0,
-      "hotspotY": 0
+      "hotspotY": 16
     }
   },
   {
@@ -8759,7 +8759,18 @@
     "actorNum": 171,
     "palette": 0,
     "type": "enemy",
-    "metaframe": null
+    "metaframe": {
+  "hotspotX": 0,
+  "hotspotY": 32,
+  "sourceActorNum": 159,
+  "layers": [
+    {
+      "frameIndex": 8,
+      "offsetX": 0,
+      "offsetY": 0
+    }
+  ]
+}
   },
   {
     "name": "Merch_Sunglasses",
@@ -10532,7 +10543,18 @@
     "actorNum": 217,
     "palette": 0,
     "type": "enemy",
-    "metaframe": null
+    "metaframe": {
+  "hotspotX": 0,
+  "hotspotY": 32,
+  "sourceActorNum": 159,
+  "layers": [
+    {
+      "frameIndex": 13,
+      "offsetX": 0,
+      "offsetY": 0
+    }
+  ]
+}
   },
   {
     "name": "Super_Force_Field_R",
@@ -12145,7 +12167,7 @@
     "type": "enemy",
     "metaframe": {
       "hotspotX": 0,
-      "hotspotY": 0,
+      "hotspotY": 16,
       "layers": [
         {
           "frameIndex": 0,
@@ -12480,7 +12502,7 @@
     "type": "FX",
     "metaframe": {
       "hotspotX": 0,
-      "hotspotY": 0,
+      "hotspotY": 16,
       "layers": [
         {
           "frameIndex": 0,

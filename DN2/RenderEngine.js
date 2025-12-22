@@ -46,6 +46,11 @@ export class RenderEngine {
                 const name = meta ? meta.name : "Unknown Actor";
                 
                 // CONDITIONAL FORMATTING
+                let typeHtml = "";
+                if (meta && meta.type) {
+                    typeHtml = `Type: ${meta.type}<br>`;
+                }
+                
                 let locationHtml = "";
                 if (hit.type === 'map') {
                     locationHtml = `Map Pos: (${actor.x}, ${actor.y})<br>`;
@@ -65,6 +70,7 @@ export class RenderEngine {
                         <span style="color:#38bdf8; font-weight:bold; display:block; margin-bottom:3px;">${name}</span>
                         <div style="color:#94a3b8; font-size:11px; line-height:1.5;">
                             ID: ${actor.id} (0x${hexId})<br>
+                            ${typeHtml}
                             ${locationHtml}
                             ${hotspotHtml}
                             ${extraInfo}
@@ -143,7 +149,7 @@ export class RenderEngine {
             if (this.isCached) {
                 if (state.layers.showMap) ctx.drawImage(this.cacheCanvas, 0, 0);
                 if (state.layers.showSprites && state.currentMap && state.currentMap.actors) {
-                    this.drawActors(ctx, state.currentMap, state.actorManager);
+                    this.drawActors(ctx, state.currentMap, state.actorManager, state.layers, state.difficulty);
                 }
             }
         } 
@@ -170,41 +176,73 @@ export class RenderEngine {
         }
     }
 
-    drawActors(ctx, map, actorManager) {
+    drawActors(ctx, map, actorManager, layers, difficulty = 0) {
         const TILE_SIZE = 8;
-        // Fallback to this.actorManager if not passed in via state
         const am = actorManager || this.actorManager;
 
+        // First pass: build a set of positions with meta-difficulty actors
+        const metaHardOnly = new Set();
+        const metaMediumHardOnly = new Set();
+        
+        for (const actor of map.actors) {
+            if (actor.id === 83) { // Meta_Hard_Only
+                metaHardOnly.add(`${actor.x},${actor.y}`);
+            } else if (actor.id === 82) { // Meta_Medium_Hard_Only
+                metaMediumHardOnly.add(`${actor.x},${actor.y}`);
+            }
+        }
+
+        // Helper function to check if an actor has a meta marker adjacent
+        const hasAdjacentMeta = (x, y, metaSet) => {
+            // Check all 8 surrounding positions
+            for (let dy = -1; dy <= 1; dy++) {
+                for (let dx = -1; dx <= 1; dx++) {
+                    if (dx === 0 && dy === 0) continue; // Skip the actor's own position
+                    if (metaSet.has(`${x + dx},${y + dy}`)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        };
+
+        // Second pass: draw actors with difficulty filtering
         for (const actor of map.actors) {
             if (actor.id === 0) continue;
             
-            // Use manager to get sprite (Directly or fallback)
-            const sprite = am ? am.getSpriteSync(actor.id) : null;
+            // Get actor metadata to check type
+            const meta = am ? am.getActorMetadata(actor.id) : null;
+            const actorType = meta ? meta.type : null;
+            
+            // Never draw meta actors themselves
+            if (actorType === 'meta') continue;
+            
+            // Check difficulty filtering
+            const hasHardOnly = hasAdjacentMeta(actor.x, actor.y, metaHardOnly);
+            const hasMediumHardOnly = hasAdjacentMeta(actor.x, actor.y, metaMediumHardOnly);
+            
+            if (hasHardOnly && difficulty !== 2) continue; // Only show on Hard
+            if (hasMediumHardOnly && difficulty === 0) continue; // Hide on Easy
+            
+            // Filter by type based on layer settings
+            if (layers) {
+                if (actorType === 'player' && !layers.showPlayer) continue;
+                if (actorType === 'enemy' && !layers.showEnemies) continue;
+                if (actorType === 'hazard' && !layers.showHazards) continue;
+                if (actorType === 'bonus' && !layers.showBonuses) continue;
+                if (actorType === 'powerup' && !layers.showPowerups) continue;
+                if (actorType === 'keyitem' && !layers.showKeys) continue;
+                if (actorType === 'tech' && !layers.showTech) continue;
+            }
+            
+            const sprite = am ? am.getMetaframeSync(actor.id) : null;
             
             if (sprite) {
                 const ax = actor.x * TILE_SIZE;
                 const ay = actor.y * TILE_SIZE;
                 
-                let dx = ax; 
-                let dy = ay;
-                
-                if (sprite.hotspotX !== 0 || sprite.hotspotY !== 0) {
-                    dx -= sprite.hotspotX;
-                    dy -= sprite.hotspotY;
-                } else {
-                    // UPDATED: Use actorManager metadata for alignment checks
-                    // instead of SpriteDefinitions name checks
-                    const meta = am ? am.getActorMetadata(actor.id) : null;
-                    const name = meta ? meta.name : "";
-
-                    // Re-implement the special alignment logic using Atlas names
-                    if (!name.includes("CEILING") && !name.includes("TOP")) {
-                        dy = (actor.y + 1) * 8 - sprite.bitmap.height;
-                    }
-                    if (name.includes("TURRET")) {
-                        dx = (actor.x * 8) + 4 - (sprite.bitmap.width / 2);
-                    }
-                }
+                const dx = ax - sprite.hotspotX;
+                const dy = ay - sprite.hotspotY;
 
                 ctx.drawImage(sprite.bitmap, dx, dy);
                 
@@ -218,7 +256,7 @@ export class RenderEngine {
                     height: sprite.bitmap.height
                 });
             } else if (am) {
-                am.requestSprite(actor.id);
+                am.requestMetaframe(actor.id);
             }
         }
     }

@@ -144,9 +144,9 @@ header {
     overflow: hidden;
 }
 
-/* -------------------------------------------------------------------------- */
-/* Sidebar                                                                    */
-/* -------------------------------------------------------------------------- */
+/* ========================================================================== */
+/* SIDEBAR & COLLAPSIBLE SYSTEM (REFINED)                                     */
+/* ========================================================================== */
 
 .sidebar {
     width: 320px;
@@ -164,62 +164,72 @@ header {
 .sidebar-section {
     display: flex;
     flex-direction: column;
-    min-height: 0; /* Allow flex children to shrink */
-    transition: flex 0.3s ease;
+    min-height: 0; /* Important for nested flex scrolling */
+    transition: flex 0.3s ease; /* Smooth growth when neighbor hides */
 }
 
-/* COLLAPSED STATE LOGIC */
-/* When collapsed, override inline flex styles to shrink, and hide content */
+/* FLEX WEIGHT UTILITIES */
+.sidebar-section[data-flex="0"] { flex: 0 0 auto; } /* Rigid panels */
+.sidebar-section[data-flex="1"] { flex: 1; }        /* Standard flexible */
+.sidebar-section[data-flex="2"] { flex: 2; }        /* Priority flexible */
+
+/* COLLAPSED STATE OVERRIDE */
+/* When collapsed, ANY panel (even flex-2) must shrink to fit only its header.
+   We use !important to strictly override the [data-flex] rules above. */
 .sidebar-section.collapsed {
-    flex: 0 0 auto !important; /* CORRECT - like DN1 */
+    flex: 0 0 auto !important; 
 }
 
-/* UPDATED: Only hide the scroll-box with display: none */
-.sidebar-section.collapsed .scroll-box {
+/* VISIBILITY UTILITIES */
+.sidebar-section.hidden {
     display: none !important;
 }
 
-/* NEW: Animate the control box smoothly */
-.control-box {
-    /* Set a max-height large enough to fit your controls */
-    max-height: 300px;
-    opacity: 1;
-    overflow: hidden; /* Essential for height animation */
+/* THE ANIMATION MAGIC: CSS GRID TRANSITION */
+.collapsible-wrapper {
+    /* KEY FIX: Grow to fill the sidebar-section's available flex space */
+    flex: 1;
+    min-height: 0; /* Vital for scrollbars to work inside flex children */
     
-    /* Animate height, opacity, and spacing */
-    transition: max-height 0.3s ease, 
-                opacity 0.3s ease, 
-                padding 0.3s ease, 
-                border-color 0.3s ease;
+    display: grid;
+    grid-template-rows: 1fr;
+    transition: grid-template-rows 0.3s ease-out;
 }
 
-/* The Collapsed State */
-.sidebar-section.collapsed .control-box {
-    /* Force it to remain technically "visible" so it can animate */
-    display: flex !important; 
-    
-    /* Crush it down to zero */
-    max-height: 0;
-    opacity: 0;
-    
-    /* Remove padding and border so it vanishes completely */
-    padding-top: 0;
-    padding-bottom: 0;
-    margin-top: 0;
-    margin-bottom: 0;    
-    border-color: transparent;
+/* Prevent wrapper expansion on rigid panels (like Actor Controls) */
+.sidebar-section[data-flex="0"] .collapsible-wrapper {
+    flex: 0 0 auto;
 }
 
+.sidebar-section.collapsed .collapsible-wrapper {
+    grid-template-rows: 0fr;
+    /* KEY FIX: When collapsed, stop the wrapper from pushing bounds */
+    flex: 0; 
+}
+
+/* The inner container handles the overflow hiding during animation */
+.section-content {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* Ensure it fills the grid cell */
+}
+
+/* Arrow Rotation */
 .sidebar-section.collapsed .collapse-arrow {
     transform: rotate(-90deg);
 }
 
-/* Header Interactions */
+/* ========================================================================== */
+/* HEADER STYLES                                                              */
+/* ========================================================================== */
+
 .collapsible-header {
     display: flex;
     align-items: center;
     cursor: pointer;
     user-select: none;
+    padding-bottom: 8px; /* Give some breathing room */
 }
 
 .collapsible-header:hover h3 {
@@ -230,7 +240,6 @@ header {
     border-top-color: var(--text-main);
 }
 
-/* Triangle Arrow using CSS borders */
 .collapse-arrow {
     display: inline-block;
     width: 0;
@@ -242,52 +251,95 @@ header {
     transition: transform 0.2s, border-color 0.2s;
 }
 
-/* Header row for sections (Assets title + Filters) */
-.section-header-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px; /* Standard spacing above the list */
-}
-
-.episode-filters {
-    display: flex;
-    gap: 8px; /* Reduced from 12px */
-    align-items: center;
-}
-
-.episode-filters label {
-    font-size: 0.7rem; /* Reduced from 0.8rem */
-    color: var(--text-main);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 4px; /* Reduced gap between checkbox and text */
-    white-space: nowrap; /* Prevent label wrapping */
-}
-
-.episode-filters input[type="checkbox"] {
-    width: 14px; /* Slightly smaller checkbox */
-    height: 14px;
-}
-
+/* Headers with extra elements (checkboxes, canvas) */
+.section-header-row,
 .log-header {
     display: flex;
     justify-content: space-between;
+    align-items: flex-start; /* Align to top in case of wrapping */
+    min-height: 24px;
+}
+
+/* ========================================================================== */
+/* EPISODE FILTERS (Final Polish)                                             */
+/* ========================================================================== */
+
+.episode-filters {
+    display: flex;
     align-items: center;
-    margin-bottom: 8px;
+    gap: 12px;
+    /* FIX 2: Specific spacing from header, not pushed to far right */
+    margin-left: 20px; 
+    /* FIX 1: Ensure it sits on the same baseline as the text */
+    height: 100%;
 }
 
-#debug-canvas {
+.episode-filters label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    /* FIX 3: Text labels are now white */
+    color: var(--text-main); 
+    margin: 0;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.episode-filters label:hover {
+    color: var(--accent);
+}
+
+/* FIX 4: Checkboxes are a little too big */
+.episode-filters input[type="checkbox"] {
+    width: 12px;
+    height: 12px;
+    margin: 0; /* Remove default margins to ensure perfect centering */
+    border-radius: 2px; /* Optional: slightly tighter radius for small boxes */
+}
+
+/* Ensure the parent row aligns everything perfectly center */
+.section-header-row {
+    display: flex;
+    align-items: center; 
+    justify-content: flex-start; /* Aligns items to the left */
+    min-height: 24px;
+    margin-bottom: 8px; /* Restores the spacing below the header we removed from the individual h3 */
+}
+
+/* Remove padding from the header when it is in a row with other items 
+   to prevents 'padding-bottom' from throwing off vertical alignment */
+.section-header-row .collapsible-header {
+    padding-bottom: 0;
+}
+
+/* ========================================================================== */
+/* CONTENT CONTAINERS                                                         */
+/* ========================================================================== */
+
+/* The Scroll Box (Assets list, Log) */
+/* Now simply fills its parent section-content */
+.scroll-box {
+    background: var(--bg-input);
     border: 1px solid var(--border);
-    border-radius: 2px;
-    background: #000;
-    cursor: pointer; /* <--- Add this to indicate interactivity */
-    transition: transform 0.1s;
+    border-radius: var(--radius);
+    overflow-y: auto;
+    flex: 1; /* Fill the section-content */
+    padding: 10px;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 0.8rem;
+    height: 100%;
 }
 
-#debug-canvas:active {
-    transform: scale(0.95);
+/* The Control Box (Actor Controls) */
+.control-box {
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    gap: 12px;
 }
 
 /* ========================================================================== */
@@ -1364,6 +1416,17 @@ details[open] summary {
     cursor: not-allowed;
 }
 
+/* Disabled state for layer checkboxes */
+#level-controls-section label.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+#level-controls-section label.disabled input {
+    cursor: not-allowed;
+}
+
 /* ========================================================================== */
 /* ACTOR DETAIL OVERLAY                                                       */
 /* ========================================================================== */
@@ -1509,4 +1572,66 @@ details[open] summary {
     padding: 5px;
     border-radius: 4px;
     border: 1px solid var(--border);
+}
+
+/* ========================================================================== */
+/* LEVEL CONTROLS PANEL                                                       */
+/* ========================================================================== */
+
+/* Groups inside the panel (Difficulty, Visibility) */
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-bottom: 4px;
+}
+
+/* Headings (Matches .actor-control-column h4) */
+.control-group-label {
+    margin: 0;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+    font-weight: bold;
+}
+
+/* Radio Button Row (Difficulty) */
+.radio-row {
+    display: flex;
+    align-items: center;
+    gap: 16px; /* Space between Easy/Medium/Hard */
+}
+
+/* Checkbox Grid (Visibility Layers) */
+.checkbox-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Two equal columns */
+    gap: 8px 12px; /* 8px vertical gap, 12px horizontal gap */
+}
+
+/* Label Styling (Matches .actor-controls-row label) */
+.radio-row label,
+.checkbox-grid label {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Space between box and text */
+    font-size: 0.8rem;
+    color: var(--text-main);
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.2s;
+}
+
+.radio-row label:hover,
+.checkbox-grid label:hover {
+    color: var(--accent);
+}
+
+/* Input styling tweaks */
+.radio-row input[type="radio"],
+.checkbox-grid input[type="checkbox"] {
+    margin: 0;
+    cursor: pointer;
+    accent-color: var(--accent); /* Uses your theme's orange color */
 }

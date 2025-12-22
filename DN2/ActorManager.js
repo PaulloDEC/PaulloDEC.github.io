@@ -170,10 +170,14 @@ export class ActorManager {
         }
 
         const metaframe = actor.metaframe;
+        
+        // Determine which actor to pull frames from
+        const sourceActorNum = metaframe.sourceActorNum !== undefined ? metaframe.sourceActorNum : actorNum;
+        
         const layerBitmaps = [];
         
         for (const layer of metaframe.layers) {
-            const frameBmp = await this.getSpriteBitmapDirect(actorNum, layer.frameIndex);
+            const frameBmp = await this.getSpriteBitmapDirect(sourceActorNum, layer.frameIndex);
             if (frameBmp) {
                 layerBitmaps.push({
                     bitmap: frameBmp.bitmap,
@@ -413,6 +417,14 @@ export class ActorManager {
         return this.spriteCache.get(cacheKey) || null;
     }
 
+    getMetaframeSync(actorNum) {
+        return this.metaframeCache.get(actorNum) || null;
+    }
+
+    requestMetaframe(actorNum) {
+        this.getMetaframeBitmap(actorNum);
+    }
+
     getActorForLevel(actorNum) {
         const actor = this.actorAtlas?.find(a => a.actorNum === actorNum);
         return {
@@ -426,3 +438,4 @@ export class ActorManager {
         };
     }
 }
+

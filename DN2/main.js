@@ -99,19 +99,19 @@ function updateHeaderStatus(text, temporary = false) {
 }
 
 	// ─────────────────────────────────────────────────────────────────────────
-	// Collapsible Panel Handlers
-	// ─────────────────────────────────────────────────────────────────────────
-	// Enables collapse/expand functionality for sidebar panels
+    // Collapsible Panel Handlers (REFACTORED)
+    // ─────────────────────────────────────────────────────────────────────────
+    // Enables collapse/expand functionality using the CSS Grid method
 
-	document.querySelectorAll('.collapsible-header').forEach(header => {
-    header.addEventListener('click', () => {
-        const section = header.closest('.sidebar-section');
-        
-        if (section) {
-            section.classList.toggle('collapsed');
-        }
+    document.querySelectorAll('.collapsible-header').forEach(header => {
+        header.addEventListener('click', () => {
+            // Find the parent section (closest .sidebar-section)
+            const section = header.closest('.sidebar-section');
+            if (section) {
+                section.classList.toggle('collapsed');
+            }
+        });
     });
-});
 
 // Actor detail overlay close handlers
 document.getElementById('actor-detail-close')?.addEventListener('click', () => {
@@ -142,6 +142,42 @@ const paletteViewer = new PaletteViewer();
 logMessage('System Ready.', 'success');
 updateHeaderStatus('Waiting for Data...');
 
+// ─────────────────────────────────────────────────────────────────────────
+// SIDEBAR CONTEXT MANAGER (NEW)
+// ─────────────────────────────────────────────────────────────────────────
+// Centralizes logic for which sidebar panels are visible
+
+function updateSidebarContext(mode) {
+    const actorPanel = document.getElementById('actor-controls-section');
+    const levelPanel = document.getElementById('level-controls-section');
+    
+    // Safety check
+    if (!actorPanel || !levelPanel) return;
+
+    // 1. Reset: Hide ALL conditional panels first
+    actorPanel.classList.add('hidden');
+    levelPanel.classList.add('hidden');
+
+    // 2. Enable specific panel based on mode
+    switch (mode) {
+        case 'ACTORS':
+            actorPanel.classList.remove('hidden');
+            actorPanel.classList.remove('collapsed'); 
+            break;
+            
+        case 'MAP':
+            levelPanel.classList.remove('hidden');
+            levelPanel.classList.remove('collapsed');
+            break;
+            
+        case 'ASSET':
+        case 'SOUND':
+        default:
+            // Keep all hidden
+            break;
+    }
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // ███████╗████████╗ █████╗ ████████╗███████╗
 // ██╔════╝╚══██╔══╝██╔══██╗╚══██╔══╝██╔════╝
@@ -161,7 +197,18 @@ let appState = {
     maskedTiles: [],
     currentMap: null,
     actorManager: actorManager,
-    layers: { showMap: true, showSprites: true },
+    layers: { 
+        showMap: true, 
+        showSprites: true,
+        showPlayer: true,
+        showEnemies: true,
+        showHazards: true,
+        showBonuses: true,
+        showPowerups: true,
+        showKeys: true,
+        showTech: true
+    },
+    difficulty: 0,  // 0 = Easy, 1 = Medium, 2 = Hard
     useSolidBG: false,
     useGridFix: false,
     actorViewMode: 'dynamic',  // 'dynamic' or 'raw'
@@ -712,6 +759,100 @@ function initControls() {
                 await renderActorView();
             });
         });
+
+        // ─────────────────────────────────────────────────────────────────────
+        // LEVEL LAYER CONTROLS
+        // ─────────────────────────────────────────────────────────────────────
+        // Wire up terrain and actor visibility toggles
+        
+        const terrainCheckbox = document.getElementById('layer-terrain');
+        const actorsCheckbox = document.getElementById('layer-actors');
+        
+        // Type-specific checkboxes
+        const typeCheckboxes = [
+            document.getElementById('layer-player'),
+            document.getElementById('layer-enemies'),
+            document.getElementById('layer-hazards'),
+            document.getElementById('layer-bonuses'),
+            document.getElementById('layer-powerups'),
+            document.getElementById('layer-keys'),
+            document.getElementById('layer-tech')
+        ];
+        
+        // Terrain toggle
+        if (terrainCheckbox) {
+            terrainCheckbox.addEventListener('change', (e) => {
+                appState.layers.showMap = e.target.checked;
+            });
+        }
+        
+        // Actors master toggle
+        if (actorsCheckbox) {
+            actorsCheckbox.addEventListener('change', (e) => {
+                appState.layers.showSprites = e.target.checked;
+                
+                // Enable/disable type-specific checkboxes
+                typeCheckboxes.forEach(checkbox => {
+                    if (checkbox) {
+                        checkbox.disabled = !e.target.checked;
+                        checkbox.parentElement.classList.toggle('disabled', !e.target.checked);
+                    }
+                });
+            });
+        }
+        
+        // Type-specific toggles
+        if (document.getElementById('layer-player')) {
+            document.getElementById('layer-player').addEventListener('change', (e) => {
+                appState.layers.showPlayer = e.target.checked;
+            });
+        }
+        
+        if (document.getElementById('layer-enemies')) {
+            document.getElementById('layer-enemies').addEventListener('change', (e) => {
+                appState.layers.showEnemies = e.target.checked;
+            });
+        }
+        
+        if (document.getElementById('layer-hazards')) {
+            document.getElementById('layer-hazards').addEventListener('change', (e) => {
+                appState.layers.showHazards = e.target.checked;
+            });
+        }
+        
+        if (document.getElementById('layer-bonuses')) {
+            document.getElementById('layer-bonuses').addEventListener('change', (e) => {
+                appState.layers.showBonuses = e.target.checked;
+            });
+        }
+        
+        if (document.getElementById('layer-powerups')) {
+            document.getElementById('layer-powerups').addEventListener('change', (e) => {
+                appState.layers.showPowerups = e.target.checked;
+            });
+        }
+        
+        if (document.getElementById('layer-keys')) {
+            document.getElementById('layer-keys').addEventListener('change', (e) => {
+                appState.layers.showKeys = e.target.checked;
+            });
+        }
+        
+        if (document.getElementById('layer-tech')) {
+            document.getElementById('layer-tech').addEventListener('change', (e) => {
+                appState.layers.showTech = e.target.checked;
+            });
+        }
+
+        // ─────────────────────────────────────────────────────────────────────
+        // DIFFICULTY FILTER
+        // ─────────────────────────────────────────────────────────────────────
+        
+        document.querySelectorAll('input[name="difficulty"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                appState.difficulty = parseInt(e.target.value);
+            });
+        });
     }
 
 
@@ -859,6 +1000,9 @@ async function loadLevel(filename) {
 
         restoreDefaultZoomPanel();
 
+        // REFACTORED: Use Context Manager
+        updateSidebarContext('MAP');
+
         appState.viewMode = 'map';
         appState.assetType = null;
 		appState.currentMap = mapParser.parse(levelData);
@@ -954,11 +1098,8 @@ async function loadAsset(filename) {
             
             restoreDefaultZoomPanel();
 
-            // Hide actor controls panel
-            const actorControlsPanel = document.getElementById('actor-controls-section');
-            if (actorControlsPanel) {
-                actorControlsPanel.style.display = 'none';
-            }
+            // REFACTORED: Use Context Manager
+            updateSidebarContext('SOUND');
 
             // Play the sound effect
             logMessage(`▶️ Playing: ${filename}`, 'success');
@@ -991,11 +1132,8 @@ async function loadAsset(filename) {
 				
                 restoreDefaultZoomPanel();
 
-                // Hide actor controls panel
-                const actorControlsPanel = document.getElementById('actor-controls-section');
-                if (actorControlsPanel) {
-                    actorControlsPanel.style.display = 'none';
-                }
+                // REFACTORED: Use Context Manager
+                updateSidebarContext('SOUND');
 
                 // Update UI: Hides Zoom (no visuals), Keeps Music (if playing)
                 updateUIState(); 
@@ -1028,11 +1166,8 @@ async function loadAsset(filename) {
 			// Show Zoom controls
 			toggleControls('zoom');
 
-            // Hide actor controls panel
-            const actorControlsPanel = document.getElementById('actor-controls-section');
-            if (actorControlsPanel) {
-                actorControlsPanel.style.display = 'none';
-            }
+            // REFACTORED: Use Context Manager
+            updateSidebarContext('ASSET');
 			
             updateUIState();
             return;
@@ -1050,12 +1185,8 @@ async function loadAsset(filename) {
             appState.actorSortMode = 'default';
             appState.actorZoom = 1;
             
-            const actorControlsPanel = document.getElementById('actor-controls-section');
-            if (actorControlsPanel) {
-                actorControlsPanel.style.display = 'block';
-                actorControlsPanel.style.flex = '0 0 auto';
-                actorControlsPanel.classList.remove('collapsed');
-            }
+            // REFACTORED: Use Context Manager
+            updateSidebarContext('ACTORS');
             
             // Reset radio buttons
             const dynamicRadio = document.querySelector('input[name="actorView"][value="dynamic"]');
@@ -1098,11 +1229,8 @@ async function loadAsset(filename) {
 			
             restoreDefaultZoomPanel();
 
-            // Hide actor controls panel
-            const actorControlsPanel = document.getElementById('actor-controls-section');
-            if (actorControlsPanel) {
-                actorControlsPanel.style.display = 'none';
-            }
+            // REFACTORED: Use Context Manager
+            updateSidebarContext('ASSET');
 
 			updateUIState();
         }
@@ -1135,11 +1263,8 @@ async function loadAsset(filename) {
 			
             restoreDefaultZoomPanel();
 
-            // Hide actor controls panel
-            const actorControlsPanel = document.getElementById('actor-controls-section');
-            if (actorControlsPanel) {
-                actorControlsPanel.style.display = 'none';
-            }
+            // REFACTORED: Use Context Manager
+            updateSidebarContext('ASSET');
 
 			updateUIState();
 		}
@@ -1179,6 +1304,10 @@ async function loadAsset(filename) {
         
             // Hide zoom controls for palette view
             toggleControls('none');
+            
+            // REFACTORED: Use Context Manager
+            updateSidebarContext('PALETTE');
+            
             updateUIState();
 
             restoreDefaultZoomPanel();

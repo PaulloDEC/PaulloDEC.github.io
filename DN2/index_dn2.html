@@ -22,7 +22,7 @@
             <span class="header-sep">|</span>
 
             <input type="file" id="folder-input" accept=".cmp" style="display: none;" />
-			<input type="file" id="palette-input" accept="image/png" style="display: none;" />
+            <input type="file" id="palette-input" accept="image/png" style="display: none;" />
             
             <label for="folder-input" class="btn-file-select">Choose Files</label>
             
@@ -36,7 +36,7 @@
         
         <aside class="sidebar">
             
-            <div class="sidebar-section" style="flex: 2;">
+            <div class="sidebar-section" data-flex="2">
                 <div class="section-header-row">
                     <div class="collapsible-header">
                         <span class="collapse-arrow"></span>
@@ -47,55 +47,103 @@
                         <label title="Show Episode 1 Levels"><input type="checkbox" id="filter-ep1" checked> Ep 1</label>
                         <label title="Show Episode 2 Levels"><input type="checkbox" id="filter-ep2"> Ep 2</label>
                         <label title="Show Episode 3 Levels"><input type="checkbox" id="filter-ep3"> Ep 3</label>
-						<label title="Show Episode 4 Levels"><input type="checkbox" id="filter-ep4"> Ep 4</label>
+                        <label title="Show Episode 4 Levels"><input type="checkbox" id="filter-ep4"> Ep 4</label>
                     </div>
                 </div>
                 
-                <div id="asset-list" class="scroll-box">
-                    <div style="padding: 20px; color: var(--text-muted); text-align: center; font-style: italic;">
-                        Select game folder to begin
+                <div class="collapsible-wrapper">
+                    <div class="section-content">
+                        <div id="asset-list" class="scroll-box">
+                            <div style="padding: 20px; color: var(--text-muted); text-align: center; font-style: italic;">
+                                Select game folder to begin
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Actor Controls Panel (Hidden by default) -->
-            <div class="sidebar-section" id="actor-controls-section" style="display: none;">
+            <div class="sidebar-section hidden" id="actor-controls-section" data-flex="0">
                 <div class="collapsible-header">
                     <span class="collapse-arrow"></span>
                     <h3>Actor Controls</h3>
                 </div>
                 
-                <div class="control-box">
-                    <!-- Top Row: View Mode and Sort Order side-by-side -->
-                    <div class="actor-controls-row">
-                        <div class="actor-control-column">
-                            <h4>View Mode</h4>
-                            <label><input type="radio" name="actorView" value="dynamic" checked> Dynamic</label>
-                            <label><input type="radio" name="actorView" value="raw"> Raw</label>
-                        </div>
-                        
-                        <div class="actor-control-column">
-                            <h4>Sort Order</h4>
-                            <label id="sort-default"><input type="radio" name="actorSort" value="default" checked> Actor #</label>
-                            <label id="sort-name"><input type="radio" name="actorSort" value="name"> Alphabetical</label>
-                            <label id="sort-type"><input type="radio" name="actorSort" value="type"> Type</label>
-                            <label id="sort-size"><input type="radio" name="actorSort" value="size"> Size</label>
-                        </div>
-                    </div>
-                    
-                    <!-- Bottom Row: Actor Scale -->
-                    <div class="actor-scale-controls">
-                        <h4>Actor Scale</h4>
-                        <div class="scale-buttons">
-                            <label id="scale-1x"><input type="radio" name="actorScale" value="1" checked> 1x</label>
-                            <label id="scale-2x"><input type="radio" name="actorScale" value="2"> 2x</label>
-                            <label id="scale-4x"><input type="radio" name="actorScale" value="4"> 4x</label>
+                <div class="collapsible-wrapper">
+                    <div class="section-content">
+                        <div class="control-box">
+                            <div class="actor-controls-row">
+                                <div class="actor-control-column">
+                                    <h4>View Mode</h4>
+                                    <label><input type="radio" name="actorView" value="dynamic" checked> Dynamic</label>
+                                    <label><input type="radio" name="actorView" value="raw"> Raw</label>
+                                </div>
+                                
+                                <div class="actor-control-column">
+                                    <h4>Sort Order</h4>
+                                    <label id="sort-default"><input type="radio" name="actorSort" value="default" checked> Actor #</label>
+                                    <label id="sort-name"><input type="radio" name="actorSort" value="name"> Alphabetical</label>
+                                    <label id="sort-type"><input type="radio" name="actorSort" value="type"> Type</label>
+                                    <label id="sort-size"><input type="radio" name="actorSort" value="size"> Size</label>
+                                </div>
+                            </div>
+                            
+                            <div class="actor-scale-controls">
+                                <h4>Actor Scale</h4>
+                                <div class="scale-buttons">
+                                    <label id="scale-1x"><input type="radio" name="actorScale" value="1" checked> 1x</label>
+                                    <label id="scale-2x"><input type="radio" name="actorScale" value="2"> 2x</label>
+                                    <label id="scale-4x"><input type="radio" name="actorScale" value="4"> 4x</label>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="sidebar-section" style="flex: 1;">
+            <div class="sidebar-section hidden" id="level-controls-section" data-flex="0">
+                <div class="collapsible-header">
+                    <span class="collapse-arrow"></span>
+                    <h3>Level Controls</h3>
+                </div>
+                
+                <div class="collapsible-wrapper">
+                    <div class="section-content">
+                        <div class="control-box">
+                            
+                            <div class="control-group">
+                                <h4 class="control-group-label">Difficulty Filter</h4>
+                                <div class="radio-row">
+                                    <label><input type="radio" name="difficulty" value="0" checked> Easy</label>
+                                    <label><input type="radio" name="difficulty" value="1"> Medium</label>
+                                    <label><input type="radio" name="difficulty" value="2"> Hard</label>
+                                </div>
+                            </div>
+
+                            <div class="control-group">
+                                <h4 class="control-group-label">Visibility Layers</h4>
+                                <div class="checkbox-grid">
+                                    <label><input type="checkbox" id="layer-terrain" checked> Terrain</label>
+                                    <label><input type="checkbox" id="layer-actors" checked> Actors</label>
+                                    
+                                    <label><input type="checkbox" id="layer-player" checked> Player</label>
+                                    <label><input type="checkbox" id="layer-enemies" checked> Enemies</label>
+                                    
+                                    <label><input type="checkbox" id="layer-hazards" checked> Hazards</label>
+                                    <label><input type="checkbox" id="layer-bonuses" checked> Bonuses</label>
+                                    
+                                    <label><input type="checkbox" id="layer-powerups" checked> Powerups</label>
+                                    <label><input type="checkbox" id="layer-keys" checked> Key Items</label>
+                                    
+                                    <label><input type="checkbox" id="layer-tech" checked> Tech</label>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section" data-flex="1">
                 <div class="log-header">
                     <div class="collapsible-header">
                         <span class="collapse-arrow"></span>
@@ -103,7 +151,12 @@
                     </div>
                     <canvas id="debug-canvas" width="160" height="10"></canvas>
                 </div>
-                <div id="app-log" class="scroll-box"></div>
+                
+                <div class="collapsible-wrapper">
+                    <div class="section-content">
+                        <div id="app-log" class="scroll-box"></div>
+                    </div>
+                </div>
             </div>
 
         </aside>
@@ -113,28 +166,24 @@
             <div id="data-view-container" style="display: none;"></div>
             
             <div class="actor-detail-overlay" id="actor-detail-overlay">
-        <div class="actor-detail-panel">
-            <button class="detail-close" id="actor-detail-close">×</button>
-            
-            <div class="detail-header">
-                <div class="detail-metaframe" id="detail-metaframe">
-                    <!-- Metaframe rendered here -->
-                </div>
-                
-                <div class="detail-info" id="detail-info">
-                    <!-- Actor info here -->
+                <div class="actor-detail-panel">
+                    <button class="detail-close" id="actor-detail-close">×</button>
+                    
+                    <div class="detail-header">
+                        <div class="detail-metaframe" id="detail-metaframe">
+                            </div>
+                        
+                        <div class="detail-info" id="detail-info">
+                            </div>
+                    </div>
+                    
+                    <div class="detail-frames">
+                        <h3>All Frames</h3>
+                        <div class="detail-frames-container" id="detail-frames">
+                            </div>
+                    </div>
                 </div>
             </div>
-            
-            <div class="detail-frames">
-                <h3>All Frames</h3>
-                <div class="detail-frames-container" id="detail-frames">
-                    <!-- All frames rendered here -->
-                </div>
-            </div>
-        </div>
-    </div>
-        
         </main>
     </div>
 
