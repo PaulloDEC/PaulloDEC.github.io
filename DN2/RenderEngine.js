@@ -11,6 +11,8 @@ export class RenderEngine {
         this.tileSize = 8;
         this.actorHitboxes = [];
         this.lastViewport = null;
+        this.viewerConfig = null;
+        this.revealStates = new Map();
         this.setupTooltip();
     }
 
@@ -24,6 +26,7 @@ export class RenderEngine {
         }
         this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
         this.canvas.addEventListener('mouseleave', () => { this.tooltip.style.display = 'none'; });
+        this.canvas.addEventListener('click', (e) => this.handleCanvasClick(e));
     }
 
     handleMouseMove(e) {
@@ -101,6 +104,29 @@ export class RenderEngine {
         ).reverse();
     }
 
+    handleCanvasClick(e) {
+        const rect = this.canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        const clicked = this.findActorsAtScreenPos(mouseX, mouseY);
+        
+        if (clicked.length > 0) {
+            const hit = clicked[0]; // Get top-most actor
+            const meta = this.actorManager ? this.actorManager.getActorMetadata(hit.actor.id) : null;
+            const actorName = meta ? meta.name : null;
+            const revealConfig = this.viewerConfig?.revealActors?.[actorName];
+            
+            if (revealConfig) {
+                // This is a revealable actor - toggle its state
+                const revealKey = `${hit.actor.id}-${hit.actor.x}-${hit.actor.y}`;
+                const currentState = this.revealStates.get(revealKey) === true;
+                this.revealStates.set(revealKey, !currentState);
+                
+                console.log(`Toggled ${actorName} at (${hit.actor.x}, ${hit.actor.y}): ${currentState ? 'hidden' : 'revealed'}`);
+            }
+        }
+    }
+
     setPixelated() {
         this.ctx.imageSmoothingEnabled = false;
         this.ctx.mozImageSmoothingEnabled = false;
@@ -176,7 +202,7 @@ export class RenderEngine {
         }
     }
 
-    drawActors(ctx, map, actorManager, layers, difficulty = 0) {
+    async drawActors(ctx, map, actorManager, layers, difficulty = 0) {
         const TILE_SIZE = 8;
         const am = actorManager || this.actorManager;
 
@@ -235,7 +261,29 @@ export class RenderEngine {
                 if (actorType === 'tech' && !layers.showTech) continue;
             }
             
-            const sprite = am ? am.getMetaframeSync(actor.id) : null;
+            // Check if this actor needs special rendering
+            let sprite = null;
+            const actorName = meta ? meta.name : null;
+            
+            // Check for compound actor configuration
+            const compoundConfig = this.viewerConfig?.compoundActors?.[actorName];
+            
+            // Check for reveal actor configuration
+            const revealConfig = this.viewerConfig?.revealActors?.[actorName];
+            const revealKey = revealConfig ? `${actor.id}-${actor.x}-${actor.y}` : null;
+            const isRevealed = revealKey ? (this.revealStates.get(revealKey) === true) : false;
+            
+            // Build the appropriate sprite
+            if (compoundConfig) {
+                // Compound actor: build composite with additional layers
+                sprite = await this.buildCompoundSprite(actor.id, compoundConfig, am);
+            } else if (revealConfig && !isRevealed) {
+                // Reveal actor in hidden state: build composite with overlay
+                sprite = await this.buildRevealSprite(actor.id, revealConfig, am);
+            } else {
+                // Normal actor or revealed state: use standard metaframe
+                sprite = am ? am.getMetaframeSync(actor.id) : null;
+            }
             
             if (sprite) {
                 const ax = actor.x * TILE_SIZE;
@@ -259,5 +307,135 @@ export class RenderEngine {
                 am.requestMetaframe(actor.id);
             }
         }
+    }
+    
+    loadViewerConfig(config) {
+        this.viewerConfig = config;
+        console.log("Viewer config loaded:", config);
+    }
+
+    async buildCompoundSprite(actorId, compoundConfig, actorManager) {
+        const am = actorManager || this.actorManager;
+        if (!am) return null;
+        
+        // Start with the base actor's metaframe
+        const baseSprite = await am.getMetaframeBitmap(actorId);
+        if (!baseSprite || !compoundConfig.layers || compoundConfig.layers.length === 0) {
+            return baseSprite;
+        }
+        
+        // Collect all layer bitmaps (base + additional layers from config)
+        const layerBitmaps = [{
+            bitmap: baseSprite.bitmap,
+            offsetX: 0,
+            offsetY: 0,
+            zIndex: 0
+        }];
+        
+        // Add configured layers
+        for (const layer of compoundConfig.layers) {
+            const layerSprite = await am.getSpriteBitmapDirect(
+                layer.sourceActorNum, 
+                layer.frameIndex
+            );
+            
+            if (layerSprite) {
+                layerBitmaps.push({
+                    bitmap: layerSprite.bitmap,
+                    offsetX: layer.offsetX || 0,
+                    offsetY: layer.offsetY || 0,
+                    zIndex: layer.zIndex || 1
+                });
+            }
+        }
+        
+        // Sort by zIndex (lower numbers draw first/behind)
+        layerBitmaps.sort((a, b) => a.zIndex - b.zIndex);
+        
+        // Calculate composite bounds
+        let minX = 0, minY = 0, maxX = baseSprite.bitmap.width, maxY = baseSprite.bitmap.height;
+        layerBitmaps.forEach(layer => {
+            minX = Math.min(minX, layer.offsetX);
+            minY = Math.min(minY, layer.offsetY);
+            maxX = Math.max(maxX, layer.offsetX + layer.bitmap.width);
+            maxY = Math.max(maxY, layer.offsetY + layer.bitmap.height);
+        });
+        
+        const totalWidth = maxX - minX;
+        const totalHeight = maxY - minY;
+        
+        // Composite all layers
+        const canvas = document.createElement('canvas');
+        canvas.width = totalWidth;
+        canvas.height = totalHeight;
+        const ctx = canvas.getContext('2d');
+        
+        layerBitmaps.forEach(layer => {
+            ctx.drawImage(layer.bitmap, layer.offsetX - minX, layer.offsetY - minY);
+        });
+        
+        const finalBitmap = await createImageBitmap(canvas);
+        return {
+            bitmap: finalBitmap,
+            hotspotX: baseSprite.hotspotX,
+            hotspotY: baseSprite.hotspotY
+        };
+    }
+
+    async buildRevealSprite(actorId, revealConfig, actorManager) {
+        const am = actorManager || this.actorManager;
+        if (!am) return null;
+        
+        // Get the base actor sprite
+        const baseSprite = await am.getMetaframeBitmap(actorId);
+        if (!baseSprite) return null;
+        
+        // Get the overlay sprite (crate)
+        const overlaySprite = await am.getSpriteBitmapDirect(
+            revealConfig.overlayActorNum,
+            revealConfig.overlayFrameIndex
+        );
+        if (!overlaySprite) return baseSprite;
+        
+        // Calculate default alignment: bottom-aligned, horizontally centered
+        const baseWidth = baseSprite.bitmap.width;
+        const baseHeight = baseSprite.bitmap.height;
+        const overlayWidth = overlaySprite.bitmap.width;
+        const overlayHeight = overlaySprite.bitmap.height;
+        
+        // Default: center horizontally, align bottom edges
+        const defaultOffsetX = Math.floor((baseWidth - overlayWidth) / 2);
+        const defaultOffsetY = baseHeight - overlayHeight;
+        
+        // Apply user offsets on top of defaults
+        const offsetX = defaultOffsetX + (revealConfig.offsetX || 0);
+        const offsetY = defaultOffsetY + (revealConfig.offsetY || 0);
+        
+        // Calculate canvas size to fit both sprites
+        const minX = Math.min(0, offsetX);
+        const minY = Math.min(0, offsetY);
+        const maxX = Math.max(baseWidth, offsetX + overlayWidth);
+        const maxY = Math.max(baseHeight, offsetY + overlayHeight);
+        
+        const width = maxX - minX;
+        const height = maxY - minY;
+        
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        
+        // Draw base (the hidden item) - account for negative offsets
+        ctx.drawImage(baseSprite.bitmap, -minX, -minY);
+        
+        // Draw overlay (the crate) on top
+        ctx.drawImage(overlaySprite.bitmap, offsetX - minX, offsetY - minY);
+        
+        const finalBitmap = await createImageBitmap(canvas);
+        return {
+            bitmap: finalBitmap,
+            hotspotX: baseSprite.hotspotX - minX,
+            hotspotY: baseSprite.hotspotY - minY
+        };
     }
 }

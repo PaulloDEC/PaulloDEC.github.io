@@ -1415,6 +1415,18 @@ async function handleFileSelection(file) {
             console.warn("Could not load actor atlas:", err);
         }
         
+        // Load level viewer config
+        try {
+            const configResponse = await fetch('level_viewer_config.json');
+            if (configResponse.ok) {
+                const viewerConfig = await configResponse.json();
+                renderer.loadViewerConfig(viewerConfig);
+                console.log("Level Viewer Config Loaded.");
+            }
+        } catch (err) {
+            console.warn("Could not load level viewer config:", err);
+        }
+        
         ui.populateLevelList(fileList);
         console.log("Archive Ready.");
         

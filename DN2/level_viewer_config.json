@@ -1,0 +1,148 @@
+{
+  "compoundActors": {
+    "Bonus_Globe_Blue": {
+      "layers": [
+        {
+          "sourceActorNum": 44,
+          "frameIndex": 0,
+          "offsetX": 0,
+          "offsetY": 0,
+          "zIndex": -1
+        }
+      ]
+    },
+    "Bonus_Globe_Red": {
+      "layers": [
+        {
+          "sourceActorNum": 44,
+          "frameIndex": 0,
+          "offsetX": 0,
+          "offsetY": 0,
+          "zIndex": -1
+        }
+      ]
+    },
+    "Bonus_Globe_Green": {
+      "layers": [
+        {
+          "sourceActorNum": 44,
+          "frameIndex": 0,
+          "offsetX": 0,
+          "offsetY": 0,
+          "zIndex": -1
+        }
+      ]
+    },
+    "Bonus_Globe_Silver": {
+      "layers": [
+        {
+          "sourceActorNum": 44,
+          "frameIndex": 0,
+          "offsetX": 0,
+          "offsetY": 0,
+          "zIndex": -1
+        }
+      ]
+    }
+  },
+  "revealActors": {
+    "Red_Box_Bomb": {
+      "overlayActorNum": 163,
+      "overlayFrameIndex": 0,
+      "offsetX": 0,
+      "offsetY": 0,
+      "defaultState": "hidden"
+    },
+    "Soda_Can": {
+      "overlayActorNum": 163,
+      "overlayFrameIndex": 0,
+      "offsetX": 4,
+      "offsetY": 0,
+      "defaultState": "hidden"
+    },
+    "Merch_TV": {
+      "overlayActorNum": 164,
+      "overlayFrameIndex": 0,
+      "offsetX": 0,
+      "offsetY": 0,
+      "defaultState": "hidden"
+    },
+    "Merch_Floppy_Disk": {
+      "overlayActorNum": 164,
+      "overlayFrameIndex": 0,
+      "offsetX": 0,
+      "offsetY": 0,
+      "defaultState": "hidden"
+    },
+    "Letter_N": {
+      "overlayActorNum": 164,
+      "overlayFrameIndex": 0,
+      "offsetX": 0,
+      "offsetY": 0,
+      "defaultState": "hidden"
+    },
+    "Letter_U": {
+      "overlayActorNum": 164,
+      "overlayFrameIndex": 0,
+      "offsetX": 0,
+      "offsetY": 0,
+      "defaultState": "hidden"
+    },
+    "Letter_K": {
+      "overlayActorNum": 164,
+      "overlayFrameIndex": 0,
+      "offsetX": 0,
+      "offsetY": 0,
+      "defaultState": "hidden"
+    },
+    "Letter_E": {
+      "overlayActorNum": 164,
+      "overlayFrameIndex": 0,
+      "offsetX": 0,
+      "offsetY": 0,
+      "defaultState": "hidden"
+    },
+    "Letter_M": {
+      "overlayActorNum": 164,
+      "overlayFrameIndex": 0,
+      "offsetX": 0,
+      "offsetY": 0,
+      "defaultState": "hidden"
+    },
+    "Rocket_Launcher_Powerup": {
+      "overlayActorNum": 162,
+      "overlayFrameIndex": 0,
+      "offsetX": 0,
+      "offsetY": 0,
+      "defaultState": "hidden"
+    },
+    "Laser_Powerup": {
+      "overlayActorNum": 162,
+      "overlayFrameIndex": 0,
+      "offsetX": 0,
+      "offsetY": 0,
+      "defaultState": "hidden"
+    },
+    "Flamethrower_Powerup": {
+      "overlayActorNum": 162,
+      "overlayFrameIndex": 0,
+      "offsetX": 0,
+      "offsetY": 0,
+      "defaultState": "hidden"
+    },
+    "Normal_Weapon_Powerup": {
+      "overlayActorNum": 162,
+      "overlayFrameIndex": 0,
+      "offsetX": 0,
+      "offsetY": 0,
+      "defaultState": "hidden"
+    },
+    "Rapid_Fire_Powerup": {
+      "overlayActorNum": 161,
+      "overlayFrameIndex": 0,
+      "offsetX": 0,
+      "offsetY": 0,
+      "defaultState": "hidden"
+    }
+  }
+}
