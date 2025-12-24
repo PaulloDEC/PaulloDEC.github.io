@@ -3105,7 +3105,7 @@
         }
       ],
       "hotspotX": 0,
-      "hotspotY": 0
+      "hotspotY": 48
     }
   },
   {
@@ -3680,7 +3680,7 @@
         }
       ],
       "hotspotX": 0,
-      "hotspotY": 0
+      "hotspotY": 16
     }
   },
   {
@@ -4714,7 +4714,7 @@
     "type": "enemy",
     "metaframe": {
       "hotspotX": 0,
-      "hotspotY": 1,
+      "hotspotY": 0,
       "layers": [
         {
           "frameIndex": 1,
@@ -4791,7 +4791,7 @@
     "type": "enemy",
     "metaframe": {
       "hotspotX": 0,
-      "hotspotY": 0,
+      "hotspotY": 8,
       "layers": [
         {
           "frameIndex": 3,
@@ -8110,7 +8110,7 @@
           "offsetY": 0
         }
       ],
-      "hotspotX": 8,
+      "hotspotX": 0,
       "hotspotY": 16
     }
   },
@@ -8138,7 +8138,7 @@
           "offsetY": 0
         }
       ],
-      "hotspotX": 8,
+      "hotspotX": 0,
       "hotspotY": 16
     }
   },
@@ -8166,7 +8166,7 @@
           "offsetY": 0
         }
       ],
-      "hotspotX": 8,
+      "hotspotX": 0,
       "hotspotY": 16
     }
   },
@@ -8194,7 +8194,7 @@
           "offsetY": 0
         }
       ],
-      "hotspotX": 8,
+      "hotspotX": 0,
       "hotspotY": 16
     }
   },
@@ -8355,8 +8355,8 @@
           "offsetY": 0
         }
       ],
-      "hotspotX": 0,
-      "hotspotY": 0
+      "hotspotX": -4,
+      "hotspotY": 8
     }
   },
   {
@@ -8384,7 +8384,7 @@
         }
       ],
       "hotspotX": 0,
-      "hotspotY": 0
+      "hotspotY": 16
     }
   },
   {
@@ -8796,8 +8796,8 @@
           "offsetY": 0
         }
       ],
-      "hotspotX": 0,
-      "hotspotY": 0
+      "hotspotX": -4,
+      "hotspotY": 8
     }
   },
   {
@@ -8824,8 +8824,8 @@
           "offsetY": 0
         }
       ],
-      "hotspotX": 0,
-      "hotspotY": 0
+      "hotspotX": -4,
+      "hotspotY": 8
     }
   },
   {
@@ -9083,8 +9083,8 @@
           "offsetY": 0
         }
       ],
-      "hotspotX": 0,
-      "hotspotY": 0
+      "hotspotX": -4,
+      "hotspotY": 8
     }
   },
   {
@@ -9167,8 +9167,8 @@
           "offsetY": 0
         }
       ],
-      "hotspotX": 0,
-      "hotspotY": 0
+      "hotspotX": -4,
+      "hotspotY": 8
     }
   },
   {
@@ -9195,8 +9195,8 @@
     "palette": 0,
     "type": "bonus",
     "metaframe": {
-      "hotspotX": 0,
-      "hotspotY": 0,
+      "hotspotX": -4,
+      "hotspotY": 8,
       "layers": [
         {
           "frameIndex": 0,
@@ -9230,8 +9230,8 @@
           "offsetY": 0
         }
       ],
-      "hotspotX": 0,
-      "hotspotY": 0
+      "hotspotX": -4,
+      "hotspotY": 8
     }
   },
   {
@@ -9258,7 +9258,7 @@
           "offsetY": 0
         }
       ],
-      "hotspotX": 8,
+      "hotspotX": 0,
       "hotspotY": 16
     }
   },
@@ -12551,7 +12551,7 @@
     "type": "FX",
     "metaframe": {
       "hotspotX": 0,
-      "hotspotY": 0,
+      "hotspotY": 16,
       "layers": [
         {
           "frameIndex": 1,
@@ -12600,7 +12600,7 @@
     "type": "FX",
     "metaframe": {
       "hotspotX": 0,
-      "hotspotY": 0,
+      "hotspotY": 16,
       "layers": [
         {
           "frameIndex": 1,
@@ -12975,8 +12975,8 @@
           "offsetY": 0
         }
       ],
-      "hotspotX": 0,
-      "hotspotY": 0
+      "hotspotX": -4,
+      "hotspotY": 16
     }
   },
   {
@@ -13003,8 +13003,8 @@
           "offsetY": 0
         }
       ],
-      "hotspotX": 0,
-      "hotspotY": 0
+      "hotspotX": -4,
+      "hotspotY": 8
     }
   },
   {

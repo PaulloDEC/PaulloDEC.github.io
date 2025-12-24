@@ -33,6 +33,17 @@
         }
       ]
     },
+    "Teleporter_1": {
+      "layers": [
+        {
+          "sourceActorNum": 51,
+          "frameIndex": 1,
+          "offsetX": -16,
+          "offsetY": -32,
+          "zIndex": 1
+        }
+      ]
+    },
     "Bonus_Globe_Silver": {
       "layers": [
         {
@@ -68,6 +79,62 @@
       "defaultState": "hidden"
     },
     "Merch_Floppy_Disk": {
+      "overlayActorNum": 164,
+      "overlayFrameIndex": 0,
+      "offsetX": 0,
+      "offsetY": 0,
+      "defaultState": "hidden"
+    },
+    "Merch_Game_Cartridge": {
+      "overlayActorNum": 164,
+      "overlayFrameIndex": 0,
+      "offsetX": 0,
+      "offsetY": 0,
+      "defaultState": "hidden"
+    },
+    "Merch_Sunglasses": {
+      "overlayActorNum": 164,
+      "overlayFrameIndex": 0,
+      "offsetX": 0,
+      "offsetY": 0,
+      "defaultState": "hidden"
+    },
+    "Merch_Compact_Disc": {
+      "overlayActorNum": 164,
+      "overlayFrameIndex": 0,
+      "offsetX": 0,
+      "offsetY": 0,
+      "defaultState": "hidden"
+    },
+    "Merch_Camcorder": {
+      "overlayActorNum": 164,
+      "overlayFrameIndex": 0,
+      "offsetX": 0,
+      "offsetY": 0,
+      "defaultState": "hidden"
+    },
+    "Merch_Cellphone": {
+      "overlayActorNum": 164,
+      "overlayFrameIndex": 0,
+      "offsetX": 0,
+      "offsetY": 0,
+      "defaultState": "hidden"
+    },
+    "Merch_T_Shirt": {
+      "overlayActorNum": 164,
+      "overlayFrameIndex": 0,
+      "offsetX": 0,
+      "offsetY": 0,
+      "defaultState": "hidden"
+    },
+    "Merch_Boombox": {
+      "overlayActorNum": 164,
+      "overlayFrameIndex": 0,
+      "offsetX": 0,
+      "offsetY": 0,
+      "defaultState": "hidden"
+    },
+    "Merch_Video_Tape": {
       "overlayActorNum": 164,
       "overlayFrameIndex": 0,
       "offsetX": 0,
