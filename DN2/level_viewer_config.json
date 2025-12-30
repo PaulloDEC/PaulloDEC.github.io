@@ -71,6 +71,13 @@
       "offsetY": 0,
       "defaultState": "hidden"
     },
+    "Soda_6_Pack": {
+      "overlayActorNum": 163,
+      "overlayFrameIndex": 0,
+      "offsetX": 0,
+      "offsetY": 0,
+      "defaultState": "hidden"
+    },
     "Merch_TV": {
       "overlayActorNum": 164,
       "overlayFrameIndex": 0,

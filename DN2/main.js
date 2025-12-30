@@ -1030,6 +1030,7 @@ async function loadLevel(filename) {
         }
 
         renderer.preRender(appState.currentMap, { solidTiles: appState.solidTiles, maskedTiles: appState.maskedTiles }, appState.useGridFix);
+        renderer.requestSpecialSprites(mapParser);
         handleFitZoom();
         updateUIState();
         
@@ -1405,7 +1406,7 @@ async function handleFileSelection(file) {
         
         // NEW: Load actor atlas
         try {
-            const atlasResponse = await fetch('actor_atlas_final.json');
+            const atlasResponse = await fetch(`actor_atlas_final.json?v=${Date.now()}`);
             if (atlasResponse.ok) {
                 const atlasData = await atlasResponse.json();
                 actorManager.loadAtlas(atlasData);
@@ -1417,7 +1418,7 @@ async function handleFileSelection(file) {
         
         // Load level viewer config
         try {
-            const configResponse = await fetch('level_viewer_config.json');
+            const configResponse = await fetch(`level_viewer_config.json?v=${Date.now()}`);
             if (configResponse.ok) {
                 const viewerConfig = await configResponse.json();
                 renderer.loadViewerConfig(viewerConfig);
@@ -1430,6 +1431,8 @@ async function handleFileSelection(file) {
         ui.populateLevelList(fileList);
         console.log("Archive Ready.");
         
+        updateHeaderStatus(`📦 Archive Loaded: <strong>${file.name}</strong> (${fileList.length} files)`);
+
         const dropZone = document.getElementById('drop-zone');
         if (dropZone) dropZone.classList.add('hidden');
         updateCanvasSize();

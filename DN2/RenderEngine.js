@@ -13,6 +13,7 @@ export class RenderEngine {
         this.lastViewport = null;
         this.viewerConfig = null;
         this.revealStates = new Map();
+        this.specialSpriteCache = new Map();
         this.setupTooltip();
     }
 
@@ -202,7 +203,7 @@ export class RenderEngine {
         }
     }
 
-    async drawActors(ctx, map, actorManager, layers, difficulty = 0) {
+    drawActors(ctx, map, actorManager, layers, difficulty = 0) {
         const TILE_SIZE = 8;
         const am = actorManager || this.actorManager;
 
@@ -274,12 +275,27 @@ export class RenderEngine {
             const isRevealed = revealKey ? (this.revealStates.get(revealKey) === true) : false;
             
             // Build the appropriate sprite
+            // Get the appropriate sprite (all should be pre-cached)
             if (compoundConfig) {
-                // Compound actor: build composite with additional layers
-                sprite = await this.buildCompoundSprite(actor.id, compoundConfig, am);
+                // Try to get cached compound sprite, fall back to base metaframe
+                const cacheKey = `compound_${actor.id}`;
+                sprite = this.specialSpriteCache?.get(cacheKey) || (am ? am.getMetaframeSync(actor.id) : null);
+                
+                // If not cached, request it for next frame
+                if (!sprite) {
+                    this.buildCompoundSprite(actor.id, compoundConfig, am);
+                    sprite = am ? am.getMetaframeSync(actor.id) : null;
+                }
             } else if (revealConfig && !isRevealed) {
-                // Reveal actor in hidden state: build composite with overlay
-                sprite = await this.buildRevealSprite(actor.id, revealConfig, am);
+                // Try to get cached reveal sprite, fall back to base metaframe
+                const cacheKey = `reveal_${actor.id}_hidden`;
+                sprite = this.specialSpriteCache?.get(cacheKey) || (am ? am.getMetaframeSync(actor.id) : null);
+                
+                // If not cached, request it for next frame
+                if (!sprite) {
+                    this.buildRevealSprite(actor.id, revealConfig, am);
+                    sprite = am ? am.getMetaframeSync(actor.id) : null;
+                }
             } else {
                 // Normal actor or revealed state: use standard metaframe
                 sprite = am ? am.getMetaframeSync(actor.id) : null;
@@ -312,6 +328,38 @@ export class RenderEngine {
     loadViewerConfig(config) {
         this.viewerConfig = config;
         console.log("Viewer config loaded:", config);
+    }
+
+    requestSpecialSprites(map) {
+        if (!map || !map.actors || !this.actorManager || !this.viewerConfig) return;
+        
+        const am = this.actorManager;
+        
+        // Pre-request sprites for all actors that need special rendering
+        for (const actor of map.actors) {
+            if (actor.id === 0) continue;
+            
+            const meta = am.getActorMetadata(actor.id);
+            const actorName = meta ? meta.name : null;
+            if (!actorName) continue;
+            
+            // Check if this actor needs compound or reveal rendering
+            const compoundConfig = this.viewerConfig?.compoundActors?.[actorName];
+            const revealConfig = this.viewerConfig?.revealActors?.[actorName];
+            
+            if (compoundConfig) {
+                // Pre-build compound sprite
+                this.buildCompoundSprite(actor.id, compoundConfig, am);
+            }
+            
+            if (revealConfig) {
+                // Pre-build both revealed and hidden states
+                this.buildRevealSprite(actor.id, revealConfig, am);
+            }
+            
+            // Also request the base metaframe
+            am.requestMetaframe(actor.id);
+        }
     }
 
     async buildCompoundSprite(actorId, compoundConfig, actorManager) {
@@ -375,11 +423,17 @@ export class RenderEngine {
         });
         
         const finalBitmap = await createImageBitmap(canvas);
-        return {
+        const result = {
             bitmap: finalBitmap,
             hotspotX: baseSprite.hotspotX,
             hotspotY: baseSprite.hotspotY
         };
+        
+        // Cache the result
+        const cacheKey = `compound_${actorId}`;
+        this.specialSpriteCache.set(cacheKey, result);
+        
+        return result;
     }
 
     async buildRevealSprite(actorId, revealConfig, actorManager) {
@@ -417,25 +471,34 @@ export class RenderEngine {
         const maxX = Math.max(baseWidth, offsetX + overlayWidth);
         const maxY = Math.max(baseHeight, offsetY + overlayHeight);
         
-        const width = maxX - minX;
-        const height = maxY - minY;
+        // Canvas needs to account for the overlay position
+        // If overlay is offset, canvas must be large enough to contain it
+        const canvasWidth = Math.max(overlayWidth, overlayWidth + offsetX, -offsetX + overlayWidth);
+        const canvasHeight = Math.max(overlayHeight, overlayHeight + offsetY, -offsetY + overlayHeight);
+        
+        // The overlay draw position within the canvas
+        const drawX = Math.max(0, -offsetX);
+        const drawY = Math.max(0, -offsetY);
         
         const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
         const ctx = canvas.getContext('2d');
         
-        // Draw base (the hidden item) - account for negative offsets
-        ctx.drawImage(baseSprite.bitmap, -minX, -minY);
-        
-        // Draw overlay (the crate) on top
-        ctx.drawImage(overlaySprite.bitmap, offsetX - minX, offsetY - minY);
+        // Draw ONLY the overlay (crate) - the base item is hidden behind it
+        ctx.drawImage(overlaySprite.bitmap, drawX, drawY);
         
         const finalBitmap = await createImageBitmap(canvas);
-        return {
+        const result = {
             bitmap: finalBitmap,
-            hotspotX: baseSprite.hotspotX - minX,
-            hotspotY: baseSprite.hotspotY - minY
+            hotspotX: baseSprite.hotspotX - offsetX + drawX,
+            hotspotY: baseSprite.hotspotY - offsetY + drawY
         };
+        
+        // Cache the result
+        const cacheKey = `reveal_${actorId}_hidden`;
+        this.specialSpriteCache.set(cacheKey, result);
+        
+        return result;
     }
 }

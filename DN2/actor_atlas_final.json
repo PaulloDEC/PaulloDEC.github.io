@@ -3911,7 +3911,7 @@
     "type": "enemy",
     "metaframe": {
       "hotspotX": 0,
-      "hotspotY": 0,
+      "hotspotY": 16,
       "layers": [
         {
           "frameIndex": 3,
@@ -5613,7 +5613,7 @@
     "type": "enemy",
     "metaframe": {
       "hotspotX": 0,
-      "hotspotY": 0,
+      "hotspotY": 40,
       "layers": [
         {
           "frameIndex": 5,
@@ -5704,7 +5704,7 @@
     "type": "enemy",
     "metaframe": {
       "hotspotX": 0,
-      "hotspotY": 0,
+      "hotspotY": 40,
       "layers": [
         {
           "frameIndex": 5,
@@ -8825,7 +8825,7 @@
         }
       ],
       "hotspotX": -4,
-      "hotspotY": 8
+      "hotspotY": 16
     }
   },
   {
@@ -8852,8 +8852,8 @@
           "offsetY": 0
         }
       ],
-      "hotspotX": 0,
-      "hotspotY": 0
+      "hotspotX": 4,
+      "hotspotY": 8
     }
   },
   {
@@ -13003,8 +13003,8 @@
           "offsetY": 0
         }
       ],
-      "hotspotX": -4,
-      "hotspotY": 8
+      "hotspotX": 0,
+      "hotspotY": 16
     }
   },
   {
