@@ -64,6 +64,13 @@
       "offsetY": 0,
       "defaultState": "hidden"
     },
+    "Circuit_Card": {
+      "overlayActorNum": 161,
+      "overlayFrameIndex": 0,
+      "offsetX": 0,
+      "offsetY": 0,
+      "defaultState": "hidden"
+    },
     "Soda_Can": {
       "overlayActorNum": 163,
       "overlayFrameIndex": 0,
@@ -73,6 +80,13 @@
     },
     "Soda_6_Pack": {
       "overlayActorNum": 163,
+      "overlayFrameIndex": 0,
+      "offsetX": 0,
+      "offsetY": 0,
+      "defaultState": "hidden"
+    },
+    "Health_Molecule": {
+      "overlayActorNum": 164,
       "overlayFrameIndex": 0,
       "offsetX": 0,
       "offsetY": 0,
@@ -142,6 +156,13 @@
       "defaultState": "hidden"
     },
     "Merch_Video_Tape": {
+      "overlayActorNum": 164,
+      "overlayFrameIndex": 0,
+      "offsetX": 0,
+      "offsetY": 0,
+      "defaultState": "hidden"
+    },
+    "Merch_Computer": {
       "overlayActorNum": 164,
       "overlayFrameIndex": 0,
       "offsetX": 0,
