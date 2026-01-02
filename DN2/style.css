@@ -1642,3 +1642,44 @@ details[open] summary {
     cursor: pointer;
     accent-color: var(--accent); /* Uses your theme's orange color */
 }
+
+/* ========================================================================== */
+/* GAME SCRIPT SYNTAX HIGHLIGHTING                                           */
+/* ========================================================================== */
+
+.script-viewer {
+    background: var(--bg-input);
+    color: var(--text-main);
+    padding: 20px;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    overflow: auto;
+    white-space: pre;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    max-height: calc(100vh - 100px);
+}
+
+.script-header {
+    color: #ffcc00; /* Yellow - section headers */
+    font-weight: bold;
+}
+
+.script-command {
+    color: #38bdf8; /* Cyan - commands */
+    font-weight: bold;
+}
+
+.script-text {
+    color: #f1f5f9; /* White - dialog text */
+}
+
+.script-param {
+    color: #85ff85; /* Light green - parameters */
+}
+
+.script-special {
+    color: #666666; /* Dark gray - de-emphasized special chars */
+    opacity: 0.5;
+}

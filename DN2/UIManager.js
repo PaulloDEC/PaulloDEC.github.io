@@ -58,6 +58,7 @@ export class UIManager {
             "Demos": [],
 			"Palettes": [],
             "DOS Text Screens": [],
+            "Game Scripts": [],
             "Misc": []
         };
 
@@ -109,6 +110,10 @@ export class UIManager {
 			{ test: (f) => f.startsWith('DOSTEXT'), category: "DOS Text Screens" },
             { test: (f) => f.startsWith('NOMEM'), category: "DOS Text Screens" },
 
+            // Game Scripts
+            { test: (f) => ['TEXT.MNI', 'OPTIONS.MNI', 'HELP.MNI', 'ORDERTXT.MNI'].includes(f), 
+              category: "Game Scripts" },
+            
 			// Demos & Palettes
 			{ test: (f) => f.startsWith('DEMO'), category: "Demos" },
 			{ test: /\.PAL$/i, category: "Palettes" }

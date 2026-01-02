@@ -466,6 +466,89 @@ export class AssetManager {
         return createImageBitmap(canvas);
     }
 
+    parseGameScript(data) {
+        // Convert binary data to text
+        let text = '';
+        for (let i = 0; i < data.length; i++) {
+            const char = data[i];
+            if (char !== 0) { // Skip null bytes
+                text += String.fromCharCode(char);
+            }
+        }
+        
+        // Split into lines
+        const lines = text.split(/\r\n|\n|\r/);
+        
+        // Parse each line and apply syntax highlighting
+        let html = '';
+        
+        for (const line of lines) {
+            if (line.trim() === '') {
+                // Blank line
+                html += '\n';
+            } else if (line.startsWith('//')) {
+                // Command line - parse command and arguments
+                const commandMatch = line.match(/^(\/\/\w+)\s*(.*)$/);
+                if (commandMatch) {
+                    const command = commandMatch[1];
+                    const args = commandMatch[2].trim();
+                    
+                    html += `<span class="script-command">${command}</span>`;
+                    
+                    if (args) {
+                        // Try to separate numeric parameters from text content
+                        // Pattern: numbers at start, then text after
+                        const paramMatch = args.match(/^((?:\d+\s+)*\d+)\s+(.+)$/);
+                        
+                        if (paramMatch) {
+                            // Has numeric parameters followed by text
+                            const params = paramMatch[1];
+                            let textContent = paramMatch[2];
+                            
+                            // Remove leading special character if present (menu markers like ñ, ò)
+                            if (textContent.length > 0 && textContent.charCodeAt(0) > 127) {
+                                const specialChar = textContent[0];
+                                textContent = textContent.substring(1);
+                                html += ` <span class="script-param">${params}</span>`;
+                                html += ` <span class="script-special">${specialChar}</span>`;
+                                html += `<span class="script-text">${textContent}</span>`;
+                            } else {
+                                html += ` <span class="script-param">${params}</span>`;
+                                html += ` <span class="script-text">${textContent}</span>`;
+                            }
+                        } else if (/^\d+(\s+\d+)*$/.test(args)) {
+                            // Only numbers, no text
+                            html += ` <span class="script-param">${args}</span>`;
+                        } else if (/^[A-Za-z0-9._-]+\.[A-Z]{3}$/i.test(args)) {
+                            // Filename (like MESSAGE.MNI)
+                            html += ` <span class="script-param">${args}</span>`;
+                        } else {
+                            // Pure text content (no numeric prefix)
+                            // Check for leading special character
+                            let textContent = args;
+                            if (textContent.length > 0 && textContent.charCodeAt(0) > 127) {
+                                const specialChar = textContent[0];
+                                textContent = textContent.substring(1);
+                                html += ` <span class="script-special">${specialChar}</span>`;
+                                html += `<span class="script-text">${textContent}</span>`;
+                            } else {
+                                html += ` <span class="script-text">${textContent}</span>`;
+                            }
+                        }
+                    }
+                    html += '\n';
+                } else {
+                    html += `<span class="script-command">${line}</span>\n`;
+                }
+            } else {
+                // Section header (non-command, non-blank)
+                html += `<span class="script-header">${line}</span>\n`;
+            }
+        }
+        
+        return html;
+    }
+
     async generateTilesetImage(data, startOffset, count, mode, columns = 16) {
         const TILE_SIZE = 8;
         const rows = Math.ceil(count / columns);

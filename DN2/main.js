@@ -1200,6 +1200,41 @@ async function loadAsset(filename) {
         }
 
         // ─────────────────────────────────────────────────────────────────────
+        // GAME SCRIPT HANDLER (TEXT.MNI, OPTIONS.MNI, etc)
+        // ─────────────────────────────────────────────────────────────────────
+        // Displays Duke Nukem 2 script files with syntax highlighting
+        
+        if (upper === 'TEXT.MNI' || upper === 'OPTIONS.MNI' || upper === 'HELP.MNI' || upper === 'ORDERTXT.MNI') {
+            appState.viewMode = 'data';
+            
+            const highlightedHTML = assets.parseGameScript(rawFile);
+            
+            // Create viewer element
+            const viewer = document.createElement('pre');
+            viewer.className = 'script-viewer';
+            viewer.innerHTML = highlightedHTML;
+            
+            // Display in data view container
+            const container = document.getElementById('data-view-container');
+            const canvas = document.getElementById('preview-canvas');
+            
+            if (container && canvas) {
+                canvas.style.display = 'none';
+                container.style.display = 'block';
+                container.innerHTML = '';
+                container.appendChild(viewer);
+            }
+            
+            logMessage(`Displaying Script: ${filename}`, 'success');
+            updateHeaderStatus(`📜 Viewing Script: <strong>${filename}</strong>`);
+            
+            toggleControls('none');
+            updateSidebarContext('ASSET');
+            updateUIState();
+            return;
+        }
+
+        // ─────────────────────────────────────────────────────────────────────
         // FULLSCREEN IMAGE HANDLER
         // ─────────────────────────────────────────────────────────────────────
         // Displays fullscreen images (32048 bytes = 320x200 pixels)
