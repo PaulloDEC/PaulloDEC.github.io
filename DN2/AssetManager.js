@@ -18,6 +18,8 @@ export class AssetManager {
             [], // Slot 4: STORY.MNI embedded palette
         ];
         
+        this.vgaFontBitmap = null;
+
         // Fill with placeholder grayscale to prevent crashes if palettes aren't loaded
         for (let p = 0; p < 5; p++) {
             for (let i = 0; i < 256; i++) { 
@@ -255,6 +257,213 @@ export class AssetManager {
             }
         }
         return createImageBitmap(new ImageData(pixels, WIDTH, HEIGHT));
+    }
+
+    async decode256ColorImage(imageData, paletteData) {
+        // Validate sizes
+        if (imageData.length !== 64000) {
+            console.error(`Invalid 256-color image data size: ${imageData.length} (expected 64000)`);
+            return null;
+        }
+        if (paletteData.length !== 768) {
+            console.error(`Invalid palette data size: ${paletteData.length} (expected 768)`);
+            return null;
+        }
+        
+        const WIDTH = 320;
+        const HEIGHT = 200;
+        
+        // Convert palette data to RGB array
+        const palette = [];
+        for (let i = 0; i < 256; i++) {
+            const r = Math.floor((paletteData[i * 3] * 255) / 63);
+            const g = Math.floor((paletteData[i * 3 + 1] * 255) / 63);
+            const b = Math.floor((paletteData[i * 3 + 2] * 255) / 63);
+            palette.push([r, g, b]);
+        }
+        
+        // Create pixel buffer
+        const pixels = new Uint8ClampedArray(WIDTH * HEIGHT * 4);
+        
+        // For each pixel, look up its color in the palette
+        for (let i = 0; i < 64000; i++) {
+            const colorIndex = imageData[i];
+            const [r, g, b] = palette[colorIndex] || [0, 0, 0];
+            const pixelOffset = i * 4;
+            pixels[pixelOffset] = r;
+            pixels[pixelOffset + 1] = g;
+            pixels[pixelOffset + 2] = b;
+            pixels[pixelOffset + 3] = 255; // Alpha
+        }
+        
+        return createImageBitmap(new ImageData(pixels, WIDTH, HEIGHT));
+    }
+
+    async generateVGAFontBitmap() {
+        // Check if we already have it cached
+        if (this.vgaFontBitmap) {
+            return this.vgaFontBitmap;
+        }
+        
+        // Wait for font to load
+        if (document.fonts) {
+            await document.fonts.ready;
+            await document.fonts.load('16px "Perfect DOS VGA 437"');
+            await new Promise(resolve => setTimeout(resolve, 50));
+        }
+        
+        const CHAR_WIDTH = 8;
+        const CHAR_HEIGHT = 16;
+        const CHARS_PER_ROW = 32; // 32 characters per row = 8 rows for 256 chars
+        const TOTAL_CHARS = 256;
+        const ROWS = Math.ceil(TOTAL_CHARS / CHARS_PER_ROW);
+        
+        const atlasWidth = CHARS_PER_ROW * CHAR_WIDTH;  // 256 pixels
+        const atlasHeight = ROWS * CHAR_HEIGHT;         // 128 pixels
+        
+        const canvas = document.createElement('canvas');
+        canvas.width = atlasWidth;
+        canvas.height = atlasHeight;
+        const ctx = canvas.getContext('2d');
+        
+        // White background for visibility (will use color tinting later)
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = '16px "Perfect DOS VGA 437"';
+        ctx.textBaseline = 'top';
+        
+        // Render all 256 CP437 characters
+        for (let i = 0; i < TOTAL_CHARS; i++) {
+            const col = i % CHARS_PER_ROW;
+            const row = Math.floor(i / CHARS_PER_ROW);
+            const x = col * CHAR_WIDTH;
+            const y = row * CHAR_HEIGHT;
+            
+            // Draw black background for this character cell
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(x, y, CHAR_WIDTH, CHAR_HEIGHT);
+            
+            // Draw white character
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillText(String.fromCharCode(i), x, y);
+        }
+        
+        // Convert to ImageBitmap and cache it
+        this.vgaFontBitmap = await createImageBitmap(canvas);
+        console.log('VGA font bitmap generated and cached');
+        
+        return this.vgaFontBitmap;
+    }
+    
+    async decodeB800Text(data) {
+        if (data.length !== 4000) {
+            console.error(`Invalid B800 text data size: ${data.length} (expected 4000)`);
+            return null;
+        }
+        
+        const COLS = 80;
+        const ROWS = 25;
+        const CHAR_WIDTH = 8;
+        const CHAR_HEIGHT = 16;
+        
+        const WIDTH = COLS * CHAR_WIDTH;  // 640
+        const HEIGHT = ROWS * CHAR_HEIGHT; // 400
+        
+        // CGA 16-color palette (standard DOS colors)
+        const palette = [
+            [0, 0, 0],       // 0: Black
+            [0, 0, 170],     // 1: Blue
+            [0, 170, 0],     // 2: Green
+            [0, 170, 170],   // 3: Cyan
+            [170, 0, 0],     // 4: Red
+            [170, 0, 170],   // 5: Magenta
+            [170, 85, 0],    // 6: Brown
+            [170, 170, 170], // 7: Light Gray
+            [85, 85, 85],    // 8: Dark Gray
+            [85, 85, 255],   // 9: Light Blue
+            [85, 255, 85],   // 10: Light Green
+            [85, 255, 255],  // 11: Light Cyan
+            [255, 85, 85],   // 12: Light Red
+            [255, 85, 255],  // 13: Light Magenta
+            [255, 255, 85],  // 14: Yellow
+            [255, 255, 255]  // 15: White
+        ];
+        
+        // Load the VGA font bitmap
+        const fontBitmap = await this.generateVGAFontBitmap();
+        if (!fontBitmap) {
+            console.error('Failed to generate VGA font bitmap');
+            return null;
+        }
+        
+        // Create a temporary canvas to extract font glyph pixels
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = fontBitmap.width;
+        tempCanvas.height = fontBitmap.height;
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCtx.drawImage(fontBitmap, 0, 0);
+        const fontImageData = tempCtx.getImageData(0, 0, fontBitmap.width, fontBitmap.height);
+        
+        const canvas = document.createElement('canvas');
+        canvas.width = WIDTH;
+        canvas.height = HEIGHT;
+        const ctx = canvas.getContext('2d');
+        
+        const outputImageData = ctx.createImageData(WIDTH, HEIGHT);
+        const CHARS_PER_ROW = 32;
+        
+        // Render each cell
+        for (let row = 0; row < ROWS; row++) {
+            for (let col = 0; col < COLS; col++) {
+                const offset = (row * COLS + col) * 2;
+                const charCode = data[offset];
+                const attribute = data[offset + 1];
+                
+                // Decode attribute byte
+                const bgColor = (attribute >> 4) & 0x0F;
+                const fgColor = attribute & 0x0F;
+                
+                const [bgR, bgG, bgB] = palette[bgColor];
+                const [fgR, fgG, fgB] = palette[fgColor];
+                
+                const destX = col * CHAR_WIDTH;
+                const destY = row * CHAR_HEIGHT;
+                
+                // Calculate source position in font atlas
+                const srcCol = charCode % CHARS_PER_ROW;
+                const srcRow = Math.floor(charCode / CHARS_PER_ROW);
+                const srcX = srcCol * CHAR_WIDTH;
+                const srcY = srcRow * CHAR_HEIGHT;
+                
+                // Copy character pixel by pixel
+                for (let py = 0; py < CHAR_HEIGHT; py++) {
+                    for (let px = 0; px < CHAR_WIDTH; px++) {
+                        // Source pixel in font atlas
+                        const fontPixelIdx = ((srcY + py) * fontBitmap.width + (srcX + px)) * 4;
+                        const isWhite = fontImageData.data[fontPixelIdx] > 128; // White pixel = character
+                        
+                        // Destination pixel in output
+                        const outPixelIdx = ((destY + py) * WIDTH + (destX + px)) * 4;
+                        
+                        if (isWhite) {
+                            // Draw foreground color
+                            outputImageData.data[outPixelIdx] = fgR;
+                            outputImageData.data[outPixelIdx + 1] = fgG;
+                            outputImageData.data[outPixelIdx + 2] = fgB;
+                            outputImageData.data[outPixelIdx + 3] = 255;
+                        } else {
+                            // Draw background color
+                            outputImageData.data[outPixelIdx] = bgR;
+                            outputImageData.data[outPixelIdx + 1] = bgG;
+                            outputImageData.data[outPixelIdx + 2] = bgB;
+                            outputImageData.data[outPixelIdx + 3] = 255;
+                        }
+                    }
+                }
+            }
+        }
+        
+        ctx.putImageData(outputImageData, 0, 0);
+        return createImageBitmap(canvas);
     }
 
     async generateTilesetImage(data, startOffset, count, mode, columns = 16) {

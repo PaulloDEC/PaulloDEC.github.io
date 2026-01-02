@@ -1145,6 +1145,61 @@ async function loadAsset(filename) {
         }
 
         // ─────────────────────────────────────────────────────────────────────
+        // LCR.MNI HANDLER (256-Color Fullscreen Image)
+        // ─────────────────────────────────────────────────────────────────────
+        // Special handler for LCR.MNI which contains its own 256-color palette
+        
+        if (upper === "LCR.MNI" && rawFile.length === 64768) {
+            appState.viewMode = 'asset';
+            
+            // Extract palette (first 768 bytes)
+            const paletteData = rawFile.slice(0, 768);
+            
+            // Extract image data (remaining 64000 bytes = 320x200 pixels)
+            const imageData = rawFile.slice(768);
+            
+            // Decode the 256-color image
+            const img = await assets.decode256ColorImage(imageData, paletteData);
+            if (img) {
+                appState.currentAsset = { image: img, layout: null };
+                handleFitZoom();
+            }
+            logMessage(`Displaying 256-Color Image: ${filename}`, 'success');
+            updateHeaderStatus(`🖼️ Viewing 256-Color Image: <strong>${filename}</strong>`);
+            
+            restoreDefaultZoomPanel();
+            resetMainView();
+            toggleControls('zoom');
+            updateSidebarContext('ASSET');
+            updateUIState();
+            return;
+        }
+
+        // ─────────────────────────────────────────────────────────────────────
+        // B800 TEXT HANDLER (DOS Text Mode Screens)
+        // ─────────────────────────────────────────────────────────────────────
+        // Displays 80x25 text mode screens (4000 bytes)
+        
+        if (rawFile.length === 4000) {
+            appState.viewMode = 'asset';
+            
+            const img = await assets.decodeB800Text(rawFile);
+            if (img) {
+                appState.currentAsset = { image: img, layout: null };
+                handleFitZoom();
+            }
+            logMessage(`Displaying B800 Text: ${filename}`, 'success');
+            updateHeaderStatus(`📄 Viewing Text Screen: <strong>${filename}</strong>`);
+            
+            restoreDefaultZoomPanel();
+            resetMainView();
+            toggleControls('zoom');
+            updateSidebarContext('ASSET');
+            updateUIState();
+            return;
+        }
+
+        // ─────────────────────────────────────────────────────────────────────
         // FULLSCREEN IMAGE HANDLER
         // ─────────────────────────────────────────────────────────────────────
         // Displays fullscreen images (32048 bytes = 320x200 pixels)
@@ -1271,10 +1326,10 @@ async function loadAsset(filename) {
 		}
 		
 	// ─────────────────────────────────────────────────────────────────────
-    // PALETTE FILE HANDLER (.PAL & LCR.MNI)
+    // PALETTE FILE HANDLER (.PAL)
     // ─────────────────────────────────────────────────────────────────────
     // Displays Duke Nukem 2 palette files as color bars and grids
-    else if (upper.endsWith(".PAL") || upper === "LCR.MNI") {
+    else if (upper.endsWith(".PAL")) {
         appState.viewMode = 'data';
     
         // Allow 48, 768, OR 64768 bytes

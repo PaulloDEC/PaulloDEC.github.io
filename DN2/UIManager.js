@@ -57,34 +57,86 @@ export class UIManager {
             "SFX (Digitised)": [],
             "Demos": [],
 			"Palettes": [],
+            "DOS Text Screens": [],
             "Misc": []
         };
 
-        // ... (Keep existing file sorting logic for brevity) ...
-        // Copy the sorting block from the previous UIManager version here.
-        // It starts with `files.forEach(f => { ...`
-        
-        files.forEach(f => {
+        // Define categorization rules
+		const rules = [
+			// Skip files
+			{ test: (f) => f === 'ACTRINFO.MNI', skip: true },
+            { test: (f) => f === 'AUDIOT.MNI', skip: true },
+            { test: (f) => f === 'NUKEM2.MNI', skip: true },
+            { test: (f) => f === 'NUKUM2.MNI', skip: true },
+			
+			// Episodes (regex patterns)
+			{ test: /^L\d\.MNI$/i, category: "Levels (Episode 1)" },
+			{ test: /^M\d\.MNI$/i, category: "Levels (Episode 2)" },
+			{ test: /^N\d\.MNI$/i, category: "Levels (Episode 3)" },
+			{ test: /^O\d\.MNI$/i, category: "Levels (Episode 4)" },
+			
+			// Tilesets
+			{ test: (f) => f.includes('CZONE'), category: "Tilesets" },
+			
+			// Backdrops
+			{ test: (f) => f.startsWith('BACKDRP') || f.startsWith('DROP') || f.startsWith('STATUS'), 
+			  category: "Backdrops" },
+			
+			// Actor Data
+			{ test: (f) => f === 'ACTORS.MNI', category: "Actor Data" },
+			
+			// User Interface
+			{ test: (f) => ['FONT', 'ALF', 'NUM', 'BOXES', 'MAIN', 'CREDITS', 'HIGHS', 'HUD']
+			    .some(prefix => f.startsWith(prefix)), 
+			  category: "User Interface" },
+			
+			// Screens & Logos
+			{ test: (f) => ['TITLE', 'LOGO', 'RIGEL', 'BONUS', 'APOGEE', 'GAMEOVER', 'END', 'HY', 
+			                'ITEMS', 'KEYBORD', 'LOAD', 'PRIZES', 'WEAPONS']
+			    .some(prefix => f.startsWith(prefix)) ||
+			    ['BONUSSCN.MNI', 'HINTS.MNI', 'MESSAGE.MNI', 'STORY.MNI', 'LCR.MNI'].includes(f) ||
+			    (f.startsWith('ORDER') && f !== 'ORDERTXT.MNI'),
+			  category: "Screens & Logos" },
+			
+			// Music
+			{ test: /\.IMF$/i, category: "Music" },
+			
+			// Sound Effects
+			{ test: (f) => f === 'AUDIOHED.MNI', category: "SFX (AdLib/PC Speaker)" },
+			{ test: (f) => f.startsWith('SB_') || f.startsWith('INTRO'), category: "SFX (Digitised)" },
+			
+            // B800 Text Screens
+			{ test: (f) => f.startsWith('DOSTEXT'), category: "DOS Text Screens" },
+            { test: (f) => f.startsWith('NOMEM'), category: "DOS Text Screens" },
+
+			// Demos & Palettes
+			{ test: (f) => f.startsWith('DEMO'), category: "Demos" },
+			{ test: /\.PAL$/i, category: "Palettes" }
+		];
+		
+		// Categorize each file
+		files.forEach(f => {
 			const upper = f.toUpperCase();
 			
-			// Skip files you don't want in any category
-			if (upper === 'ACTRINFO.MNI') return;
+			// Find matching rule
+			for (const rule of rules) {
+				let matches = false;
+				
+				if (rule.test instanceof RegExp) {
+					matches = rule.test.test(upper);
+				} else if (typeof rule.test === 'function') {
+					matches = rule.test(upper);
+				}
+				
+				if (matches) {
+					if (rule.skip) return; // Skip this file
+					categories[rule.category].push(f);
+					return;
+				}
+			}
 			
-			if (/^L\d\.MNI$/i.test(upper)) categories["Levels (Episode 1)"].push(f);
-			else if (/^M\d\.MNI$/i.test(upper)) categories["Levels (Episode 2)"].push(f);
-			else if (/^N\d\.MNI$/i.test(upper)) categories["Levels (Episode 3)"].push(f);
-			else if (/^O\d\.MNI$/i.test(upper)) categories["Levels (Episode 4)"].push(f);
-			else if (upper.includes('CZONE')) categories["Tilesets"].push(f);
-			else if (upper.startsWith('BACKDRP') || upper.startsWith('DROP') || upper.startsWith('STATUS')) categories["Backdrops"].push(f);
-			else if (upper === 'ACTORS.MNI') categories["Actor Data"].push(f);  // Removed ACTRINFO.MNI from here
-			else if (upper.startsWith('FONT') || upper.startsWith('ALF') || upper.startsWith('NUM') || upper.startsWith('BOXES') || upper.startsWith('MAIN') || upper.startsWith('CREDITS') || upper.startsWith('HIGHS') || upper.startsWith('HUD')) categories["User Interface"].push(f);
-			else if (upper.startsWith('TITLE') || upper.startsWith('LOGO') || upper.startsWith('RIGEL') || upper.startsWith('BONUS') || upper.startsWith('APOGEE') || upper.startsWith('GAMEOVER') || upper === 'BONUSSCN.MNI' || upper.startsWith('END') || upper === 'HINTS.MNI' || upper.startsWith('HY') || upper.startsWith('ITEMS') || upper.startsWith('KEYBOARD') || upper.startsWith('LOAD') || upper === 'MESSAGE.MNI' || (upper.startsWith('ORDER') && upper !== 'ORDERTXT.MNI') || upper.startsWith('PRIZES') || upper === 'STORY.MNI' || upper.startsWith('WEAPONS')) categories["Screens & Logos"].push(f);
-			else if (upper.endsWith('.IMF')) categories["Music"].push(f);
-			else if (upper === 'AUDIOHED.MNI') categories["SFX (AdLib/PC Speaker)"].push(f);
-			else if (upper.startsWith('SB_') || upper.startsWith('INTRO')) categories["SFX (Digitised)"].push(f);
-			else if (upper.startsWith('DEMO')) categories["Demos"].push(f);
-			else if (upper === 'LCR.MNI' || upper.endsWith('.PAL')) categories["Palettes"].push(f);
-			else categories["Misc"].push(f);
+			// Default: Misc
+			categories["Misc"].push(f);
 		});
 
         // Render Categories
