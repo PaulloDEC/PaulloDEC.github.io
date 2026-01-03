@@ -137,19 +137,71 @@ export class RenderEngine {
 
     preRender(map, assets, useGridFix) {
         if (!map || !assets) return;
-        this.cacheCanvas.width = map.width * this.tileSize;
-        this.cacheCanvas.height = map.height * this.tileSize;
-        this.cacheCtx.imageSmoothingEnabled = false;
-        this.cacheCtx.clearRect(0,0,this.cacheCanvas.width,this.cacheCanvas.height);
+        
+        const width = map.width * this.tileSize;
+        const height = map.height * this.tileSize;
+        
+        // Create canvas for background terrain (solid tiles + masked tiles that have bg)
+        this.bgTerrainCanvas = document.createElement('canvas');
+        this.bgTerrainCanvas.width = width;
+        this.bgTerrainCanvas.height = height;
+        const bgCtx = this.bgTerrainCanvas.getContext('2d');
+        bgCtx.imageSmoothingEnabled = false;
+        
+        // Create canvas for overlay terrain (masked tiles with NO bg - render over actors)
+        this.overlayTerrainCanvas = document.createElement('canvas');
+        this.overlayTerrainCanvas.width = width;
+        this.overlayTerrainCanvas.height = height;
+        const overlayCtx = this.overlayTerrainCanvas.getContext('2d');
+        overlayCtx.imageSmoothingEnabled = false;
+        
         const ds = useGridFix ? 8.4 : 8;
+        
+        // Render tiles based on DN2 layer rules
         for(let y=0; y<map.height; y++) {
             for(let x=0; x<map.width; x++) {
                 const c = map.grid[y*map.width+x];
-                if(c.bg!==null && assets.solidTiles[c.bg]) this.cacheCtx.drawImage(assets.solidTiles[c.bg], x*8, y*8, ds, ds);
-                if(c.fg!==null && assets.maskedTiles[c.fg]) this.cacheCtx.drawImage(assets.maskedTiles[c.fg], x*8, y*8, ds, ds);
+                
+                // Background tiles check "draw in front" attribute (bit 5)
+                if(c.bg!==null && assets.solidTiles[c.bg]) {
+                    const tileAttr = assets.solidTileAttributes?.[c.bg] || 0;
+                    const drawInFront = (tileAttr & 0x20) !== 0; // Bit 5 = 0x20
+                    
+                    if (drawInFront) {
+                        // Solid tile with "draw in front" flag - renders over actors
+                        overlayCtx.drawImage(assets.solidTiles[c.bg], x*8, y*8, ds, ds);
+                    } else {
+                        // Normal solid tile - renders in background
+                        bgCtx.drawImage(assets.solidTiles[c.bg], x*8, y*8, ds, ds);
+                    }
+                }
+                
+                // Foreground tiles render based on their "draw in front" attribute (bit 5)
+                if(c.fg!==null && assets.maskedTiles[c.fg]) {
+                    // Check if this tile has the "draw in front" flag
+                    const tileAttr = assets.maskedTileAttributes?.[c.fg] || 0;
+                    const drawInFront = (tileAttr & 0x20) !== 0; // Bit 5 = 0x20
+                    
+                    if (drawInFront) {
+                        // Tile has "draw in front" flag - renders over actors
+                        overlayCtx.drawImage(assets.maskedTiles[c.fg], x*8, y*8, ds, ds);
+                    } else {
+                        // Normal tile - renders with background
+                        bgCtx.drawImage(assets.maskedTiles[c.fg], x*8, y*8, ds, ds);
+                    }
+                }
             }
         }
+        
         this.isCached = true;
+        
+        // DEBUG: Log overlay tile count
+        const overlayImageData = overlayCtx.getImageData(0, 0, width, height);
+        let overlayPixelCount = 0;
+        for (let i = 3; i < overlayImageData.data.length; i += 4) {
+            if (overlayImageData.data[i] > 0) overlayPixelCount++;
+        }
+        console.log(`Overlay terrain: ${overlayPixelCount} non-transparent pixels found`);
     }
 
     draw(state, viewport) {
@@ -174,12 +226,30 @@ export class RenderEngine {
 
         if (state.viewMode === 'map') {
             if (this.isCached) {
-                if (state.layers.showMap) ctx.drawImage(this.cacheCanvas, 0, 0);
-                if (state.layers.showSprites && state.currentMap && state.currentMap.actors) {
-                    this.drawActors(ctx, state.currentMap, state.actorManager, state.layers, state.difficulty);
+                // 1. Draw background terrain (solid tiles + masked tiles with bg)
+                if (state.layers.showBackgroundTerrain && this.bgTerrainCanvas) {
+                    ctx.drawImage(this.bgTerrainCanvas, 0, 0);
+                }
+                
+                if (state.actorsAlwaysOnTop) {
+                    // Actors on top mode: overlay terrain, then actors
+                    if (state.layers.showForegroundTerrain && this.overlayTerrainCanvas) {
+                        ctx.drawImage(this.overlayTerrainCanvas, 0, 0);
+                    }
+                    if (state.layers.showSprites && state.currentMap && state.currentMap.actors) {
+                        this.drawActors(ctx, state.currentMap, state.actorManager, state.layers, state.difficulty);
+                    }
+                } else {
+                    // Normal mode: actors, then overlay terrain
+                    if (state.layers.showSprites && state.currentMap && state.currentMap.actors) {
+                        this.drawActors(ctx, state.currentMap, state.actorManager, state.layers, state.difficulty);
+                    }
+                    if (state.layers.showForegroundTerrain && this.overlayTerrainCanvas) {
+                        ctx.drawImage(this.overlayTerrainCanvas, 0, 0);
+                    }
                 }
             }
-        } 
+        }
         else if (state.viewMode === 'asset' && state.currentAsset) {
             // Draw Asset Image
             ctx.drawImage(state.currentAsset.image, 0, 0);
@@ -233,7 +303,9 @@ export class RenderEngine {
             return false;
         };
 
-        // Second pass: draw actors with difficulty filtering
+        // Second pass: collect and sort actors by type
+        const actorsToDraw = [];
+        
         for (const actor of map.actors) {
             if (actor.id === 0) continue;
             
@@ -248,8 +320,8 @@ export class RenderEngine {
             const hasHardOnly = hasAdjacentMeta(actor.x, actor.y, metaHardOnly);
             const hasMediumHardOnly = hasAdjacentMeta(actor.x, actor.y, metaMediumHardOnly);
             
-            if (hasHardOnly && difficulty !== 2) continue; // Only show on Hard
-            if (hasMediumHardOnly && difficulty === 0) continue; // Hide on Easy
+            if (hasHardOnly && difficulty !== 2) continue;
+            if (hasMediumHardOnly && difficulty === 0) continue;
             
             // Filter by type based on layer settings
             if (layers) {
@@ -262,8 +334,31 @@ export class RenderEngine {
                 if (actorType === 'tech' && !layers.showTech) continue;
             }
             
-            // Check if this actor needs special rendering
-            let sprite = null;
+            // Add to draw list with metadata
+            actorsToDraw.push({ actor, meta, actorType });
+        }
+        
+        // Sort actors by type (z-order)
+        const typeOrder = {
+            'FX': 0,
+            'tech': 1,
+            'hazard': 2,
+            'bonus': 3,
+            'powerup': 4,
+            'keyitem': 5,
+            'enemy': 6,
+            'player': 7,
+            'UI': 8
+        };
+        
+        actorsToDraw.sort((a, b) => {
+            const orderA = typeOrder[a.actorType] ?? 99;
+            const orderB = typeOrder[b.actorType] ?? 99;
+            return orderA - orderB;
+        });
+        
+        // Third pass: draw sorted actors
+        for (const { actor, meta, actorType } of actorsToDraw) {
             const actorName = meta ? meta.name : null;
             
             // Check for compound actor configuration
@@ -274,30 +369,26 @@ export class RenderEngine {
             const revealKey = revealConfig ? `${actor.id}-${actor.x}-${actor.y}` : null;
             const isRevealed = revealKey ? (this.revealStates.get(revealKey) === true) : false;
             
-            // Build the appropriate sprite
+            let sprite = null;
+            
             // Get the appropriate sprite (all should be pre-cached)
             if (compoundConfig) {
-                // Try to get cached compound sprite, fall back to base metaframe
                 const cacheKey = `compound_${actor.id}`;
                 sprite = this.specialSpriteCache?.get(cacheKey) || (am ? am.getMetaframeSync(actor.id) : null);
                 
-                // If not cached, request it for next frame
                 if (!sprite) {
                     this.buildCompoundSprite(actor.id, compoundConfig, am);
                     sprite = am ? am.getMetaframeSync(actor.id) : null;
                 }
             } else if (revealConfig && !isRevealed) {
-                // Try to get cached reveal sprite, fall back to base metaframe
                 const cacheKey = `reveal_${actor.id}_hidden`;
                 sprite = this.specialSpriteCache?.get(cacheKey) || (am ? am.getMetaframeSync(actor.id) : null);
                 
-                // If not cached, request it for next frame
                 if (!sprite) {
                     this.buildRevealSprite(actor.id, revealConfig, am);
                     sprite = am ? am.getMetaframeSync(actor.id) : null;
                 }
             } else {
-                // Normal actor or revealed state: use standard metaframe
                 sprite = am ? am.getMetaframeSync(actor.id) : null;
             }
             

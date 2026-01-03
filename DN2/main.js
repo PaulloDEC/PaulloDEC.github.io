@@ -195,10 +195,13 @@ let appState = {
     currentAsset: null, 
     solidTiles: [],
     maskedTiles: [],
+    solidTileAttributes: [],
+    maskedTileAttributes: [],
     currentMap: null,
     actorManager: actorManager,
     layers: { 
-        showMap: true, 
+        showBackgroundTerrain: true,
+        showForegroundTerrain: true,
         showSprites: true,
         showPlayer: true,
         showEnemies: true,
@@ -209,6 +212,7 @@ let appState = {
         showTech: true
     },
     difficulty: 0,  // 0 = Easy, 1 = Medium, 2 = Hard
+    actorsAlwaysOnTop: false,
     useSolidBG: false,
     useGridFix: false,
     actorViewMode: 'dynamic',  // 'dynamic' or 'raw'
@@ -765,7 +769,6 @@ function initControls() {
         // ─────────────────────────────────────────────────────────────────────
         // Wire up terrain and actor visibility toggles
         
-        const terrainCheckbox = document.getElementById('layer-terrain');
         const actorsCheckbox = document.getElementById('layer-actors');
         
         // Type-specific checkboxes
@@ -779,10 +782,19 @@ function initControls() {
             document.getElementById('layer-tech')
         ];
         
-        // Terrain toggle
-        if (terrainCheckbox) {
-            terrainCheckbox.addEventListener('change', (e) => {
-                appState.layers.showMap = e.target.checked;
+        // Background terrain toggle
+        const bgTerrainCheckbox = document.getElementById('layer-bg-terrain');
+        if (bgTerrainCheckbox) {
+            bgTerrainCheckbox.addEventListener('change', (e) => {
+                appState.layers.showBackgroundTerrain = e.target.checked;
+            });
+        }
+        
+        // Foreground terrain toggle
+        const fgTerrainCheckbox = document.getElementById('layer-fg-terrain');
+        if (fgTerrainCheckbox) {
+            fgTerrainCheckbox.addEventListener('change', (e) => {
+                appState.layers.showForegroundTerrain = e.target.checked;
             });
         }
         
@@ -855,6 +867,13 @@ function initControls() {
         });
     }
 
+    // Actors Always on Top checkbox
+        const actorsOnTopCheckbox = document.getElementById('actors-always-on-top');
+        if (actorsOnTopCheckbox) {
+            actorsOnTopCheckbox.addEventListener('change', (e) => {
+                appState.actorsAlwaysOnTop = e.target.checked;
+            });
+        }
 
     // ─────────────────────────────────────────────────────────────────────────
     // MUSIC CONTROLS (Bottom-Center Panel)
@@ -1012,16 +1031,44 @@ async function loadLevel(filename) {
         if (rawZone) {
             appState.solidTiles = [];
             appState.maskedTiles = [];
-            const solidData = rawZone.subarray(3600, 3600 + 32000);
+            appState.solidTileAttributes = [];
+            appState.maskedTileAttributes = [];
+            
+            // Parse tile attributes (offset 0, 1000 solid + 160 masked tiles)
+            // Each attribute is 2 bytes (UINT16LE)
+            const attributeView = new DataView(rawZone.buffer, rawZone.byteOffset, 3600);
+            
+            // Parse solid tile attributes (first 1000 tiles = 2000 bytes)
             for (let i = 0; i < 1000; i++) {
-                const img = assets.decodeTile(solidData, i, 'solid_local');
+                const attrOffset = i * 2;
+                const attribute = attributeView.getUint16(attrOffset, true);
+                appState.solidTileAttributes[i] = attribute;
+            }
+            
+            // Parse masked tile attributes (next 800 bytes = 160 tiles × 5 values × 2 bytes)
+            // Only the first value per tile is used
+            for (let i = 0; i < 160; i++) {
+                const attrOffset = 2000 + (i * 10); // 2000 bytes for solid tiles, then 10 bytes per masked tile
+                const attribute = attributeView.getUint16(attrOffset, true); // Little-endian
+                appState.maskedTileAttributes[i] = attribute;
+            }
+            
+            console.log(`Loaded ${appState.solidTileAttributes.length} solid tile attributes`);
+            console.log(`Loaded ${appState.maskedTileAttributes.length} masked tile attributes`);
+            
+            const solidData = rawZone.subarray(3600);
+            for (let i = 0; i < 1000; i++) {
+                const img = assets.decodeTile(solidData, i, 'solid_czone', 0);
                 if (img) appState.solidTiles[i] = await createImageBitmap(img);
             }
-            const maskedData = rawZone.subarray(35600);
+            
+            const maskedData = rawZone.subarray(3600 + 32000);
             for (let i = 0; i < 160; i++) {
-                const img = assets.decodeTile(maskedData, i, 'masked');
+                const img = assets.decodeTile(maskedData, i, 'masked', 0);
                 if (img) appState.maskedTiles[i] = await createImageBitmap(img);
             }
+            
+            console.log(`Loaded ${appState.maskedTileAttributes.length} masked tile attributes`);
         }
 
         if (appState.currentMap.actors) {
@@ -1029,7 +1076,16 @@ async function loadLevel(filename) {
             ids.forEach(id => actorManager.requestSprite(id));
         }
 
-        renderer.preRender(appState.currentMap, { solidTiles: appState.solidTiles, maskedTiles: appState.maskedTiles }, appState.useGridFix);
+        renderer.preRender(
+            appState.currentMap, 
+            { 
+                solidTiles: appState.solidTiles, 
+                maskedTiles: appState.maskedTiles,
+                solidTileAttributes: appState.solidTileAttributes,
+                maskedTileAttributes: appState.maskedTileAttributes
+            }, 
+            appState.useGridFix
+        );
         renderer.requestSpecialSprites(mapParser);
         handleFitZoom();
         updateUIState();

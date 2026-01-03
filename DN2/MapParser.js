@@ -91,18 +91,23 @@ export class MapParser {
             const extra = highBits[i] || 0;
             let bgIndex = null;
             let fgIndex = null;
+            let fgOverlay = false;
 
             if (val & 0x8000) {
                 // Extended tile spec: separate indices for layers 0 and 1
                 bgIndex = val & 0x03FF;
                 let fgLow = (val >> 10) & 0x1F;
                 fgIndex = fgLow + (extra * 32);
+                // Extended spec masked tiles render OVER actors (layer 1)
+                fgOverlay = true;
             } else {
                 // Simple tile spec
                 if (val < 8000) bgIndex = val / 8;
                 else fgIndex = (val - 8000) / 40;
+                // Simple spec tiles render normally (layer 0)
+                fgOverlay = false;
             }
-            this.grid[i] = { bg: bgIndex, fg: fgIndex };
+            this.grid[i] = { bg: bgIndex, fg: fgIndex, fgOverlay: fgOverlay };
         }
         
         return this;
