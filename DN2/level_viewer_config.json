@@ -64,7 +64,21 @@
       "offsetY": 0,
       "defaultState": "hidden"
     },
+    "Nuclear_Waste": {
+      "overlayActorNum": 14,
+      "overlayFrameIndex": 0,
+      "offsetX": 0,
+      "offsetY": 0,
+      "defaultState": "hidden"
+    },
     "Circuit_Card": {
+      "overlayActorNum": 161,
+      "overlayFrameIndex": 0,
+      "offsetX": 0,
+      "offsetY": 0,
+      "defaultState": "hidden"
+    },
+    "Cloaking_Device": {
       "overlayActorNum": 161,
       "overlayFrameIndex": 0,
       "offsetX": 0,

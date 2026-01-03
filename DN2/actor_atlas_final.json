@@ -3070,7 +3070,7 @@
     "type": "enemy",
     "metaframe": {
       "hotspotX": 0,
-      "hotspotY": 0,
+      "hotspotY": 40,
       "layers": [
         {
           "frameIndex": 0,
@@ -4409,7 +4409,7 @@
       "hotspotY": 24,
       "layers": [
         {
-          "frameIndex": 3,
+          "frameIndex": 0,
           "offsetX": 0,
           "offsetY": 0
         }
@@ -4637,7 +4637,7 @@
     "type": "enemy",
     "metaframe": {
       "hotspotX": 0,
-      "hotspotY": 0,
+      "hotspotY": 24,
       "layers": [
         {
           "frameIndex": 0,
@@ -5264,8 +5264,8 @@
     "palette": 0,
     "type": "tech",
     "metaframe": {
-      "hotspotX": 0,
-      "hotspotY": 14,
+      "hotspotX": 12,
+      "hotspotY": 0,
       "layers": [
         {
           "frameIndex": 3,
@@ -6147,7 +6147,7 @@
     "type": "keyitem",
     "metaframe": {
       "hotspotX": 0,
-      "hotspotY": 0,
+      "hotspotY": 16,
       "layers": [
         {
           "frameIndex": 0,
@@ -7614,7 +7614,7 @@
         }
       ],
       "hotspotX": 0,
-      "hotspotY": 0
+      "hotspotY": 88
     }
   },
   {
@@ -11565,7 +11565,7 @@
     "type": "bonus",
     "metaframe": {
       "hotspotX": 0,
-      "hotspotY": 0,
+      "hotspotY": 16,
       "layers": [
         {
           "frameIndex": 4,
@@ -13716,7 +13716,7 @@
     "type": "bonus",
     "metaframe": {
       "hotspotX": 0,
-      "hotspotY": 0,
+      "hotspotY": 32,
       "layers": [
         {
           "frameIndex": 0,
