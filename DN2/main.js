@@ -213,6 +213,7 @@ let appState = {
     },
     difficulty: 0,  // 0 = Easy, 1 = Medium, 2 = Hard
     actorsAlwaysOnTop: false,
+    hideBgGrid: false,
     useSolidBG: false,
     useGridFix: false,
     actorViewMode: 'dynamic',  // 'dynamic' or 'raw'
@@ -874,6 +875,29 @@ function initControls() {
                 appState.actorsAlwaysOnTop = e.target.checked;
             });
         }
+    
+    // Hide BG Grid checkbox
+        const hideBgGridCheckbox = document.getElementById('hide-bg-grid');
+        if (hideBgGridCheckbox) {
+            hideBgGridCheckbox.addEventListener('change', (e) => {
+                appState.hideBgGrid = e.target.checked;
+                
+                // Re-render the level with the new setting
+                if (appState.currentMap) {
+                    renderer.preRender(
+                        appState.currentMap,
+                        {
+                            solidTiles: appState.solidTiles,
+                            maskedTiles: appState.maskedTiles,
+                            solidTileAttributes: appState.solidTileAttributes,
+                            maskedTileAttributes: appState.maskedTileAttributes
+                        },
+                        appState.useGridFix,
+                        appState.hideBgGrid
+                    );
+                }
+            });
+        }
 
     // ─────────────────────────────────────────────────────────────────────────
     // MUSIC CONTROLS (Bottom-Center Panel)
@@ -1084,7 +1108,8 @@ async function loadLevel(filename) {
                 solidTileAttributes: appState.solidTileAttributes,
                 maskedTileAttributes: appState.maskedTileAttributes
             }, 
-            appState.useGridFix
+            appState.useGridFix,
+            appState.hideBgGrid
         );
         renderer.requestSpecialSprites(mapParser);
         handleFitZoom();

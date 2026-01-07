@@ -6,6 +6,7 @@
 export class AudioPlayer {
     constructor() {
         this.ctx = null;
+        this.currentSource = null;
     }
 
     init() {
@@ -17,6 +18,16 @@ export class AudioPlayer {
     async playVoc(buffer) {
         this.init();
         if (this.ctx.state === 'suspended') await this.ctx.resume();
+
+        // Stop any currently playing VOC before starting a new one
+        if (this.currentSource) {
+            try {
+                this.currentSource.stop();
+            } catch (e) {
+                // Already stopped, ignore
+            }
+            this.currentSource = null;
+        }
 
         const data = new Uint8Array(buffer);
         let offset = 0;
@@ -174,6 +185,7 @@ export class AudioPlayer {
     }
 
     playPcmBuffer(pcmData, sampleRate) {
+                
         const audioBuffer = this.ctx.createBuffer(1, pcmData.length, sampleRate);
         const channel = audioBuffer.getChannelData(0);
         
@@ -186,6 +198,15 @@ export class AudioPlayer {
         const source = this.ctx.createBufferSource();
         source.buffer = audioBuffer;
         source.connect(this.ctx.destination);
+        
+        // Clean up reference when audio finishes
+        source.onended = () => {
+            if (this.currentSource === source) {
+                this.currentSource = null;
+            }
+        };
+        
+        this.currentSource = source;
         source.start();
     }
 

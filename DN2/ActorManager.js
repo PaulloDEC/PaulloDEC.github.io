@@ -402,7 +402,7 @@ export class ActorManager {
              if(imgData) {
                  const bmp = await createImageBitmap(imgData);
                  ctx.drawImage(bmp, x, y);
-                 layout.push({ id: i, x, y, width: TILE_SIZE, height: TILE_SIZE });
+                 layout.push({ id: i, x, y, width: TILE_SIZE, height: TILE_SIZE, isRawView: true });
              }
              
              currentByteOffset += BYTES_PER_TILE;

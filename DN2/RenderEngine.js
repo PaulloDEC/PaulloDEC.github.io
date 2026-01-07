@@ -38,8 +38,14 @@ export class RenderEngine {
         const hovered = this.findActorsAtScreenPos(mouseX, mouseY);
         
         if (hovered.length > 0) {
+            // Skip tooltips for raw view items
+            if (hovered[0].isRawView) {
+                this.tooltip.style.display = 'none';
+                return;
+            }
             let html = `<div style="margin-bottom:4px;border-bottom:1px solid #555;padding-bottom:2px;color:#fc0;font-weight:bold;">${hovered.length} Item(s)</div>`;
             
+
             hovered.forEach(hit => {
                 const actor = hit.actor;
                 const sprite = hit.sprite;
@@ -135,7 +141,7 @@ export class RenderEngine {
         this.ctx.msImageSmoothingEnabled = false;
     }
 
-    preRender(map, assets, useGridFix) {
+    preRender(map, assets, useGridFix, hideBgGrid = false) {
         if (!map || !assets) return;
         
         const width = map.width * this.tileSize;
@@ -164,6 +170,11 @@ export class RenderEngine {
                 
                 // Background tiles check "draw in front" attribute (bit 5)
                 if(c.bg!==null && assets.solidTiles[c.bg]) {
+                    // Skip tile 0 (background grid) if hideBgGrid is enabled
+                    if (hideBgGrid && c.bg === 0) {
+                        continue; // Leave as black/transparent
+                    }
+                    
                     const tileAttr = assets.solidTileAttributes?.[c.bg] || 0;
                     const drawInFront = (tileAttr & 0x20) !== 0; // Bit 5 = 0x20
                     
@@ -266,7 +277,8 @@ export class RenderEngine {
                         x: item.x,
                         y: item.y,
                         width: item.width,
-                        height: item.height
+                        height: item.height,
+                        isRawView: item.isRawView || false
                     });
                 });
             }
