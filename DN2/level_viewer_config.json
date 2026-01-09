@@ -33,6 +33,188 @@
         }
       ]
     },
+    "Watchbot_Container_Carrier": {
+      "layers": [
+        {
+          "sourceActorNum": 59,
+          "frameIndex": 0,
+          "offsetX": 0,
+          "offsetY": -8,
+          "zIndex": -1
+        }
+      ]
+    },
+    "Blowing_Fan": {
+      "layers": [
+        {
+          "sourceActorNum": 260,
+          "frameIndex": 2,
+          "offsetX": 0,
+          "offsetY": -8,
+          "zIndex": -1
+        }
+      ]
+    },
+    "Messenger_Drone_1": {
+      "layers": [
+        {
+          "sourceActorNum": 107,
+          "frameIndex": 0,
+          "offsetX": -8,
+          "offsetY": -8,
+          "zIndex": -1
+        },
+        {
+          "sourceActorNum": 108,
+          "frameIndex": 0,
+          "offsetX": 40,
+          "offsetY": -8,
+          "zIndex": -2
+        },
+        {
+          "sourceActorNum": 110,
+          "frameIndex": 0,
+          "offsetX": 0,
+          "offsetY": 24,
+          "zIndex": -3
+        },
+        {
+          "sourceActorNum": 111,
+          "frameIndex": 0,
+          "offsetX": 8,
+          "offsetY": 32,
+          "zIndex": -4
+        }
+      ]
+    },
+    "Messenger_Drone_2": {
+      "layers": [
+        {
+          "sourceActorNum": 107,
+          "frameIndex": 0,
+          "offsetX": -8,
+          "offsetY": -8,
+          "zIndex": -1
+        },
+        {
+          "sourceActorNum": 108,
+          "frameIndex": 0,
+          "offsetX": 40,
+          "offsetY": -8,
+          "zIndex": -2
+        },
+        {
+          "sourceActorNum": 110,
+          "frameIndex": 0,
+          "offsetX": 0,
+          "offsetY": 24,
+          "zIndex": -3
+        },
+        {
+          "sourceActorNum": 111,
+          "frameIndex": 0,
+          "offsetX": 8,
+          "offsetY": 32,
+          "zIndex": -4
+        }
+      ]
+    },
+    "Messenger_Drone_3": {
+      "layers": [
+        {
+          "sourceActorNum": 107,
+          "frameIndex": 0,
+          "offsetX": -8,
+          "offsetY": -8,
+          "zIndex": -1
+        },
+        {
+          "sourceActorNum": 108,
+          "frameIndex": 0,
+          "offsetX": 40,
+          "offsetY": -8,
+          "zIndex": -2
+        },
+        {
+          "sourceActorNum": 110,
+          "frameIndex": 0,
+          "offsetX": 0,
+          "offsetY": 24,
+          "zIndex": -3
+        },
+        {
+          "sourceActorNum": 111,
+          "frameIndex": 0,
+          "offsetX": 8,
+          "offsetY": 32,
+          "zIndex": -4
+        }
+      ]
+    },
+    "Messenger_Drone_4": {
+      "layers": [
+        {
+          "sourceActorNum": 107,
+          "frameIndex": 0,
+          "offsetX": -8,
+          "offsetY": -8,
+          "zIndex": -1
+        },
+        {
+          "sourceActorNum": 108,
+          "frameIndex": 0,
+          "offsetX": 40,
+          "offsetY": -8,
+          "zIndex": -2
+        },
+        {
+          "sourceActorNum": 110,
+          "frameIndex": 0,
+          "offsetX": 0,
+          "offsetY": 24,
+          "zIndex": -3
+        },
+        {
+          "sourceActorNum": 111,
+          "frameIndex": 0,
+          "offsetX": 8,
+          "offsetY": 32,
+          "zIndex": -4
+        }
+      ]
+    },
+    "Messenger_Drone_5": {
+      "layers": [
+        {
+          "sourceActorNum": 107,
+          "frameIndex": 0,
+          "offsetX": -8,
+          "offsetY": -8,
+          "zIndex": -1
+        },
+        {
+          "sourceActorNum": 108,
+          "frameIndex": 0,
+          "offsetX": 40,
+          "offsetY": -8,
+          "zIndex": -2
+        },
+        {
+          "sourceActorNum": 110,
+          "frameIndex": 0,
+          "offsetX": 0,
+          "offsetY": 24,
+          "zIndex": -3
+        },
+        {
+          "sourceActorNum": 111,
+          "frameIndex": 0,
+          "offsetX": 8,
+          "offsetY": 32,
+          "zIndex": -4
+        }
+      ]
+    },
     "Teleporter_1": {
       "layers": [
         {
