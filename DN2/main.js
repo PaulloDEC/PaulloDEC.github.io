@@ -4,6 +4,7 @@ import { MapParser } from './MapParser.js';
 import { Viewport } from './Viewport.js';
 import { RenderEngine } from './RenderEngine.js';
 import { UIManager } from './UIManager.js';
+import { LevelStats } from './LevelStats.js';
 import { ActorManager } from './ActorManager.js';
 import { AudioPlayer } from './AudioPlayer.js';
 import { MusicPlayer } from './MusicPlayer.js';
@@ -138,6 +139,7 @@ const canvas = document.getElementById('preview-canvas') || createFallbackCanvas
 const viewport = new Viewport(canvas);
 const renderer = new RenderEngine(canvas, actorManager);
 const paletteViewer = new PaletteViewer();
+const levelStats = new LevelStats('level-stats');
 
 logMessage('System Ready.', 'success');
 updateHeaderStatus('Waiting for Data...');
@@ -864,6 +866,11 @@ function initControls() {
         document.querySelectorAll('input[name="difficulty"]').forEach(radio => {
             radio.addEventListener('change', (e) => {
                 appState.difficulty = parseInt(e.target.value);
+                
+                // Update level stats to reflect difficulty change
+                if (appState.currentMap && appState.viewMode === 'map') {
+                    levelStats.update(appState.currentMap, actorManager, appState.difficulty);
+                }
             });
         });
     }
@@ -1115,6 +1122,9 @@ async function loadLevel(filename) {
         handleFitZoom();
         updateUIState();
         
+        // Update level statistics panel
+        await levelStats.update(appState.currentMap, actorManager, appState.difficulty);
+
 		// Enhanced header status
         const actorCount = appState.currentMap.actors.length;
 		const dimensions = `${appState.currentMap.width}×${appState.currentMap.height}`;
@@ -1206,7 +1216,8 @@ async function loadAsset(filename) {
                 // Clear any previous visual asset
                 appState.currentAsset = null;
                 appState.viewMode = 'soundboard';
-                
+                levelStats.hide();
+
                 const sounds = soundManager.load(headData, bodyData);
                 renderSoundBoard(sounds);
                 
@@ -1232,6 +1243,7 @@ async function loadAsset(filename) {
         
         if (upper === "LCR.MNI" && rawFile.length === 64768) {
             appState.viewMode = 'asset';
+            levelStats.hide();
             
             // Extract palette (first 768 bytes)
             const paletteData = rawFile.slice(0, 768);
@@ -1263,6 +1275,7 @@ async function loadAsset(filename) {
         
         if (rawFile.length === 4000) {
             appState.viewMode = 'asset';
+            levelStats.hide();
             
             const img = await assets.decodeB800Text(rawFile);
             if (img) {
@@ -1287,6 +1300,7 @@ async function loadAsset(filename) {
         
         if (upper === 'TEXT.MNI' || upper === 'OPTIONS.MNI' || upper === 'HELP.MNI' || upper === 'ORDERTXT.MNI') {
             appState.viewMode = 'data';
+            levelStats.hide();
             
             const highlightedHTML = assets.parseGameScript(rawFile);
             
@@ -1322,6 +1336,7 @@ async function loadAsset(filename) {
 
         if (rawFile.length === 32048) {
             appState.viewMode = 'asset';
+            levelStats.hide();
             const img = await assets.decodeFullScreenImage(rawFile);
             if (img) {
                 appState.currentAsset = { image: img, layout: null };
@@ -1352,6 +1367,7 @@ async function loadAsset(filename) {
 
         if (upper === "ACTORS.MNI") {
             appState.viewMode = 'asset';
+            levelStats.hide();
             appState.assetType = 'actors';
             appState.actorViewMode = 'dynamic';
             appState.actorSortMode = 'default';
@@ -1383,6 +1399,7 @@ async function loadAsset(filename) {
 
         else if (upper.includes("CZONE")) {
             appState.viewMode = 'asset';
+            levelStats.hide();
             if (rawFile) {
                 const sheet = await assets.generateCZoneSheet(rawFile);
                 if (sheet) {
@@ -1413,6 +1430,7 @@ async function loadAsset(filename) {
 		// Handles backdrop images and status bar graphics
 		else if (upper.startsWith("BACKDRP") || upper.startsWith("DROP") || upper === "STATUS.MNI") {
 			appState.viewMode = 'asset';
+            levelStats.hide();
 			if (rawFile) {
 				// All these files use 4-plane solid tiles (32 bytes per tile)
 				const bytesPerTile = 32;
@@ -1447,6 +1465,7 @@ async function loadAsset(filename) {
     // Displays Duke Nukem 2 palette files as color bars and grids
     else if (upper.endsWith(".PAL")) {
         appState.viewMode = 'data';
+        levelStats.hide();
     
         // Allow 48, 768, OR 64768 bytes
         if (rawFile && (rawFile.length === 48 || rawFile.length === 768 || rawFile.length === 64768)) {

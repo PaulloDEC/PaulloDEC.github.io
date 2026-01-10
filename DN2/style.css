@@ -660,6 +660,7 @@ details[open] summary {
     padding: 8px;
     border: 1px solid var(--border);
     border-radius: var(--radius);
+    backdrop-filter: blur(4px); /* Blur canvas behind panel */
     box-shadow: var(--shadow);
     z-index: 100;
 }
@@ -1682,4 +1683,122 @@ details[open] summary {
 .script-special {
     color: #666666; /* Dark gray - de-emphasized special chars */
     opacity: 0.5;
+}
+
+/* ========================================================================== */
+/* LEVEL STATISTICS PANEL                                                     */
+/* ========================================================================== */
+
+.stats-panel {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 200px;
+    background: rgba(26, 15, 15, 0.9);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px;
+    color: var(--text-main);
+    font-family: 'Consolas', monospace;
+    font-size: 0.8rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    z-index: 100; /* Float above canvas */
+    backdrop-filter: blur(4px); /* Blur canvas behind panel */
+    transition: height 0.2s; /* Smooth collapse animation */
+}
+
+.stats-header {
+    /* Clickable header to collapse/expand stats panel */
+    cursor: pointer;
+    user-select: none;
+    color: var(--accent); /* Match zoom panel orange */
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-bottom: 2px;
+}
+
+.stats-title {
+    font-weight: bold;
+}
+
+.stats-arrow {
+    /* Arrow indicator for collapse state */
+    font-size: 0.7rem;
+    width: 12px;
+}
+
+.stats-content {
+    /* Container for stats data rows */
+    margin-top: 8px;
+}
+
+.stats-grid {
+    /* Vertical stack of stat rows */
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.stat-item {
+    /* Individual statistic row (label: value) */
+    display: flex;
+    justify-content: space-between;
+    color: var(--text-muted);
+}
+
+.stat-item span {
+    /* Stat value */
+    font-weight: bold;
+    color: var(--accent);
+}
+
+.stats-divider {
+    /* Horizontal line separator between stat sections */
+    height: 1px;
+    background: var(--border);
+    margin: 8px 0;
+}
+
+.stats-subtitle {
+    /* Section subtitle within stats panel */
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+}
+
+.required-items-list {
+    /* List of required collectibles for level completion */
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.req-item {
+    /* Individual required item row (icon + name) */
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.req-icon {
+    /* Container for item sprite icon */
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.req-icon canvas {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+
+.map-dim {
+    /* Map dimensions display (width x height) */
+    text-align: center;
+    color: #666;
+    font-size: 0.75rem;
 }
