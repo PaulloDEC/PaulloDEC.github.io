@@ -193,8 +193,10 @@ export class LevelStats {
             }
         }
         
-        // Always add "Reach the Exit" objective
-        foundObjectives.add("Reach the Exit");
+        // Add "Reach the Exit" objective unless there's a boss
+        if (!foundObjectives.has("Defeat Rigelatin Boss")) {
+            foundObjectives.add("Reach the Exit");
+        }
         
         /* ------------------------------------------------------------------ */
         /* Step 4: Build HTML                                                 */
