@@ -11775,7 +11775,7 @@
     "type": "enemy",
     "metaframe": {
       "hotspotX": 0,
-      "hotspotY": 0,
+      "hotspotY": 16,
       "layers": [
         {
           "frameIndex": 0,

@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DN2 Animation Viewer Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: monospace;
+            background: #1a1a1a;
+            color: #f0f0f0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        h1 {
+            color: #5af;
+        }
+        
+        #controls {
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        button {
+            background: #3a3a3a;
+            color: #f0f0f0;
+            border: 1px solid #555;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: monospace;
+        }
+        
+        button:hover {
+            background: #4a4a4a;
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        #canvas-container {
+            background: #000;
+            border: 2px solid #444;
+            display: inline-block;
+        }
+        
+        canvas {
+            display: block;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+        
+        #frame-info {
+            color: #888;
+            font-size: 14px;
+        }
+        
+        #speed-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        input[type="range"] {
+            width: 150px;
+        }
+        
+        #playback-controls {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 800px;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎬 Duke Nukem 2 - Animation Viewer (Test)</h1>
+    
+    <div id="controls">
+        <input type="file" id="file-input" accept=".f1,.f2,.f3,.f4,.f5">
+        <label for="file-input">Load animation file...</label>
+        <span id="file-info" style="margin-left: 20px;"></span>
+    </div>
+    
+    <div id="canvas-container">
+        <canvas id="canvas"></canvas>
+    </div>
+    
+    <div id="playback-controls" style="display: none;">
+        <button id="btn-first">⏮ First</button>
+        <button id="btn-prev">◀ Prev</button>
+        <button id="btn-play">▶ Play</button>
+        <button id="btn-next">Next ▶</button>
+        <button id="btn-last">Last ⏭</button>
+        
+        <div id="frame-info"></div>
+        
+        <div id="speed-control">
+            <label>Speed:</label>
+            <input type="range" id="speed-slider" min="1" max="30" value="10">
+            <span id="speed-value">10 FPS</span>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = false;
+        
+        let animationData = null;
+        let currentFrame = 0;
+        let isPlaying = false;
+        let playbackInterval = null;
+        let fps = 10;
+        
+        // UI Elements
+        const btnFirst = document.getElementById('btn-first');
+        const btnPrev = document.getElementById('btn-prev');
+        const btnPlay = document.getElementById('btn-play');
+        const btnNext = document.getElementById('btn-next');
+        const btnLast = document.getElementById('btn-last');
+        const frameInfo = document.getElementById('frame-info');
+        const speedSlider = document.getElementById('speed-slider');
+        const speedValue = document.getElementById('speed-value');
+        const playbackControls = document.getElementById('playback-controls');
+        const fileInfo = document.getElementById('file-info');
+        
+        // RLE Decompression helper (CORRECTED)
+        function expandRleWord(marker, data, offset, callback) {
+            if (marker > 0) {
+                // RLE: repeat next byte 'marker' times
+                const value = data[offset++];
+                for (let i = 0; i < marker; i++) {
+                    callback(value);
+                }
+            } else if (marker < 0) {
+                // Literal: copy next 'abs(marker)' bytes
+                const count = Math.abs(marker);
+                for (let i = 0; i < count; i++) {
+                    callback(data[offset++]);
+                }
+            }
+            return offset;
+        }
+        
+        // Parse animation file
+        function parseAnimation(buffer) {
+            const data = new Uint8Array(buffer);
+            const view = new DataView(buffer);
+            
+            let offset = 0;
+            
+            // Read header (128 bytes)
+            const fileSize = view.getUint32(offset, true); offset += 4;
+            const typeMarker = view.getUint16(offset, true); offset += 2;
+            const numFrames = view.getUint16(offset, true); offset += 2;
+            const width = view.getUint16(offset, true); offset += 2;
+            const height = view.getUint16(offset, true); offset += 2;
+            
+            console.log(`Animation: ${width}x${height}, ${numFrames} frames`);
+            
+            if (typeMarker !== 0xAF11) {
+                throw new Error('Invalid animation file type marker');
+            }
+            
+            offset = 128; // Skip to end of header
+            
+            // Read main image chunk header
+            const mainChunkSize = view.getUint32(offset, true); offset += 4;
+            const mainChunkType = view.getUint16(offset, true); offset += 2;
+            const mainNumSubChunks = view.getUint16(offset, true); offset += 2;
+            offset += 8; // Skip unknown bytes
+            
+            console.log(`Main chunk: size=${mainChunkSize}, type=0x${mainChunkType.toString(16)}, subchunks=${mainNumSubChunks}`);
+            
+            if (mainChunkType !== 0xF1FA || mainNumSubChunks !== 2) {
+                throw new Error('Invalid main chunk');
+            }
+            
+            // Read palette sub-chunk
+            const paletteSize = view.getUint32(offset, true); offset += 4;
+            const paletteType = view.getUint16(offset, true); offset += 2;
+            
+            console.log(`Palette: size=${paletteSize}, type=0x${paletteType.toString(16)}`);
+            
+            if (paletteType !== 0x0B || paletteSize !== 778) {
+                throw new Error('Invalid palette chunk');
+            }
+            
+            offset += 4; // Skip padding
+            
+            const palette = [];
+            for (let i = 0; i < 256; i++) {
+                const r = Math.floor((data[offset++] * 255) / 63);
+                const g = Math.floor((data[offset++] * 255) / 63);
+                const b = Math.floor((data[offset++] * 255) / 63);
+                palette.push([r, g, b]);
+            }
+            
+            // Read main image sub-chunk header
+            const mainImageStartOffset = offset;
+            const mainImageSize = view.getUint32(offset, true); offset += 4;
+            const mainImageType = view.getUint16(offset, true); offset += 2;
+            
+            console.log(`Main image: size=${mainImageSize}, type=0x${mainImageType.toString(16)}, data starts at ${offset}`);
+            
+            if (mainImageType !== 0x0F) {
+                throw new Error('Invalid main image chunk');
+            }
+            
+            // Decompress main image (RLE compressed row by row)
+            const mainImagePixels = [];
+            for (let row = 0; row < height; row++) {
+                const numRleFlags = data[offset++];
+                
+                for (let flag = 0; flag < numRleFlags; flag++) {
+                    const marker = view.getInt8(offset++);
+                    offset = expandRleWord(marker, data, offset, (colorIndex) => {
+                        mainImagePixels.push(colorIndex);
+                    });
+                }
+            }
+            
+            console.log(`Decoded main image: ${mainImagePixels.length} pixels, now at offset ${offset}`);
+            
+            // Skip to end of main image subchunk (based on size field)
+            offset = mainImageStartOffset + mainImageSize;
+            console.log(`Skipped to end of main image chunk: offset ${offset}`);
+            
+            // Read animation frames
+            const frames = [];
+            for (let frameIdx = 0; frameIdx < numFrames; frameIdx++) {
+                console.log(`\nReading frame ${frameIdx} at offset ${offset}`);
+                
+                // Frame chunk header
+                const frameChunkSize = view.getUint32(offset, true); offset += 4;
+                const frameChunkType = view.getUint16(offset, true); offset += 2;
+                const frameNumSubChunks = view.getUint16(offset, true); offset += 2;
+                offset += 8; // Skip unknown
+                
+                console.log(`Frame chunk: size=${frameChunkSize}, type=0x${frameChunkType.toString(16)}, subchunks=${frameNumSubChunks}`);
+                
+                if (frameChunkType !== 0xF1FA || frameNumSubChunks !== 1) {
+                    throw new Error(`Invalid frame ${frameIdx} chunk (type=0x${frameChunkType.toString(16)}, subchunks=${frameNumSubChunks})`);
+                }
+                
+                // Frame sub-chunk header
+                const frameSubStartOffset = offset;
+                const frameSubSize = view.getUint32(offset, true); offset += 4;
+                const frameSubType = view.getUint16(offset, true); offset += 2;
+                
+                console.log(`Frame subchunk: size=${frameSubSize}, type=0x${frameSubType.toString(16)}`);
+                
+                if (frameSubType !== 0x0C) {
+                    throw new Error(`Invalid frame ${frameIdx} sub-chunk (type=0x${frameSubType.toString(16)})`);
+                }
+                
+                const yOffset = view.getUint16(offset, true); offset += 2;
+                const numRows = view.getUint16(offset, true); offset += 2;
+                
+                console.log(`Frame ${frameIdx}: yOffset=${yOffset}, rows=${numRows}`);
+                
+                // Decompress frame delta
+                const frameDelta = new Array(width * numRows).fill(null);
+                
+                for (let row = 0; row < numRows; row++) {
+                    const startOffset = row * width;
+                    let targetCol = 0;
+                    
+                    const numRleWords = data[offset++];
+                    
+                    for (let rleEntry = 0; rleEntry < numRleWords; rleEntry++) {
+                        const pixelsToSkip = data[offset++];
+                        targetCol += pixelsToSkip;
+                        
+                        // Inverted marker for animation frames
+                        const invertedMarker = view.getInt8(offset++);
+                        const actualMarker = -invertedMarker;
+                        
+                        offset = expandRleWord(actualMarker, data, offset, (colorIndex) => {
+                            frameDelta[targetCol++ + startOffset] = colorIndex;
+                        });
+                    }
+                }
+                
+                // Skip to end of frame subchunk
+                offset = frameSubStartOffset + frameSubSize;
+                console.log(`Finished frame ${frameIdx}, now at offset ${offset}`);
+                
+                frames.push({ yOffset, numRows, delta: frameDelta });
+            }
+            
+            return { width, height, palette, mainImage: mainImagePixels, frames };
+        }
+        
+        // Render current frame
+        function renderFrame() {
+            if (!animationData) return;
+            
+            const { width, height, palette, mainImage, frames } = animationData;
+            
+            canvas.width = width;
+            canvas.height = height;
+            
+            const imageData = ctx.createImageData(width, height);
+            const pixels = imageData.data;
+            
+            // Start with main image
+            for (let i = 0; i < mainImage.length; i++) {
+                const colorIndex = mainImage[i];
+                const [r, g, b] = palette[colorIndex];
+                pixels[i * 4] = r;
+                pixels[i * 4 + 1] = g;
+                pixels[i * 4 + 2] = b;
+                pixels[i * 4 + 3] = 255;
+            }
+            
+            // Apply all frames up to current frame
+            for (let f = 0; f <= currentFrame && f < frames.length; f++) {
+                const frame = frames[f];
+                const startRow = frame.yOffset;
+                
+                for (let row = 0; row < frame.numRows; row++) {
+                    for (let col = 0; col < width; col++) {
+                        const deltaIdx = row * width + col;
+                        const colorIndex = frame.delta[deltaIdx];
+                        
+                        if (colorIndex !== null) {
+                            const pixelIdx = ((startRow + row) * width + col) * 4;
+                            const [r, g, b] = palette[colorIndex];
+                            pixels[pixelIdx] = r;
+                            pixels[pixelIdx + 1] = g;
+                            pixels[pixelIdx + 2] = b;
+                            pixels[pixelIdx + 3] = 255;
+                        }
+                    }
+                }
+            }
+            
+            ctx.putImageData(imageData, 0, 0);
+            updateFrameInfo();
+        }
+        
+        // Update frame info display
+        function updateFrameInfo() {
+            if (!animationData) return;
+            const totalFrames = animationData.frames.length + 1; // +1 for base image
+            frameInfo.textContent = `Frame ${currentFrame + 1} / ${totalFrames}`;
+        }
+        
+        // Playback controls
+        function goToFrame(index) {
+            if (!animationData) return;
+            currentFrame = Math.max(-1, Math.min(index, animationData.frames.length - 1));
+            renderFrame();
+        }
+        
+        function play() {
+            if (isPlaying) {
+                stop();
+                return;
+            }
+            
+            isPlaying = true;
+            btnPlay.textContent = '⏸ Pause';
+            
+            playbackInterval = setInterval(() => {
+                currentFrame++;
+                if (currentFrame >= animationData.frames.length) {
+                    currentFrame = -1; // Loop back to base image
+                }
+                renderFrame();
+            }, 1000 / fps);
+        }
+        
+        function stop() {
+            isPlaying = false;
+            btnPlay.textContent = '▶ Play';
+            if (playbackInterval) {
+                clearInterval(playbackInterval);
+                playbackInterval = null;
+            }
+        }
+        
+        // Event handlers
+        btnFirst.addEventListener('click', () => { stop(); goToFrame(-1); });
+        btnPrev.addEventListener('click', () => { stop(); goToFrame(currentFrame - 1); });
+        btnPlay.addEventListener('click', play);
+        btnNext.addEventListener('click', () => { stop(); goToFrame(currentFrame + 1); });
+        btnLast.addEventListener('click', () => { stop(); goToFrame(animationData.frames.length - 1); });
+        
+        speedSlider.addEventListener('input', (e) => {
+            fps = parseInt(e.target.value);
+            speedValue.textContent = `${fps} FPS`;
+            
+            if (isPlaying) {
+                stop();
+                play();
+            }
+        });
+        
+        // File loading
+        document.getElementById('file-input').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            try {
+                const buffer = await file.arrayBuffer();
+                animationData = parseAnimation(buffer);
+                currentFrame = -1; // Start with base image
+                renderFrame();
+                playbackControls.style.display = 'flex';
+                fileInfo.textContent = `${file.name} - ${animationData.width}×${animationData.height}, ${animationData.frames.length} frames`;
+            } catch (err) {
+                alert(`Error loading animation: ${err.message}`);
+                console.error(err);
+            }
+        });
+    </script>
+</body>
+</html>

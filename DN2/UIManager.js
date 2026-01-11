@@ -49,6 +49,7 @@ export class UIManager {
             "Levels (Episode 4)": [],
             "Tilesets": [],
             "Backdrops": [],
+            "Animations": [],
             "Actor Data": [],
             "User Interface": [],
             "Screens & Logos": [],
@@ -121,6 +122,12 @@ export class UIManager {
 		
 		// Categorize each file
 		files.forEach(f => {
+            // Handle animation files (these come as objects with .file property)
+            if (typeof f === 'object' && f.category === 'animations') {
+                categories["Animations"].push(f.name);
+                return;
+            }
+            
 			const upper = f.toUpperCase();
 			
 			// Find matching rule
@@ -176,8 +183,17 @@ export class UIManager {
                     if (prev) prev.classList.remove('active');
                     link.classList.add('active');
                     if (this.onItemSelect) {
-                        const type = title.includes("Levels") ? "level" : "asset";
-                        this.onItemSelect(fileName, type);
+                        let type = title.includes("Levels") ? "level" : "asset";
+                        
+                        // For animations, pass the file object instead of filename
+                        if (title === "Animations") {
+                            type = "animation";
+                            // Find the original file object from the items array
+                            const animFile = files.find(f => f.category === 'animations' && f.name === fileName);
+                            this.onItemSelect(animFile ? animFile.file : fileName, type);
+                        } else {
+                            this.onItemSelect(fileName, type);
+                        }
                     }
                 });
 
@@ -190,7 +206,7 @@ export class UIManager {
         }
 
         if (this.statusDisplay) {
-            this.statusDisplay.textContent = "NUKEM2.CMP Loaded";
+            this.statusDisplay.textContent = "Game Folder Loaded";
             this.statusDisplay.style.color = "#cd7f32"; 
         }
         

@@ -7,6 +7,7 @@ import { UIManager } from './UIManager.js';
 import { LevelStats } from './LevelStats.js';
 import { ActorManager } from './ActorManager.js';
 import { AudioPlayer } from './AudioPlayer.js';
+import { AnimationPlayer } from './AnimationPlayer.js';
 import { MusicPlayer } from './MusicPlayer.js';
 import { SoundManager } from './SoundManager.js';
 import { PaletteViewer } from './PaletteViewer.js';
@@ -132,6 +133,7 @@ const ui = new UIManager();
 const actorManager = new ActorManager(assets);
 window.actorManager = actorManager;  // ADD THIS LINE - makes it global for debugging
 const audioPlayer = new AudioPlayer();
+const animationPlayer = new AnimationPlayer();
 const musicPlayer = new MusicPlayer();
 const soundManager = new SoundManager(audioPlayer.ctx, musicPlayer);
 
@@ -220,7 +222,8 @@ let appState = {
     useGridFix: false,
     actorViewMode: 'dynamic',  // 'dynamic' or 'raw'
     actorSortMode: 'default',  // 'default', 'name', 'type', 'size'
-    actorZoom: 1               // 1, 2, or 4
+    actorZoom: 1,               // 1, 2, or 4
+    animationFiles: []         // Animation files (.F1-.F5)
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -264,7 +267,16 @@ function resetMainView() {
     
     // Hide the grid, show the canvas
     if (container) container.style.display = 'none';
-    if (canvas) canvas.style.display = 'block';
+    if (canvas) {
+        canvas.style.display = 'block';
+        
+        // 1. Clear inline styles (your previous fix)
+        canvas.style.width = '';
+        canvas.style.height = '';
+        
+        // 2. [NEW] Force internal resolution to match the parent container
+        updateCanvasSize();
+    }
 }
 
 // Show the little palette image next to the System Log
@@ -1036,6 +1048,10 @@ initControls();
 
 async function loadLevel(filename) {
     try {
+        
+        // Clean up animation player
+        animationPlayer.destroy();
+
         console.log(`Loading Level: ${filename}`);
         logMessage(`Loaded Level: ${filename}`, 'success');
 		
@@ -1140,6 +1156,138 @@ async function loadLevel(filename) {
     }
 }
 
+// ═════════════════════════════════════════════════════════════════════════
+// ANIMATION LOADER
+// ═════════════════════════════════════════════════════════════════════════
+async function loadAnimation(file) {
+    try {
+        // Hide level stats
+        levelStats.hide();
+        
+        // Clean up previous animation if any
+        animationPlayer.destroy();
+        
+        // Set view mode
+        appState.viewMode = 'asset';
+        
+        // Load and parse animation
+        await animationPlayer.load(file);
+        
+        logMessage(`Loaded ${file.name}`, 'success');
+        
+        // Setup canvas
+        const canvas = document.getElementById('preview-canvas');
+        const container = document.getElementById('data-view-container');
+        
+        canvas.style.display = 'block';
+        container.style.display = 'none';
+        
+        // Create control panel
+        const mainContent = document.querySelector('.main-content');
+        const controlPanel = animationPlayer.createControlPanel();
+        mainContent.appendChild(controlPanel);
+        
+        // Wire up control events
+        setupAnimationControls();
+        
+        // Initial render
+        renderAnimation();
+        
+        // Fit to viewport
+        handleFitZoom();
+        
+        updateHeaderStatus(`🎬 Animation: <strong>${file.name}</strong>`);
+        resetMainView();
+        toggleControls('zoom');
+        updateSidebarContext('ASSET');
+        updateUIState();
+        
+    } catch (err) {
+        logMessage(`Error loading animation: ${err.message}`, 'error');
+        console.error(err);
+    }
+}
+
+function setupAnimationControls() {
+    const btnFirst = animationPlayer.controlPanel.querySelector('button[title="First Frame"]');
+    const btnPrev = animationPlayer.controlPanel.querySelector('button[title="Previous Frame"]');
+    const btnPlay = animationPlayer.controlPanel.querySelector('button[title="Play/Pause"]');
+    const btnNext = animationPlayer.controlPanel.querySelector('button[title="Next Frame"]');
+    const btnLast = animationPlayer.controlPanel.querySelector('button[title="Last Frame"]');
+    const speedSlider = document.getElementById('anim-speed-slider');
+    const speedValue = document.getElementById('anim-speed-value');
+    const zoomSelect = document.getElementById('anim-zoom-select');
+    
+    btnFirst.addEventListener('click', () => {
+        animationPlayer.pause();
+        animationPlayer.goToFrame(-1);
+        renderAnimation();
+    });
+    
+    btnPrev.addEventListener('click', () => {
+        animationPlayer.pause();
+        animationPlayer.goToFrame(animationPlayer.currentFrame - 1);
+        renderAnimation();
+    });
+    
+    btnPlay.addEventListener('click', () => {
+        animationPlayer.play();
+        animationPlayer.updatePlayButton();
+        
+        // Setup render loop if playing
+        if (animationPlayer.isPlaying) {
+            const renderLoop = setInterval(() => {
+                if (!animationPlayer.isPlaying) {
+                    clearInterval(renderLoop);
+                    return;
+                }
+                renderAnimation();
+            }, 1000 / 60); // 60 FPS render loop
+        }
+    });
+    
+    btnNext.addEventListener('click', () => {
+        animationPlayer.pause();
+        animationPlayer.goToFrame(animationPlayer.currentFrame + 1);
+        renderAnimation();
+    });
+    
+    btnLast.addEventListener('click', () => {
+        animationPlayer.pause();
+        animationPlayer.goToFrame(animationPlayer.animationData.frames.length - 1);
+        renderAnimation();
+    });
+    
+    speedSlider.addEventListener('input', (e) => {
+        const fps = parseInt(e.target.value);
+        speedValue.textContent = `${fps} FPS`;
+        animationPlayer.setSpeed(fps);
+    });
+    
+    zoomSelect.addEventListener('change', (e) => {
+        const zoom = parseInt(e.target.value);
+        animationPlayer.setZoom(zoom);
+        renderAnimation();
+    });
+}
+
+function renderAnimation() {
+    const canvas = document.getElementById('preview-canvas');
+    const { width, height } = animationPlayer.animationData;
+    
+    // Render to native-sized canvas
+    animationPlayer.render(canvas);
+    
+    // Apply zoom by scaling canvas display size
+    const zoom = animationPlayer.zoom;
+    canvas.style.width = (width * zoom) + 'px';
+    canvas.style.height = (height * zoom) + 'px';
+    canvas.style.imageRendering = 'pixelated';
+    
+    // Update frame counter
+    animationPlayer.updateFrameCounter();
+}
+
 // ─────────────────────────────────────────────────────────────────────────
 // ASSET LOADER
 // ─────────────────────────────────────────────────────────────────────────
@@ -1148,6 +1296,9 @@ async function loadLevel(filename) {
 
 async function loadAsset(filename) {
     console.log(`Loading Asset: ${filename}`);
+
+    // Clean up animation player
+	animationPlayer.destroy();
 	
 	appState.assetType = null;
 	
@@ -1530,6 +1681,7 @@ async function loadAsset(filename) {
 
 ui.onItemSelect = (filename, type) => {
     if (type === 'level') loadLevel(filename);
+    else if (type === 'animation') loadAnimation(filename);
     else loadAsset(filename);
 };
 
@@ -1541,8 +1693,27 @@ ui.onItemSelect = (filename, type) => {
 const fileInput = document.getElementById('folder-input');
 if (fileInput) {
     fileInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) handleFileSelection(file);
+        const files = Array.from(e.target.files);
+        
+        // Find CMP file
+        const cmpFile = files.find(f => f.name.toUpperCase().endsWith('.CMP'));
+        
+        if (!cmpFile) {
+            logMessage('No .CMP file found in selected folder', 'error');
+            return;
+        }
+        
+        // Find animation files (.F1 through .F5)
+        const animFiles = files.filter(f => {
+            const name = f.name.toUpperCase();
+            return name.match(/\.F[1-5]$/);
+        });
+        
+        // Store animation files in appState
+        appState.animationFiles = animFiles.sort((a, b) => a.name.localeCompare(b.name));
+        
+        // Process the CMP file
+        handleFileSelection(cmpFile);
     });
 }
 
@@ -1568,7 +1739,10 @@ async function handleFileSelection(file) {
         
         logMessage(`${file.name} successfully loaded.`, 'success');
         logMessage(`Found ${fileList.length} assets.`);
-        
+        if (appState.animationFiles.length > 0) {
+            logMessage(`Found ${appState.animationFiles.length} animation file(s).`, 'info');
+        }
+
         // Load palettes
         const pal0 = fs.getFile("GAMEPAL.PAL");
         const pal1 = fs.getFile("STORY2.PAL");
@@ -1618,7 +1792,17 @@ async function handleFileSelection(file) {
             console.warn("Could not load level viewer config:", err);
         }
         
-        ui.populateLevelList(fileList);
+        // Combine CMP files with animation files
+        const combinedFiles = [
+            ...fileList,
+            ...appState.animationFiles.map(f => ({ 
+                name: f.name, 
+                category: 'animations', 
+                file: f 
+            }))
+        ];
+        
+        ui.populateLevelList(combinedFiles);
         console.log("Archive Ready.");
         
         updateHeaderStatus(`📦 Archive Loaded: <strong>${file.name}</strong> (${fileList.length} files)`);
