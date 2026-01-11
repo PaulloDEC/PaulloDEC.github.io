@@ -1175,31 +1175,42 @@ async function loadLevel(filename) {
 // ═════════════════════════════════════════════════════════════════════════
 // ANIMATION LOADER
 // ═════════════════════════════════════════════════════════════════════════
+// REPLACE THE EXISTING loadAnimation FUNCTION IN main.js WITH THIS:
+
 async function loadAnimation(file) {
     try {
+        // 1. Reset Global UI State
         levelStats.hide();
+        animationPlayer.destroy(); // Cleanup previous animation/UI
         
-        // 1. Cleanup old UI if it exists
-        animationPlayer.destroy(); 
-        
-        // 2. Set State
+        // 2. Set App State
         appState.viewMode = 'asset';
         appState.assetType = 'animation'; 
+        appState.currentAsset = null; // Important: Clear previous asset so UI doesn't think we are viewing a generic image
         
-        // 3. Load Data via AssetManager (The New Way)
+        // 3. Load Data via AssetManager
         const buffer = await file.arrayBuffer();
         const data = await assets.loadAnimation(buffer);
         
         // 4. Initialize Player
         animationPlayer.load(data);
         
-        // 5. Add UI
+        // 5. Add Player UI to Screen
         const mainContent = document.querySelector('.main-content');
         mainContent.appendChild(animationPlayer.createControlPanel());
         
-        // 6. Reset View
+        // 6. Viewport & Control Cleanup
         resetMainView();
-        toggleControls('none'); // Hide the standard zoom/layer controls
+        
+        // HIDE the standard floating zoom controls (The player has its own now)
+        toggleControls('none'); 
+        
+        // HIDE sidebar panels (Level Controls, Actor Controls)
+        updateSidebarContext('ASSET'); 
+        
+        // [NEW] Add System Log Entry
+        logMessage(`Loaded Animation: ${file.name}`, 'success');
+
         updateHeaderStatus(`🎬 Animation: <strong>${file.name}</strong>`);
         updateUIState();
         

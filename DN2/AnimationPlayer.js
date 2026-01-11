@@ -140,7 +140,7 @@ export class AnimationPlayer {
         // Speed Control
         const speedWrapper = document.createElement('div');
         speedWrapper.className = 'anim-row';
-        speedWrapper.style.width = 'auto'; // Override full width
+        speedWrapper.style.width = 'auto';
 
         const speedLabel = document.createElement('span');
         speedLabel.textContent = 'Speed:';
@@ -148,14 +148,14 @@ export class AnimationPlayer {
 
         const speedSlider = document.createElement('input');
         speedSlider.type = 'range';
-        speedSlider.min = '1'; speedSlider.max = '60'; speedSlider.value = '10';
+        speedSlider.min = '1'; speedSlider.max = '60'; speedSlider.value = this.fps; // Sync with current FPS
         speedSlider.className = 'anim-input';
         speedSlider.style.width = '100px';
         speedSlider.oninput = (e) => this.setSpeed(parseInt(e.target.value));
 
         const speedValue = document.createElement('span');
         speedValue.id = 'anim-speed-val';
-        speedValue.textContent = '10 FPS';
+        speedValue.textContent = `${this.fps} FPS`; // Sync with current FPS
         speedValue.className = 'anim-value';
 
         speedWrapper.append(speedLabel, speedSlider, speedValue);
@@ -176,7 +176,10 @@ export class AnimationPlayer {
             const opt = document.createElement('option');
             opt.value = z;
             opt.textContent = `${z}x`;
-            if (z === 2) opt.selected = true;
+            
+            // [FIX] Select the option that matches the CURRENT zoom, not the default "2"
+            if (z === this.zoom) opt.selected = true;
+            
             zoomSelect.appendChild(opt);
         });
         
