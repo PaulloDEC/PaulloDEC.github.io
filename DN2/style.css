@@ -1695,7 +1695,7 @@ details[open] summary {
     left: 20px;
     width: 200px;
     background: rgba(26, 15, 15, 0.9);
-    border: 1px solid var(--border);
+    border: 1px solid var(--accent);
     border-radius: var(--radius);
     padding: 10px;
     color: var(--text-main);
@@ -1801,4 +1801,85 @@ details[open] summary {
     text-align: center;
     color: #666;
     font-size: 0.75rem;
+}
+
+/* Animation Viewer Controls */
+.animation-controls {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(26, 15, 15, 0.9);
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    padding: 10px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+    z-index: 100;
+    font-family: monospace;
+    font-size: 14px;
+    min-width: 400px;
+    backdrop-filter: blur(4px);
+}
+
+.anim-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.anim-row.settings {
+    border-top: 1px solid var(--border, #444);
+    padding-top: 10px;
+    gap: 20px;
+}
+
+.anim-btn {
+    background: var(--bg-input, #2a2a2a);
+    color: var(--text-main, #fff);
+    border: 1px solid var(--border, #555);
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-family: inherit;
+    transition: background 0.2s;
+    min-width: 32px;
+}
+
+.anim-btn:hover {
+    background: var(--bg-hover, #444);
+}
+
+.anim-btn.play-btn {
+    min-width: 40px;
+}
+
+.anim-input {
+    background: var(--bg-input, #222);
+    color: var(--text-main, #fff);
+    border: 1px solid var(--border, #555);
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-family: inherit;
+}
+
+.anim-label {
+    color: var(--text-muted, #aaa);
+}
+
+.anim-value {
+    color: var(--text-main, #fff);
+    min-width: 50px;
+}
+
+.anim-counter {
+    color: var(--text-muted, #ccc);
+    min-width: 100px;
+    text-align: center;
 }

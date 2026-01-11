@@ -625,4 +625,116 @@ export class AssetManager {
         
         return createImageBitmap(canvas);
     }
+    async loadAnimation(buffer) {
+        const view = new DataView(buffer);
+        const u8 = new Uint8Array(buffer);
+        let offset = 0;
+
+        // 1. Read Header
+        // 0-3: File Size, 4-5: Type Marker
+        const numFrames = view.getUint16(6, true);
+        const width = view.getUint16(8, true);
+        const height = view.getUint16(10, true);
+        
+        offset = 128; // Skip header
+
+        // 2. Read Main Chunk Header
+        offset += 16; 
+
+        // 3. Read Palette Sub-Chunk
+        offset += 6;
+        offset += 4; // Skip Padding
+
+        // 4. Parse Palette
+        const palette = [];
+        for (let i = 0; i < 256; i++) {
+            const r = Math.floor((u8[offset++] * 255) / 63);
+            const g = Math.floor((u8[offset++] * 255) / 63);
+            const b = Math.floor((u8[offset++] * 255) / 63);
+            palette.push([r, g, b]);
+        }
+
+        // 5. Prepare Master Buffer
+        const masterPixelBuffer = new Uint8ClampedArray(width * height * 4);
+        
+        const setPixel = (x, y, colorIdx) => {
+            if (x >= width || y >= height) return;
+            // Safety: prevent palette lookup crashes
+            if (!palette[colorIdx]) return; 
+
+            const idx = (y * width + x) * 4;
+            const [r, g, b] = palette[colorIdx];
+            masterPixelBuffer[idx] = r;
+            masterPixelBuffer[idx + 1] = g;
+            masterPixelBuffer[idx + 2] = b;
+            masterPixelBuffer[idx + 3] = 255;
+        };
+
+        const bitmapFrames = [];
+
+        // 6. Decode Base Frame
+        const mainImageStartOffset = offset;
+        const mainImageSize = view.getUint32(offset, true); offset += 4;
+        offset += 2; // Skip type
+
+        // RLE Decode Main Image
+        for (let row = 0; row < height; row++) {
+            const numRleFlags = u8[offset++];
+            let col = 0;
+            for (let flag = 0; flag < numRleFlags; flag++) {
+                const marker = view.getInt8(offset++);
+                if (marker > 0) { // Repeat
+                    const val = u8[offset++];
+                    for(let k=0; k<marker; k++) setPixel(col++, row, val);
+                } else { // Literal
+                    const count = Math.abs(marker);
+                    for(let k=0; k<count; k++) setPixel(col++, row, u8[offset++]);
+                }
+            }
+        }
+
+        // Convert Base Frame to Bitmap
+        bitmapFrames.push(await createImageBitmap(new ImageData(masterPixelBuffer, width, height)));
+
+        offset = mainImageStartOffset + mainImageSize; // Sync
+
+        // 7. Decode Animation Frames
+        for (let f = 0; f < numFrames; f++) {
+            offset += 16; // Chunk Header
+            
+            const frameSubStartOffset = offset;
+            const frameSubSize = view.getUint32(offset, true); offset += 4;
+            offset += 2; // Type
+
+            const yOffset = view.getUint16(offset, true); offset += 2;
+            const numRows = view.getUint16(offset, true); offset += 2;
+
+            for (let row = 0; row < numRows; row++) {
+                const actualRow = yOffset + row;
+                let col = 0;
+                const numRleWords = u8[offset++];
+                for (let rle = 0; rle < numRleWords; rle++) {
+                    const skip = u8[offset++];
+                    col += skip;
+                    const marker = -view.getInt8(offset++); // Inverted
+                    
+                    if (marker > 0) { // Repeat
+                        const val = u8[offset++];
+                        for(let k=0; k<marker; k++) setPixel(col++, actualRow, val);
+                    } else { // Literal
+                        const count = Math.abs(marker);
+                        for(let k=0; k<count; k++) setPixel(col++, actualRow, u8[offset++]);
+                    }
+                }
+            }
+            
+            offset = frameSubStartOffset + frameSubSize; // Sync
+            
+            // Create bitmap for this frame state
+            // Note: We create a new ImageData here to capture the current state of the buffer
+            bitmapFrames.push(await createImageBitmap(new ImageData(masterPixelBuffer, width, height)));
+        }
+
+        return { width, height, frames: bitmapFrames };
+    }
 }

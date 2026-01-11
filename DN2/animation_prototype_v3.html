@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DN2 Animation Viewer V3 (Controls)</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #121212;
+            color: #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            height: 100vh;
+            margin: 0;
+        }
+
+        #viewport-container {
+            width: 800px;
+            height: 600px;
+            background: #000;
+            border: 2px solid #333;
+            margin-bottom: 20px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        canvas {
+            display: block;
+            image-rendering: pixelated;
+        }
+
+        .controls-area {
+            background: #1e1e1e;
+            padding: 15px 25px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            width: 800px; /* Match viewport width */
+        }
+
+        .row {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 5px;
+        }
+
+        button {
+            background: #3a3a3a;
+            color: white;
+            border: 1px solid #555;
+            padding: 8px 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+            min-width: 40px;
+            transition: background 0.2s;
+        }
+
+        button:hover { background: #505050; }
+        button:active { background: #606060; transform: translateY(1px); }
+        button:disabled { opacity: 0.5; cursor: default; }
+
+        .stat-box {
+            font-family: monospace;
+            font-size: 14px;
+            color: #aaa;
+            background: #252525;
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid #333;
+            min-width: 120px;
+            text-align: center;
+        }
+        
+        select {
+            background: #252525;
+            color: #fff;
+            border: 1px solid #555;
+            padding: 5px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="viewport-container">
+        <canvas id="main-canvas"></canvas>
+    </div>
+
+    <div class="controls-area">
+        <div class="row">
+            <input type="file" id="file-input" accept=".f1,.f2,.f3,.f4,.f5">
+            <div class="stat-box" id="debug-info">No File Loaded</div>
+        </div>
+
+        <div class="row">
+            <div class="btn-group">
+                <button id="btn-first" title="First Frame">|&lt;</button>
+                <button id="btn-prev" title="Previous Frame">&lt;</button>
+                <button id="btn-play" style="min-width: 80px;">Pause</button>
+                <button id="btn-next" title="Next Frame">&gt;</button>
+                <button id="btn-last" title="Last Frame">&gt;|</button>
+            </div>
+
+            <div class="stat-box" id="frame-counter">Frame: -- / --</div>
+
+            <div class="btn-group">
+                <div class="stat-box" style="border:none; background:transparent;">Zoom:</div>
+                <select id="zoom-select">
+                    <option value="1">1x</option>
+                    <option value="2" selected>2x</option>
+                    <option value="3">3x</option>
+                    <option value="4">4x</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+<script>
+/**
+ * ============================================================================
+ * ASSET LOADER (Robust Version)
+ * ============================================================================
+ */
+const AssetLoader = {
+    async loadAndPreRender(buffer) {
+        const view = new DataView(buffer);
+        const u8 = new Uint8Array(buffer);
+        let offset = 0;
+
+        // 1. Read Header (Corrected Offsets)
+        const numFrames = view.getUint16(6, true);
+        const width = view.getUint16(8, true);
+        const height = view.getUint16(10, true);
+        
+        offset = 128; // Skip header
+
+        // 2. Read Main Chunk Header
+        offset += 16; 
+
+        // 3. Read Palette Sub-Chunk
+        offset += 6;
+        offset += 4; // Skip Padding
+
+        // 4. Parse Palette
+        const palette = [];
+        for (let i = 0; i < 256; i++) {
+            const r = Math.floor((u8[offset++] * 255) / 63);
+            const g = Math.floor((u8[offset++] * 255) / 63);
+            const b = Math.floor((u8[offset++] * 255) / 63);
+            palette.push([r, g, b]);
+        }
+
+        // 5. Prepare Master Buffer
+        const masterPixelBuffer = new Uint8ClampedArray(width * height * 4);
+        
+        const setPixel = (x, y, colorIdx) => {
+            if (x >= width || y >= height) return;
+            if (!palette[colorIdx]) return; 
+
+            const idx = (y * width + x) * 4;
+            const [r, g, b] = palette[colorIdx];
+            masterPixelBuffer[idx] = r;
+            masterPixelBuffer[idx + 1] = g;
+            masterPixelBuffer[idx + 2] = b;
+            masterPixelBuffer[idx + 3] = 255;
+        };
+
+        const bitmapFrames = [];
+
+        // 6. Decode Base Frame
+        const mainImageStartOffset = offset;
+        const mainImageSize = view.getUint32(offset, true); offset += 4;
+        offset += 2; // Skip type
+
+        // RLE Decode Main Image
+        for (let row = 0; row < height; row++) {
+            const numRleFlags = u8[offset++];
+            let col = 0;
+            for (let flag = 0; flag < numRleFlags; flag++) {
+                const marker = view.getInt8(offset++);
+                if (marker > 0) { // Repeat
+                    const val = u8[offset++];
+                    for(let k=0; k<marker; k++) setPixel(col++, row, val);
+                } else { // Literal
+                    const count = Math.abs(marker);
+                    for(let k=0; k<count; k++) setPixel(col++, row, u8[offset++]);
+                }
+            }
+        }
+
+        bitmapFrames.push(await this.bufferToBitmap(masterPixelBuffer, width, height));
+        offset = mainImageStartOffset + mainImageSize; // Sync
+
+        // 7. Decode Animation Frames
+        for (let f = 0; f < numFrames; f++) {
+            offset += 16; // Chunk Header
+            
+            const frameSubStartOffset = offset;
+            const frameSubSize = view.getUint32(offset, true); offset += 4;
+            offset += 2; // Type
+
+            const yOffset = view.getUint16(offset, true); offset += 2;
+            const numRows = view.getUint16(offset, true); offset += 2;
+
+            for (let row = 0; row < numRows; row++) {
+                const actualRow = yOffset + row;
+                let col = 0;
+                const numRleWords = u8[offset++];
+                for (let rle = 0; rle < numRleWords; rle++) {
+                    const skip = u8[offset++];
+                    col += skip;
+                    const marker = -view.getInt8(offset++); // Inverted
+                    
+                    if (marker > 0) { // Repeat
+                        const val = u8[offset++];
+                        for(let k=0; k<marker; k++) setPixel(col++, actualRow, val);
+                    } else { // Literal
+                        const count = Math.abs(marker);
+                        for(let k=0; k<count; k++) setPixel(col++, actualRow, u8[offset++]);
+                    }
+                }
+            }
+            
+            offset = frameSubStartOffset + frameSubSize; // Sync
+            bitmapFrames.push(await this.bufferToBitmap(masterPixelBuffer, width, height));
+        }
+
+        return { width, height, frames: bitmapFrames };
+    },
+
+    async bufferToBitmap(pixelArray, w, h) {
+        const imageData = new ImageData(pixelArray, w, h);
+        return await createImageBitmap(imageData);
+    }
+};
+
+/**
+ * ============================================================================
+ * ANIMATION PLAYER
+ * ============================================================================
+ */
+class AnimationPlayer {
+    constructor() {
+        this.animationData = null;
+        this.frameIndex = 0;
+        this.fps = 10;
+        this.timer = 0;
+        this.isPlaying = true;
+    }
+
+    load(data) {
+        this.animationData = data;
+        this.frameIndex = 0;
+        this.timer = 0;
+        this.isPlaying = true;
+    }
+
+    update(deltaTime) {
+        if (!this.animationData || !this.isPlaying) return;
+
+        this.timer += deltaTime;
+        const interval = 1000 / this.fps;
+
+        if (this.timer >= interval) {
+            this.timer -= interval;
+            this.next(); // Use internal next()
+        }
+    }
+
+    // --- New Navigation Controls ---
+
+    next() {
+        if (!this.animationData) return;
+        this.frameIndex++;
+        if (this.frameIndex >= this.animationData.frames.length) {
+            this.frameIndex = 0; // Loop
+        }
+    }
+
+    prev() {
+        if (!this.animationData) return;
+        this.frameIndex--;
+        if (this.frameIndex < 0) {
+            this.frameIndex = this.animationData.frames.length - 1; // Loop back
+        }
+    }
+
+    first() {
+        if (!this.animationData) return;
+        this.frameIndex = 0;
+    }
+
+    last() {
+        if (!this.animationData) return;
+        this.frameIndex = this.animationData.frames.length - 1;
+    }
+
+    // --- End Navigation Controls ---
+
+    draw(ctx, canvasWidth, canvasHeight, zoom) {
+        if (!this.animationData) return;
+
+        const frame = this.animationData.frames[this.frameIndex];
+        
+        // Centered Draw Logic
+        const drawW = this.animationData.width * zoom;
+        const drawH = this.animationData.height * zoom;
+        const x = Math.floor((canvasWidth - drawW) / 2);
+        const y = Math.floor((canvasHeight - drawH) / 2);
+
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(frame, x, y, drawW, drawH);
+    }
+}
+
+/**
+ * ============================================================================
+ * MAIN LOGIC
+ * ============================================================================
+ */
+const canvas = document.getElementById('main-canvas');
+const ctx = canvas.getContext('2d');
+const container = document.getElementById('viewport-container');
+const frameCounter = document.getElementById('frame-counter');
+const btnPlay = document.getElementById('btn-play');
+
+// State
+const player = new AnimationPlayer();
+let lastTime = 0;
+let zoom = 2;
+
+function resizeCanvas() {
+    canvas.width = container.clientWidth;
+    canvas.height = container.clientHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+// Game Loop
+function loop(timestamp) {
+    const deltaTime = timestamp - lastTime;
+    lastTime = timestamp;
+
+    // Clear
+    ctx.fillStyle = '#111';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw Grid
+    ctx.strokeStyle = '#222';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for(let i=0; i<canvas.width; i+=40) { ctx.moveTo(i,0); ctx.lineTo(i,canvas.height); }
+    for(let i=0; i<canvas.height; i+=40) { ctx.moveTo(0,i); ctx.lineTo(canvas.width,i); }
+    ctx.stroke();
+
+    // Update
+    player.update(deltaTime);
+    player.draw(ctx, canvas.width, canvas.height, zoom);
+
+    // Update UI Stats
+    if (player.animationData) {
+        frameCounter.textContent = `Frame: ${player.frameIndex + 1} / ${player.animationData.frames.length}`;
+    } else {
+        frameCounter.textContent = "Frame: -- / --";
+    }
+
+    requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+// --- Event Handlers ---
+
+// File Loading
+document.getElementById('file-input').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    document.getElementById('debug-info').textContent = "Loading...";
+    
+    try {
+        const buffer = await file.arrayBuffer();
+        const data = await AssetLoader.loadAndPreRender(buffer);
+        player.load(data);
+        
+        document.getElementById('debug-info').textContent = 
+            `${file.name} | ${data.width}x${data.height} | ${data.frames.length} Frames`;
+            
+        // Reset Play button to "Pause" (since it auto-plays on load)
+        btnPlay.textContent = "Pause";
+    } catch(err) {
+        console.error(err);
+        document.getElementById('debug-info').textContent = "Error Loading File";
+    }
+});
+
+// Zoom
+document.getElementById('zoom-select').addEventListener('change', (e) => {
+    zoom = parseInt(e.target.value);
+});
+
+// Play/Pause
+btnPlay.addEventListener('click', () => {
+    player.isPlaying = !player.isPlaying;
+    btnPlay.textContent = player.isPlaying ? "Pause" : "Play";
+});
+
+// Navigation Handlers (Auto-Pause on interaction)
+function manualControl(action) {
+    // 1. Pause Animation
+    player.isPlaying = false;
+    btnPlay.textContent = "Play";
+    
+    // 2. Perform Action
+    if (action === 'next') player.next();
+    if (action === 'prev') player.prev();
+    if (action === 'first') player.first();
+    if (action === 'last') player.last();
+}
+
+document.getElementById('btn-next').addEventListener('click', () => manualControl('next'));
+document.getElementById('btn-prev').addEventListener('click', () => manualControl('prev'));
+document.getElementById('btn-first').addEventListener('click', () => manualControl('first'));
+document.getElementById('btn-last').addEventListener('click', () => manualControl('last'));
+
+</script>
+</body>
+</html>

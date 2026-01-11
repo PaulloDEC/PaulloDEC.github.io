@@ -226,6 +226,8 @@ let appState = {
     animationFiles: []         // Animation files (.F1-.F5)
 };
 
+let lastTime = 0;
+
 // ═══════════════════════════════════════════════════════════════════════════════
 //  ██████╗ ██████╗ ██████╗ ███████╗    ██╗      ██████╗  ██████╗ ██████╗ 
 // ██╔════╝██╔═══██╗██╔══██╗██╔════╝    ██║     ██╔═══██╗██╔═══██╗██╔══██╗
@@ -238,8 +240,26 @@ let appState = {
 // This function calls itself repeatedly using requestAnimationFrame to create
 // smooth animation and update the display whenever the viewport or content changes.
 
-function loop() {
-    renderer.draw(appState, viewport);
+function loop(timestamp) {
+    // Calculate Delta Time (time since last frame in ms)
+    const deltaTime = timestamp - lastTime;
+    lastTime = timestamp;
+
+    if (appState.assetType === 'animation') {
+        // --- Animation Mode ---
+        // 1. Clear Screen (Black background)
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#000'; 
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // 2. Update & Draw Animation
+        animationPlayer.update(deltaTime);
+        animationPlayer.draw(ctx, canvas.width, canvas.height);
+    } else {
+        // --- Standard Map/Asset Mode ---
+        renderer.draw(appState, viewport);
+    }
+    
     requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);
@@ -270,11 +290,7 @@ function resetMainView() {
     if (canvas) {
         canvas.style.display = 'block';
         
-        // 1. Clear inline styles (your previous fix)
-        canvas.style.width = '';
-        canvas.style.height = '';
-        
-        // 2. [NEW] Force internal resolution to match the parent container
+        // Ensure internal resolution matches the screen size
         updateCanvasSize();
     }
 }
@@ -1161,131 +1177,36 @@ async function loadLevel(filename) {
 // ═════════════════════════════════════════════════════════════════════════
 async function loadAnimation(file) {
     try {
-        // Hide level stats
         levelStats.hide();
         
-        // Clean up previous animation if any
-        animationPlayer.destroy();
+        // 1. Cleanup old UI if it exists
+        animationPlayer.destroy(); 
         
-        // Set view mode
+        // 2. Set State
         appState.viewMode = 'asset';
+        appState.assetType = 'animation'; 
         
-        // Load and parse animation
-        await animationPlayer.load(file);
+        // 3. Load Data via AssetManager (The New Way)
+        const buffer = await file.arrayBuffer();
+        const data = await assets.loadAnimation(buffer);
         
-        logMessage(`Loaded ${file.name}`, 'success');
+        // 4. Initialize Player
+        animationPlayer.load(data);
         
-        // Setup canvas
-        const canvas = document.getElementById('preview-canvas');
-        const container = document.getElementById('data-view-container');
-        
-        canvas.style.display = 'block';
-        container.style.display = 'none';
-        
-        // Create control panel
+        // 5. Add UI
         const mainContent = document.querySelector('.main-content');
-        const controlPanel = animationPlayer.createControlPanel();
-        mainContent.appendChild(controlPanel);
+        mainContent.appendChild(animationPlayer.createControlPanel());
         
-        // Wire up control events
-        setupAnimationControls();
-        
-        // Initial render
-        renderAnimation();
-        
-        // Fit to viewport
-        handleFitZoom();
-        
-        updateHeaderStatus(`🎬 Animation: <strong>${file.name}</strong>`);
+        // 6. Reset View
         resetMainView();
-        toggleControls('zoom');
-        updateSidebarContext('ASSET');
+        toggleControls('none'); // Hide the standard zoom/layer controls
+        updateHeaderStatus(`🎬 Animation: <strong>${file.name}</strong>`);
         updateUIState();
         
     } catch (err) {
         logMessage(`Error loading animation: ${err.message}`, 'error');
         console.error(err);
     }
-}
-
-function setupAnimationControls() {
-    const btnFirst = animationPlayer.controlPanel.querySelector('button[title="First Frame"]');
-    const btnPrev = animationPlayer.controlPanel.querySelector('button[title="Previous Frame"]');
-    const btnPlay = animationPlayer.controlPanel.querySelector('button[title="Play/Pause"]');
-    const btnNext = animationPlayer.controlPanel.querySelector('button[title="Next Frame"]');
-    const btnLast = animationPlayer.controlPanel.querySelector('button[title="Last Frame"]');
-    const speedSlider = document.getElementById('anim-speed-slider');
-    const speedValue = document.getElementById('anim-speed-value');
-    const zoomSelect = document.getElementById('anim-zoom-select');
-    
-    btnFirst.addEventListener('click', () => {
-        animationPlayer.pause();
-        animationPlayer.goToFrame(-1);
-        renderAnimation();
-    });
-    
-    btnPrev.addEventListener('click', () => {
-        animationPlayer.pause();
-        animationPlayer.goToFrame(animationPlayer.currentFrame - 1);
-        renderAnimation();
-    });
-    
-    btnPlay.addEventListener('click', () => {
-        animationPlayer.play();
-        animationPlayer.updatePlayButton();
-        
-        // Setup render loop if playing
-        if (animationPlayer.isPlaying) {
-            const renderLoop = setInterval(() => {
-                if (!animationPlayer.isPlaying) {
-                    clearInterval(renderLoop);
-                    return;
-                }
-                renderAnimation();
-            }, 1000 / 60); // 60 FPS render loop
-        }
-    });
-    
-    btnNext.addEventListener('click', () => {
-        animationPlayer.pause();
-        animationPlayer.goToFrame(animationPlayer.currentFrame + 1);
-        renderAnimation();
-    });
-    
-    btnLast.addEventListener('click', () => {
-        animationPlayer.pause();
-        animationPlayer.goToFrame(animationPlayer.animationData.frames.length - 1);
-        renderAnimation();
-    });
-    
-    speedSlider.addEventListener('input', (e) => {
-        const fps = parseInt(e.target.value);
-        speedValue.textContent = `${fps} FPS`;
-        animationPlayer.setSpeed(fps);
-    });
-    
-    zoomSelect.addEventListener('change', (e) => {
-        const zoom = parseInt(e.target.value);
-        animationPlayer.setZoom(zoom);
-        renderAnimation();
-    });
-}
-
-function renderAnimation() {
-    const canvas = document.getElementById('preview-canvas');
-    const { width, height } = animationPlayer.animationData;
-    
-    // Render to native-sized canvas
-    animationPlayer.render(canvas);
-    
-    // Apply zoom by scaling canvas display size
-    const zoom = animationPlayer.zoom;
-    canvas.style.width = (width * zoom) + 'px';
-    canvas.style.height = (height * zoom) + 'px';
-    canvas.style.imageRendering = 'pixelated';
-    
-    // Update frame counter
-    animationPlayer.updateFrameCounter();
 }
 
 // ─────────────────────────────────────────────────────────────────────────
