@@ -42,7 +42,12 @@ export class AnimationPlayer {
         const drawW = this.animationData.width * this.zoom;
         const drawH = this.animationData.height * this.zoom;
         const x = Math.floor((canvasWidth - drawW) / 2);
-        const y = Math.floor((canvasHeight - drawH) / 2);
+        
+        // Offset Y to account for control panel height (approx 120px)
+        // Center in the space ABOVE the controls
+        const controlPanelHeight = 120;
+        const availableHeight = canvasHeight - controlPanelHeight;
+        const y = Math.floor((availableHeight - drawH) / 2);
 
         ctx.imageSmoothingEnabled = false;
         ctx.drawImage(frame, x, y, drawW, drawH);
