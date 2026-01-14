@@ -223,7 +223,8 @@ let appState = {
     actorViewMode: 'dynamic',  // 'dynamic' or 'raw'
     actorSortMode: 'default',  // 'default', 'name', 'type', 'size'
     actorZoom: 1,               // 1, 2, or 4
-    animationFiles: []         // Animation files (.F1-.F5)
+    animationFiles: [],         // Animation files (.F1-.F5)
+    activeBottomPanel: null    // 'music' or 'animation' - tracks which panel is visible
 };
 
 let lastTime = 0;
@@ -244,6 +245,12 @@ function loop(timestamp) {
     // Calculate Delta Time (time since last frame in ms)
     const deltaTime = timestamp - lastTime;
     lastTime = timestamp;
+
+    // DEBUG: Log when assetType changes
+    if (appState.assetType !== window.lastAssetType) {
+        console.log('assetType changed from', window.lastAssetType, 'to', appState.assetType);
+        window.lastAssetType = appState.assetType;
+    }
 
     if (appState.assetType === 'animation') {
         // --- Animation Mode ---
@@ -671,7 +678,6 @@ function createActorCell(actor) {
 
 function updateUIState() {
     const zoomCtrl = document.querySelector('.zoom-controls');
-    const musicCtrl = document.querySelector('.music-controls');
     
     // Show zoom controls if we have any visual content (map or asset) loaded
     const hasVisuals = (appState.viewMode === 'map' && appState.currentMap) || 
@@ -687,32 +693,72 @@ function updateUIState() {
         layerToggles.style.display = (appState.viewMode === "map") ? "flex" : "none";
     }
 	
-	// NEW: Show View Mode checkboxes ONLY for Actor Sheet
+	// Show View Mode checkboxes ONLY for Actor Sheet
     const viewToggles = document.querySelector(".view-toggles");
     if (viewToggles) {
-        // Use 'flex' so the radio buttons sit next to each other
         viewToggles.style.display = (appState.assetType === "actors") ? "flex" : "none";
     }
 
-    // Show music controls if music is playing or paused
-    const hasMusic = musicPlayer.isPlaying || musicPlayer.isPaused;
+    // Handle bottom panel visibility (music/animation with swap button)
+    updateBottomPanelVisibility();
+}
+
+function updateBottomPanelVisibility() {
+    const musicCtrl = document.querySelector('.music-controls');
+    const animCtrl = document.querySelector('.animation-controls');
+    const swapBtn = document.querySelector('.panel-swap-btn');
+    const swapLabel = document.getElementById('swap-label');
     
-    if (musicCtrl) {
-        musicCtrl.style.display = hasMusic ? 'flex' : 'none';
+    const hasMusicPlaying = musicPlayer.isPlaying || musicPlayer.isPaused;
+    const hasAnimationLoaded = appState.assetType === 'animation';
+    
+    // Both active: show swap button and respect activeBottomPanel state
+    if (hasMusicPlaying && hasAnimationLoaded) {
+        // Set default if not already set
+        if (!appState.activeBottomPanel) {
+            appState.activeBottomPanel = 'animation'; // Default to animation
+        }
+        
+        // Show appropriate panel
+        if (musicCtrl) musicCtrl.style.display = appState.activeBottomPanel === 'music' ? 'flex' : 'none';
+        if (animCtrl) animCtrl.style.display = appState.activeBottomPanel === 'animation' ? 'flex' : 'none';
+        
+        // Show swap button with correct label
+        if (swapBtn) {
+            swapBtn.style.display = 'flex';
+            if (swapLabel) {
+                swapLabel.textContent = appState.activeBottomPanel === 'music' ? 'Animation' : 'Music';
+            }
+        }
+    }
+    // Only music active
+    else if (hasMusicPlaying && !hasAnimationLoaded) {
+        if (musicCtrl) musicCtrl.style.display = 'flex';
+        if (animCtrl) animCtrl.style.display = 'none';
+        if (swapBtn) swapBtn.style.display = 'none';
+    }
+    // Only animation active
+    else if (!hasMusicPlaying && hasAnimationLoaded) {
+        if (musicCtrl) musicCtrl.style.display = 'none';
+        if (animCtrl) animCtrl.style.display = 'flex';
+        if (swapBtn) swapBtn.style.display = 'none';
+    }
+    // Neither active
+    else {
+        if (musicCtrl) musicCtrl.style.display = 'none';
+        if (animCtrl) animCtrl.style.display = 'none';
+        if (swapBtn) swapBtn.style.display = 'none';
+        appState.activeBottomPanel = null;
     }
 }
 
 function toggleControls(mode) {
     const zoomCtrl = document.querySelector('.zoom-controls');
-    const musicCtrl = document.querySelector('.music-controls');
     
-    // Hide all first to prevent overlap
-    if (zoomCtrl) zoomCtrl.style.display = 'none';
-    if (musicCtrl) musicCtrl.style.display = 'none';
-
-    // Show requested
-    if (mode === 'zoom' && zoomCtrl) zoomCtrl.style.display = 'flex';
-    if (mode === 'music' && musicCtrl) musicCtrl.style.display = 'flex';
+    // Only handle zoom controls here; bottom panels handled by updateBottomPanelVisibility
+    if (zoomCtrl) {
+        zoomCtrl.style.display = mode === 'zoom' ? 'flex' : 'none';
+    }
 }
 
 function updateMusicUI(trackName, isPlaying) {
@@ -721,6 +767,21 @@ function updateMusicUI(trackName, isPlaying) {
     
     if (nameLabel) nameLabel.textContent = trackName;
     if (playBtn) playBtn.textContent = isPlaying ? "⏸" : "▶️";
+}
+
+function toggleBottomPanel() {
+    const musicCtrl = document.querySelector('.music-controls');
+    const animCtrl = document.querySelector('.animation-controls');
+    
+    // Toggle between music and animation
+    if (appState.activeBottomPanel === 'music') {
+        appState.activeBottomPanel = 'animation';
+    } else {
+        appState.activeBottomPanel = 'music';
+    }
+    
+    // Update visibility
+    updateBottomPanelVisibility();
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -982,6 +1043,39 @@ function initControls() {
     }
 }
 
+// ═════════════════════════════════════════════════════════════════════════
+// PANEL SWAP BUTTON (for when both music and animation are active)
+// ═════════════════════════════════════════════════════════════════════════
+
+function createPanelSwapButton() {
+    if (document.querySelector('.panel-swap-btn')) return; // Already exists
+    
+    const swapBtn = document.createElement('div');
+    swapBtn.className = 'panel-swap-btn';
+    
+    const icon = document.createElement('span');
+    icon.className = 'swap-icon';
+    icon.textContent = '🔄';
+    
+    const label = document.createElement('span');
+    label.className = 'swap-label';
+    label.id = 'swap-label';
+    label.textContent = 'Animation';
+    
+    swapBtn.appendChild(icon);
+    swapBtn.appendChild(label);
+    
+    swapBtn.addEventListener('click', () => {
+        toggleBottomPanel();
+    });
+    
+    const mainContent = document.querySelector('.main-content');
+    mainContent.appendChild(swapBtn);
+}
+
+// Call this on page load
+createPanelSwapButton();
+
 	// ─────────────────────────────────────────────────────────────────────────
     // ADLIB/PC SPEAKER SOUNDBOARD CONTROLS
     // ─────────────────────────────────────────────────────────────────────────
@@ -1229,14 +1323,17 @@ async function loadAnimation(file) {
 async function loadAsset(filename) {
     console.log(`Loading Asset: ${filename}`);
 
-    // Clean up animation player
-	animationPlayer.destroy();
-	
-	appState.assetType = null;
-	
 	try {
         const upper = filename.toUpperCase();
         const rawFile = fs.getFile(filename);
+        
+        if (!rawFile) return;
+        
+        // Don't clean up animation or clear assetType for music/SFX - they play in background
+        if (!upper.endsWith(".IMF") && !upper.startsWith("SB_") && !upper.startsWith("INTRO")) {
+            animationPlayer.destroy();
+            appState.assetType = null;
+        }
         
         if (!rawFile) return;
 
@@ -1246,7 +1343,9 @@ async function loadAsset(filename) {
         // Plays AdLib music files in the background
 
         if (upper.endsWith(".IMF")) {
+            console.log("🎵 Music starting. Current assetType:", appState.assetType);
             console.log("Playing AdLib Music...");
+            
             updateHeaderStatus(`🎵 Playing Music: <strong>${filename}</strong>`, true);
             
 			updateMusicUI(filename, true);

@@ -214,7 +214,7 @@ export class SoundManager {
                 
                 // Generate square wave samples
                 for (let j = 0; j < SAMPLES_PER_BYTE; j++) {
-                    channelData[outputIndex++] = sign * 0.3; // Volume: 0.3
+                    channelData[outputIndex++] = sign * 0.05; // Volume: 0.05
                     
                     phase++;
                     if (phase >= phaseLength) {

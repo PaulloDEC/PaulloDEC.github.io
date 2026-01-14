@@ -197,7 +197,13 @@ export class AudioPlayer {
 
         const source = this.ctx.createBufferSource();
         source.buffer = audioBuffer;
-        source.connect(this.ctx.destination);
+        
+        // Add gain node for volume control
+        const gainNode = this.ctx.createGain();
+        gainNode.gain.value = 0.25; // 50% volume (adjust to taste: 0.3-0.7)
+        
+        source.connect(gainNode);
+        gainNode.connect(this.ctx.destination);
         
         // Clean up reference when audio finishes
         source.onended = () => {

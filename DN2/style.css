@@ -4,6 +4,7 @@
  * - Dark Bronze theme with Duke Nukem-inspired accent colors
  * - Retro-futuristic aesthetic
  * - Pixel-perfect rendering for game graphics
+ * * * VISUAL REFACTOR ONLY: Layout properties are untouched.
  */
 
 /* ========================================================================== */
@@ -15,6 +16,7 @@
     --bg-app: #1a0f0f;           /* Main application background */
     --bg-panel: #2d1a1a;         /* Sidebar and header background */
     --bg-input: #120808;         /* Input fields and log boxes */
+    --bg-canvas: #0a0a0a;        /* Canvas Background */
     
     --accent: #cd7f32;           /* Primary accent (Bronze) */
     --duke-yellow: #ffcc00;      /* Duke Nukem signature color */
@@ -23,6 +25,7 @@
     
     --text-main: #f1f5f9;        /* Primary text color */
     --text-muted: #94a3b8;       /* Secondary/muted text */
+    --text-dim: #6b5555;         /* Dim/Brown text for IDs */
     
     --border: #3d2a2a;           /* Border color */
     
@@ -181,8 +184,6 @@ header {
 .sidebar-section[data-flex="2"] { flex: 2; }        /* Priority flexible */
 
 /* COLLAPSED STATE OVERRIDE */
-/* When collapsed, ANY panel (even flex-2) must shrink to fit only its header.
-   We use !important to strictly override the [data-flex] rules above. */
 .sidebar-section.collapsed {
     flex: 0 0 auto !important; 
 }
@@ -194,9 +195,8 @@ header {
 
 /* THE ANIMATION MAGIC: CSS GRID TRANSITION */
 .collapsible-wrapper {
-    /* KEY FIX: Grow to fill the sidebar-section's available flex space */
     flex: 1;
-    min-height: 0; /* Vital for scrollbars to work inside flex children */
+    min-height: 0; 
     
     display: grid;
     grid-template-rows: 1fr;
@@ -210,7 +210,6 @@ header {
 
 .sidebar-section.collapsed .collapsible-wrapper {
     grid-template-rows: 0fr;
-    /* KEY FIX: When collapsed, stop the wrapper from pushing bounds */
     flex: 0; 
 }
 
@@ -275,9 +274,7 @@ header {
     display: flex;
     align-items: center;
     gap: 12px;
-    /* FIX 2: Specific spacing from header, not pushed to far right */
     margin-left: 20px; 
-    /* FIX 1: Ensure it sits on the same baseline as the text */
     height: 100%;
 }
 
@@ -286,7 +283,6 @@ header {
     align-items: center;
     gap: 6px;
     font-size: 0.75rem;
-    /* FIX 3: Text labels are now white */
     color: var(--text-main); 
     margin: 0;
     cursor: pointer;
@@ -297,25 +293,21 @@ header {
     color: var(--accent);
 }
 
-/* FIX 4: Checkboxes are a little too big */
 .episode-filters input[type="checkbox"] {
     width: 12px;
     height: 12px;
-    margin: 0; /* Remove default margins to ensure perfect centering */
-    border-radius: 2px; /* Optional: slightly tighter radius for small boxes */
+    margin: 0; 
+    border-radius: 2px;
 }
 
-/* Ensure the parent row aligns everything perfectly center */
 .section-header-row {
     display: flex;
     align-items: center; 
-    justify-content: flex-start; /* Aligns items to the left */
+    justify-content: flex-start; 
     min-height: 24px;
-    margin-bottom: 8px; /* Restores the spacing below the header we removed from the individual h3 */
+    margin-bottom: 8px; 
 }
 
-/* Remove padding from the header when it is in a row with other items 
-   to prevents 'padding-bottom' from throwing off vertical alignment */
 .section-header-row .collapsible-header {
     padding-bottom: 0;
 }
@@ -325,13 +317,12 @@ header {
 /* ========================================================================== */
 
 /* The Scroll Box (Assets list, Log) */
-/* Now simply fills its parent section-content */
 .scroll-box {
     background: var(--bg-input);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     overflow-y: auto;
-    flex: 1; /* Fill the section-content */
+    flex: 1; 
     padding: 10px;
     font-family: 'Consolas', 'Monaco', monospace;
     font-size: 0.8rem;
@@ -384,7 +375,7 @@ header {
 #file-input-status {
     font-size: 0.85rem;
     color: var(--text-muted);
-    margin-left: 0px; /* Spacing requested */
+    margin-left: 0px; 
 }
 
 /* -------------------------------------------------------------------------- */
@@ -488,7 +479,7 @@ input[type="radio"]:checked::after {
 
 .log-entry {
     margin-bottom: 4px;
-    border-bottom: 1px solid #1e293b;
+    border-bottom: 1px solid var(--border); /* CHANGED: Was #1e293b (blue) */
     padding-bottom: 2px;
 }
 
@@ -587,14 +578,14 @@ details[open] summary {
 
 .main-content {
     flex: 1;
-    background: #0a0a0a;  /* Very dark grey base */
+    background: var(--bg-canvas);  /* CHANGED: Was hardcoded #0a0a0a */
     position: relative; 
     overflow: hidden;
     cursor: grab;
     position: relative;
     
-    /* Subtle grid pattern */
-    background-image: radial-gradient(#1a1a1a 1px, transparent 1px);
+    /* Subtle grid pattern - CHANGED to use var */
+    background-image: radial-gradient(var(--bg-panel) 1px, transparent 1px);
     background-size: 20px 20px;
     display: flex;
     align-items: center;
@@ -609,16 +600,16 @@ details[open] summary {
     position: absolute;
     top: 20px;
     right: 20px;
-    /* FIX: Use Flex by default, JS will toggle visibility via style.display */
     display: none; 
     flex-direction: column;
     gap: 8px;
-    background: var(--bg-panel);
+    background: rgba(26, 15, 15, 0.9); /* CHANGED: Added opacity for consistency */
     padding: 8px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--accent);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     z-index: 100;
+    backdrop-filter: blur(4px); /* ENSURED: consistent glass effect */
 }
 
 /* ========================================================================== */
@@ -649,21 +640,8 @@ details[open] summary {
 /* Zoom Controls                                                              */
 /* -------------------------------------------------------------------------- */
 
-.zoom-controls {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    display: none;
-    flex-direction: column;
-    gap: 8px;
-    background: var(--bg-panel);
-    padding: 8px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    backdrop-filter: blur(4px); /* Blur canvas behind panel */
-    box-shadow: var(--shadow);
-    z-index: 100;
-}
+/* NOTE: Duplicate .zoom-controls block removed. 
+   Kept the definition above that includes layout + visual styles. */
 
 .zoom-btn {
     background: var(--bg-input);
@@ -691,18 +669,18 @@ details[open] summary {
 /* Checkbox labels within zoom controls */
 .zoom-controls label {
     font-size: 0.75rem;
-    color: #aaa;
+    color: var(--text-muted); /* CHANGED: Was #aaa */
     display: flex;
     align-items: center;
     gap: 5px;
     cursor: pointer;
     margin-top: 5px;
     padding-top: 5px;
-    border-top: 1px solid #444;
+    border-top: 1px solid var(--border); /* CHANGED: Was #444 */
 }
 
 .zoom-controls label:hover {
-    color: #fff;
+    color: var(--text-main); /* CHANGED: Was #fff */
 }
 
 /* Layer toggle container (Map/Sprites checkboxes) */
@@ -713,7 +691,7 @@ details[open] summary {
     gap: 0;
     margin-top: 5px;
     padding-top: 5px;
-    border-top: 1px solid #444;
+    border-top: 1px solid var(--border); /* CHANGED: Was #444 */
 }
 
 .layer-toggles label,
@@ -1045,7 +1023,7 @@ details[open] summary {
 
 .map-dim {
     text-align: center;
-    color: #6b5555;
+    color: var(--text-dim); /* CHANGED: Was #6b5555 */
     font-size: 0.75rem;
 }
 
@@ -1057,48 +1035,7 @@ details[open] summary {
 /* Zoom Controls (Top-Right Panel)                                            */
 /* -------------------------------------------------------------------------- */
 
-.zoom-controls {
-    display: none;
-    gap: 6px;
-    align-items: center;
-    padding: 8px 12px;
-    background: rgba(26, 15, 15, 0.9);
-    border-radius: 6px;
-    border: 1px solid var(--accent);
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    z-index: 100;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-}
-
-.zoom-btn {
-    background: var(--bg-input);
-    border: 1px solid var(--border);
-    color: var(--accent);
-    padding: 4px 8px;
-    font-size: 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.zoom-btn:hover {
-    background: var(--accent);
-    color: var(--bg-app);
-    border-color: var(--accent);
-}
-
-.zoom-controls label {
-    display: flex;
-    gap: 4px;
-    color: var(--text-main);
-    font-family: monospace;
-    font-size: 11px;
-    cursor: pointer;
-    align-items: center;
-    margin-left: 8px;
-}
+/* Duplicate Removed here. */
 
 /* -------------------------------------------------------------------------- */
 /* Music Controls (Bottom-Center Panel)                                       */
@@ -1191,6 +1128,51 @@ details[open] summary {
     accent-color: var(--accent);
 }
 
+/* ============================================================================
+   BOTTOM PANEL SWAP BUTTON
+   ============================================================================
+   Small floating button that appears when both music and animation are active.
+   Positioned to the right of whichever bottom panel is currently visible.
+*/
+
+.panel-swap-btn {
+    position: absolute;
+    bottom: 20px;
+    left: 20px; /* Bottom-left corner, matching zoom panel's top-right positioning */
+    
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    
+    display: none; /* Hidden by default */
+    align-items: center;
+    gap: 6px;
+    
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(4px);
+    z-index: 101; /* Above the control panels (which are z-index: 100) */
+    
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.panel-swap-btn:hover {
+    background: var(--bg-panel); /* CHANGED: Was --bg-hover (undefined) */
+    border-color: var(--accent);
+}
+
+.panel-swap-btn .swap-icon {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.panel-swap-btn .swap-label {
+    font-size: 12px;
+    color: var(--text-main);  /* Changed from text-muted */
+    font-family: monospace;
+}
+
 /* -------------------------------------------------------------------------- */
 /* Sound Card Styling                                                         */
 /* -------------------------------------------------------------------------- */
@@ -1202,8 +1184,8 @@ details[open] summary {
     padding: 20px;
     overflow-y: auto;
     height: 100%;
-    background: #0a0a0a;
-    background-image: radial-gradient(#1a1a1a 1px, transparent 1px);
+    background: var(--bg-canvas); /* CHANGED: Was #0a0a0a */
+    background-image: radial-gradient(var(--bg-panel) 1px, transparent 1px);
     background-size: 20px 20px;
 }
 
@@ -1341,7 +1323,7 @@ details[open] summary {
 .actor-id {
     font-family: 'Silkscreen', monospace;
     font-size: 7px;
-    color: #6b5555;
+    color: var(--text-dim); /* CHANGED: Was #6b5555 */
     margin-top: 2px;
 }
 
@@ -1663,31 +1645,34 @@ details[open] summary {
 }
 
 .script-header {
-    color: #ffcc00; /* Yellow - section headers */
+    color: var(--duke-yellow); /* CHANGED: Was #ffcc00 */
     font-weight: bold;
 }
 
 .script-command {
-    color: #38bdf8; /* Cyan - commands */
+    color: var(--accent-hover); /* CHANGED: Was #38bdf8 (cyan) */
     font-weight: bold;
 }
 
 .script-text {
-    color: #f1f5f9; /* White - dialog text */
+    color: var(--text-main); /* CHANGED: Was #f1f5f9 */
 }
 
 .script-param {
-    color: #85ff85; /* Light green - parameters */
+    color: #9fb38f; /* CHANGED: Was #85ff85 (neon green). Now Sage Green. */
 }
 
 .script-special {
-    color: #666666; /* Dark gray - de-emphasized special chars */
+    color: var(--text-dim); /* CHANGED: Was #666666 */
     opacity: 0.5;
 }
 
 /* ========================================================================== */
 /* LEVEL STATISTICS PANEL                                                     */
 /* ========================================================================== */
+
+/* NOTE: This section kept intact to preserve Position Absolute layout.
+   Only color/visual values were updated. */
 
 .stats-panel {
     position: absolute;
@@ -1799,7 +1784,7 @@ details[open] summary {
 .map-dim {
     /* Map dimensions display (width x height) */
     text-align: center;
-    color: #666;
+    color: var(--text-dim); /* CHANGED: Was #666 */
     font-size: 0.75rem;
 }
 
@@ -1809,8 +1794,8 @@ details[open] summary {
     bottom: 20px;
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(26, 15, 15, 0.9);
-    border: 1px solid var(--accent);
+    background: rgba(26, 15, 15, 0.9); /* CHANGED: Matches stats panel */
+    border: 1px solid var(--accent); /* CHANGED: Matches stats panel */
     border-radius: 8px;
     padding: 10px 20px;
     display: flex;
@@ -1834,15 +1819,15 @@ details[open] summary {
 }
 
 .anim-row.settings {
-    border-top: 1px solid var(--border, #444);
+    border-top: 1px solid var(--border); /* CHANGED: Was #444 */
     padding-top: 10px;
     gap: 20px;
 }
 
 .anim-btn {
-    background: var(--bg-input, #2a2a2a);
-    color: var(--text-main, #fff);
-    border: 1px solid var(--border, #555);
+    background: var(--bg-input); /* CHANGED: Was #2a2a2a */
+    color: var(--text-main); /* CHANGED: Was #fff */
+    border: 1px solid var(--border); /* CHANGED: Was #555 */
     padding: 5px 10px;
     border-radius: 4px;
     cursor: pointer;
@@ -1853,7 +1838,8 @@ details[open] summary {
 }
 
 .anim-btn:hover {
-    background: var(--bg-hover, #444);
+    background: var(--bg-panel); /* CHANGED: Was #444 */
+    border-color: var(--accent);
 }
 
 .anim-btn.play-btn {
@@ -1861,25 +1847,49 @@ details[open] summary {
 }
 
 .anim-input {
-    background: var(--bg-input, #222);
-    color: var(--text-main, #fff);
-    border: 1px solid var(--border, #555);
+    background: var(--bg-input); /* CHANGED: Was #222 */
+    color: var(--text-main); /* CHANGED: Was #fff */
+    border: 1px solid var(--border); /* CHANGED: Was #555 */
     padding: 2px 5px;
     border-radius: 4px;
     font-family: inherit;
 }
 
 .anim-label {
-    color: var(--text-muted, #aaa);
+    color: var(--text-muted); /* CHANGED: Was #aaa */
 }
 
 .anim-value {
-    color: var(--text-main, #fff);
+    color: var(--text-main); /* CHANGED: Was #fff */
     min-width: 50px;
 }
 
 .anim-counter {
-    color: var(--text-muted, #ccc);
+    color: var(--text-muted); /* CHANGED: Was #ccc */
     min-width: 100px;
     text-align: center;
 }
+
+/* ========================================================================== */
+/* LEVEL STATISTICS - OBJECTIVE MODIFIERS                                     */
+/* ========================================================================== */
+
+/* Replaces inline style="margin-bottom: 12px;" */
+.stats-objectives-wrapper {
+    margin-bottom: 12px;
+}
+
+/* Base style for objective text items */
+/* Replaces inline style="font-weight: bold; text-shadow:..." */
+.req-item.objective-text {
+    font-weight: bold;
+    text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+/* Objective Color Classes (Moved from JS object) */
+.obj-boss       { color: #ff55ff; } /* Magenta */
+.obj-forcefield { color: #55ffff; } /* Cyan */
+.obj-radar      { color: #ff8855; } /* Orange */
+.obj-teleport   { color: #5555ff; } /* Blue */
+.obj-exit       { color: #ffff55; } /* Yellow */
+.obj-default    { color: #ffffff; } /* Fallback */

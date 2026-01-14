@@ -91,15 +91,16 @@ export class LevelStats {
         };
         
         /* ------------------------------------------------------------------ */
-        /* Define Objective Colors                                            */
+        /* Define Objective Classes (Refactored)                              */
         /* ------------------------------------------------------------------ */
-        
-        this.OBJECTIVE_COLORS = {
-            "Defeat Rigelatin Boss": "#ff55ff",   // Magenta
-            "Breach Super Forcefield": "#55ffff", // Cyan
-            "Destroy Radar Dishes": "#ff8855",    // Orange
-            "Locate Teleporter": "#5555ff",       // Blue
-            "Reach the Exit": "#ffff55"           // Yellow
+
+        // Maps objective text to CSS classes instead of hex codes
+        this.OBJECTIVE_CLASSES = {
+            "Defeat Rigelatin Boss": "obj-boss",
+            "Breach Super Forcefield": "obj-forcefield",
+            "Destroy Radar Dishes": "obj-radar",
+            "Locate Teleporter": "obj-teleport",
+            "Reach the Exit": "obj-exit"
         };
     }
     
@@ -263,13 +264,13 @@ export class LevelStats {
         /* ------------------------------------------------------------------ */
         /* Build Objectives Section                                           */
         /* ------------------------------------------------------------------ */
-        
+
         html += `
             <div class="stats-divider"></div>
             <div class="stats-subtitle">OBJECTIVES:</div>
-            <div class="required-items-list" style="margin-bottom: 12px;">
+            <div class="required-items-list stats-objectives-wrapper">
         `;
-        
+
         // Sort objectives by priority
         const order = [
             "Defeat Rigelatin Boss",
@@ -278,20 +279,23 @@ export class LevelStats {
             "Locate Teleporter",
             "Reach the Exit"
         ];
-        
+
         const sortedObjs = Array.from(foundObjectives).sort((a, b) => {
             return order.indexOf(a) - order.indexOf(b);
         });
-        
+
         sortedObjs.forEach(obj => {
-            const color = this.OBJECTIVE_COLORS[obj] || '#ffffff';
+            // Get the CSS class, fallback to default if not found
+            const colorClass = this.OBJECTIVE_CLASSES[obj] || 'obj-default';
+            
+            // Uses classes instead of inline styles
             html += `
-                <div class="req-item" style="color: ${color}; font-weight: bold; text-shadow: 0 0 5px rgba(0,0,0,0.5);">
+                <div class="req-item objective-text ${colorClass}">
                     <span>${obj}</span>
                 </div>
             `;
         });
-        
+
         html += `</div>`;
         
         /* ------------------------------------------------------------------ */
