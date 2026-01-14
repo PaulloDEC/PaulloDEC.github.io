@@ -1810,6 +1810,13 @@ details[open] summary {
     backdrop-filter: blur(4px);
 }
 
+/* Matches the style of .music-controls volume slider */
+.animation-controls input[type="range"] {
+    cursor: pointer;
+    accent-color: var(--accent); /* Bronze color */
+    vertical-align: middle;      /* Ensures alignment with text/buttons */
+}
+
 .anim-row {
     display: flex;
     gap: 8px;
