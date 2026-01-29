@@ -299,60 +299,36 @@ export class AssetManager {
         return createImageBitmap(new ImageData(pixels, WIDTH, HEIGHT));
     }
 
-    async generateVGAFontBitmap() {
-        // Check if we already have it cached
-        if (this.vgaFontBitmap) {
-            return this.vgaFontBitmap;
-        }
-        
-        // Wait for font to load
-        if (document.fonts) {
-            await document.fonts.ready;
-            await document.fonts.load('16px "Perfect DOS VGA 437"');
-            await new Promise(resolve => setTimeout(resolve, 50));
-        }
-        
-        const CHAR_WIDTH = 8;
-        const CHAR_HEIGHT = 16;
-        const CHARS_PER_ROW = 32; // 32 characters per row = 8 rows for 256 chars
-        const TOTAL_CHARS = 256;
-        const ROWS = Math.ceil(TOTAL_CHARS / CHARS_PER_ROW);
-        
-        const atlasWidth = CHARS_PER_ROW * CHAR_WIDTH;  // 256 pixels
-        const atlasHeight = ROWS * CHAR_HEIGHT;         // 128 pixels
-        
-        const canvas = document.createElement('canvas');
-        canvas.width = atlasWidth;
-        canvas.height = atlasHeight;
-        const ctx = canvas.getContext('2d');
-        
-        // White background for visibility (will use color tinting later)
-        ctx.fillStyle = '#FFFFFF';
-        ctx.font = '16px "Perfect DOS VGA 437"';
-        ctx.textBaseline = 'top';
-        
-        // Render all 256 CP437 characters
-        for (let i = 0; i < TOTAL_CHARS; i++) {
-            const col = i % CHARS_PER_ROW;
-            const row = Math.floor(i / CHARS_PER_ROW);
-            const x = col * CHAR_WIDTH;
-            const y = row * CHAR_HEIGHT;
-            
-            // Draw black background for this character cell
-            ctx.fillStyle = '#000000';
-            ctx.fillRect(x, y, CHAR_WIDTH, CHAR_HEIGHT);
-            
-            // Draw white character
-            ctx.fillStyle = '#FFFFFF';
-            ctx.fillText(String.fromCharCode(i), x, y);
-        }
-        
-        // Convert to ImageBitmap and cache it
-        this.vgaFontBitmap = await createImageBitmap(canvas);
-        console.log('VGA font bitmap generated and cached');
-        
-        return this.vgaFontBitmap;
-    }
+	async generateVGAFontBitmap() {
+			// Check if we already have it cached
+			if (this.vgaFontBitmap) {
+				return this.vgaFontBitmap;
+			}
+			
+			console.log('Loading VGA font atlas from PNG...');
+			
+			// Load the pre-generated font atlas PNG
+			const img = new Image();
+			
+			// IMPORTANT: Update this path to match where you placed vga_font_atlas.png
+			// Examples:
+			//   img.src = 'assets/vga_font_atlas.png';
+			//   img.src = 'data/vga_font_atlas.png';
+			//   img.src = './vga_font_atlas.png';
+			img.src = 'vga_font_atlas.png'; // <-- UPDATE THIS PATH
+			
+			// Wait for image to load
+			await new Promise((resolve, reject) => {
+				img.onload = resolve;
+				img.onerror = () => reject(new Error('Failed to load VGA font atlas PNG'));
+			});
+			
+			// Convert to ImageBitmap and cache it
+			this.vgaFontBitmap = await createImageBitmap(img);
+			console.log('VGA font atlas loaded successfully (256×128 pixels)');
+			
+			return this.vgaFontBitmap;
+		}
     
     async decodeB800Text(data) {
         if (data.length !== 4000) {
