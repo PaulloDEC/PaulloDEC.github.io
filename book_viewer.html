@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Book Viewer</title>
+<style>
+  /* ── Colour tokens ── */
+  :root {
+    --backdrop:        #C8C0B0;
+    --page-bg:         #FAF6EF;
+    --page-blank-bg:   #F0ECE4;
+    --page-text:       #1E1B13;
+    --page-label:      #999;
+    --page-spine:      #999;
+    --jump-link:       #BE2E0D;
+    --jump-link-hover: #E85530;
+    --illus-border:    #bbb;
+    --illus-bg:        #EDE9E0;
+    --illus-text:      #999;
+    --ui-bg:           #F0ECE4;
+    --ui-border:       #999;
+    --ui-text:         #666;
+    --ui-text-hover:   #222;
+    --ui-btn-text:     #1E1B13;
+    --spread-shadow:   rgba(0,0,0,0.35);
+    --toggle-track:    #bbb;
+    --toggle-track-on: #888;
+    --toggle-knob:     #fff;
+    --divider:         #aaa;
+    --error-text:      #800;
+    --error-link:      #1a4a8a;
+  }
+
+  [data-theme="dark"] {
+    --backdrop:        #1A1814;
+    --page-bg:         #2A2824;
+    --page-blank-bg:   #222018;
+    --page-text:       #D1CEC7;
+    --page-label:      #666;
+    --page-spine:      #444;
+    --jump-link:       #C79A5B;
+    --jump-link-hover: #E0B87A;
+    --illus-border:    #444;
+    --illus-bg:        #222018;
+    --illus-text:      #666;
+    --ui-bg:           #222018;
+    --ui-border:       #444;
+    --ui-text:         #888;
+    --ui-text-hover:   #ccc;
+    --ui-btn-text:     #D1CEC7;
+    --spread-shadow:   rgba(0,0,0,0.6);
+    --toggle-track:    #444;
+    --toggle-track-on: #777;
+    --toggle-knob:     #ccc;
+    --divider:         #555;
+    --error-text:      #c66;
+    --error-link:      #7a9fcc;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: Georgia, serif;
+    background: var(--backdrop);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 12px 20px;
+    gap: 12px;
+    transition: background 0.3s ease;
+  }
+
+  #error-area {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    color: var(--error-text);
+    font-size: 1em;
+    margin-top: 40px;
+  }
+
+  #error-area a {
+    color: var(--error-link);
+  }
+
+  #book-container {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    width: 100%;
+    min-height: 0;
+  }
+
+  #spread-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-height: 0;
+  }
+
+  #spread-row button {
+    width: 44px;
+    height: 44px;
+    font-size: 1.3em;
+    cursor: pointer;
+    background: var(--ui-bg);
+    border: 1px solid var(--ui-border);
+    border-radius: 4px;
+    color: var(--ui-btn-text);
+    flex-shrink: 0;
+    transition: background 0.2s, border-color 0.2s;
+  }
+
+  #spread-row button:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+
+  #spread-scaler {
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  #spread {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    transform-origin: top left;
+    box-shadow: 0 4px 24px var(--spread-shadow);
+  }
+
+  .page {
+    width: 218px;
+    height: 325px;
+    background: var(--page-bg);
+    padding: 6px 16px 14px 16px;
+    font-size: 0.38em;
+    line-height: 1.65;
+    color: var(--page-text);
+    overflow-y: hidden;
+    border: none;
+    position: relative;
+    flex-shrink: 0;
+    transition: background 0.3s ease, color 0.3s ease;
+  }
+
+  .page.left-page  { border-right: 2px solid var(--page-spine); }
+  .page.right-page { border-left: none; }
+  .page.hidden-page { display: none; }
+  .page.solo-page  { border-right: none; }
+  .page.blank      { background: var(--page-blank-bg); }
+
+  .page.cover-page {
+    background: #000;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .cover-page .page-label { display: none; }
+
+  .cover-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .page-label {
+    font-size: 0.7em;
+    color: var(--page-label);
+    text-align: center;
+    margin-bottom: 4px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .page-content { white-space: normal; }
+
+  .page-content p {
+    margin: 0;
+    white-space: pre-wrap;
+  }
+
+  .page-content .blank-line {
+    display: block;
+    height: 0.6em;
+  }
+
+  .page-content .cent {
+    display: block;
+    text-align: center;
+  }
+
+  .page-content .ind {
+    display: block;
+    margin-left: 2.5em;
+  }
+
+  .illus-block {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px dashed var(--illus-border);
+    background: var(--illus-bg);
+    color: var(--illus-text);
+    font-size: 0.8em;
+    font-style: italic;
+    text-align: center;
+    margin: 8px 0;
+    padding: 8px;
+    width: 100%;
+  }
+
+  .illus-block.has-image {
+    border: none;
+    background: none;
+    padding: 0;
+    margin: 8px 0;
+  }
+
+  .illus-full img {
+    width: 100%;
+    height: auto;
+    max-height: 280px;
+    object-fit: contain;
+    display: block;
+  }
+
+  .illus-mini img {
+    width: 100%;
+    height: auto;
+    max-height: 120px;
+    object-fit: contain;
+    display: block;
+  }
+
+  .illus-full:not(.has-image) { height: 200px; }
+  .illus-mini:not(.has-image) { height: 90px; }
+
+  /* Jump links — option 7: bold with tighter letter-spacing */
+  .goto-link {
+    color: var(--jump-link);
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: bold;
+    letter-spacing: -0.03em;
+    transition: color 0.15s;
+  }
+
+  .goto-link:hover {
+    color: var(--jump-link-hover);
+  }
+
+  /* ── Bottom bar ── */
+  #bottom-bar {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
+    font-size: 0.82em;
+    color: var(--ui-text);
+    flex-shrink: 0;
+    padding: 2px 0;
+  }
+
+  #bottom-bar a,
+  #bottom-bar label,
+  #bottom-bar span.bar-label {
+    color: var(--ui-text);
+    text-decoration: none;
+    font-size: 1em;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color 0.15s;
+  }
+
+  #bottom-bar a:hover,
+  #bottom-bar label:hover {
+    color: var(--ui-text-hover);
+  }
+
+  .bar-divider {
+    color: var(--divider);
+    font-size: 0.85em;
+    user-select: none;
+  }
+
+  #jump-input {
+    width: 60px;
+    padding: 3px 6px;
+    font-size: 1em;
+    border: 1px solid var(--ui-border);
+    background: var(--page-bg);
+    color: var(--page-text);
+    border-radius: 3px;
+    text-align: center;
+    font-family: Georgia, serif;
+  }
+
+  #btn-jump {
+    padding: 3px 10px;
+    font-size: 1em;
+    cursor: pointer;
+    background: var(--ui-bg);
+    border: 1px solid var(--ui-border);
+    color: var(--ui-btn-text);
+    border-radius: 3px;
+    font-family: Georgia, serif;
+  }
+
+  /* Toggle switch */
+  .toggle-switch {
+    position: relative;
+    width: 28px;
+    height: 15px;
+    flex-shrink: 0;
+  }
+
+  .toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+  }
+
+  .toggle-track {
+    position: absolute;
+    inset: 0;
+    background: var(--toggle-track);
+    border-radius: 15px;
+    transition: background 0.2s;
+    cursor: pointer;
+  }
+
+  .toggle-switch input:checked + .toggle-track {
+    background: var(--toggle-track-on);
+  }
+
+  .toggle-track::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 11px;
+    height: 11px;
+    background: var(--toggle-knob);
+    border-radius: 50%;
+    transition: transform 0.2s;
+  }
+
+  .toggle-switch input:checked + .toggle-track::after {
+    transform: translateX(13px);
+  }
+</style>
+</head>
+<body>
+
+<div id="error-area">
+  <div id="error-msg">Could not load book.</div>
+  <a href="index.html">&larr; Back to book list</a>
+</div>
+
+<div id="book-container">
+  <div id="spread-row">
+    <button id="btn-back" title="Turn page back">&#8592;</button>
+    <div id="spread-scaler">
+      <div id="spread">
+        <div class="page left-page" id="left-page">
+          <div class="page-label" id="left-label"></div>
+          <div class="page-content" id="left-content"></div>
+        </div>
+        <div class="page right-page" id="right-page">
+          <div class="page-label" id="right-label"></div>
+          <div class="page-content" id="right-content"></div>
+        </div>
+      </div>
+    </div>
+    <button id="btn-forward" title="Turn page forward">&#8594;</button>
+  </div>
+
+  <div id="bottom-bar">
+    <a href="index.html">&larr; Books</a>
+
+    <span class="bar-divider">|</span>
+
+    <label for="jump-input">Go to page:</label>
+    <input type="text" id="jump-input" placeholder="e.g. 16">
+    <button id="btn-jump">Go</button>
+
+    <span class="bar-divider">|</span>
+
+    <label for="theme-toggle">Dark mode</label>
+    <label class="toggle-switch">
+      <input type="checkbox" id="theme-toggle">
+      <div class="toggle-track"></div>
+    </label>
+  </div>
+</div>
+
+<script>
+let pages = [];
+let spreadIndex = 0;
+let currentBook = null;
+
+const PAGE_W = 218;
+const PAGE_H = 325;
+
+// ── Theme persistence ─────────────────────────────────────────
+function applyTheme(dark) {
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+  document.getElementById('theme-toggle').checked = dark;
+  localStorage.setItem('theme', dark ? 'dark' : 'light');
+}
+
+applyTheme(localStorage.getItem('theme') === 'dark');
+
+document.getElementById('theme-toggle').addEventListener('change', e => {
+  applyTheme(e.target.checked);
+});
+
+// ── Startup ───────────────────────────────────────────────────
+function showError(msg) {
+  document.getElementById('error-msg').textContent = msg;
+  document.getElementById('error-area').style.display = 'flex';
+}
+
+async function init() {
+  const params = new URLSearchParams(window.location.search);
+  const codename = params.get('book');
+
+  if (!codename) {
+    showError('No book specified. Use ?book=codename in the URL.');
+    return;
+  }
+
+  let bookList;
+  try {
+    const r = await fetch('book_list.json?v=' + Date.now());
+    if (!r.ok) throw new Error();
+    bookList = await r.json();
+  } catch {
+    showError('Could not load book_list.json.');
+    return;
+  }
+
+  const book = bookList.find(b => b.codename === codename);
+  if (!book) {
+    showError(`Book "${codename}" not found in book list.`);
+    return;
+  }
+
+  currentBook = book;
+  document.title = book.title;
+
+  let text;
+  try {
+    const r = await fetch(book.data + '?v=' + Date.now());
+    if (!r.ok) throw new Error();
+    text = await r.text();
+  } catch {
+    showError(`Could not load data file for "${book.title}".`);
+    return;
+  }
+
+  parseBook(text);
+  spreadIndex = 0;
+  document.getElementById('book-container').style.display = 'flex';
+  renderSpread();
+}
+
+init();
+
+// ── Parser ────────────────────────────────────────────────────
+function parseBook(text) {
+  pages = [];
+  const headerRe = /^---\s*PAGE:\s*(.+?)\s*---/;
+  const lines = text.split('\n');
+  let current = null;
+  for (const line of lines) {
+    const m = line.match(headerRe);
+    if (m) {
+      if (current) pages.push(current);
+      current = { id: m[1].trim(), rawText: '' };
+    } else if (current) {
+      current.rawText += line + '\n';
+    }
+  }
+  if (current) pages.push(current);
+}
+
+// ── Image path helpers ────────────────────────────────────────
+function illustrationPath(n) {
+  const num = String(n).padStart(2, '0');
+  return `${currentBook.folder}/illustrations/${currentBook.codename}_illustration_${num}.${currentBook.imageExt}`;
+}
+
+function miniPath(n) {
+  const num = String(n).padStart(2, '0');
+  return `${currentBook.folder}/minis/${currentBook.codename}_mini_${num}.${currentBook.imageExt}`;
+}
+
+function tryLoadIllustration(div, src) {
+  const img = document.createElement('img');
+  img.onload = () => {
+    div.innerHTML = '';
+    div.classList.add('has-image');
+    div.appendChild(img);
+  };
+  img.src = src;
+}
+
+// ── Page lookup ───────────────────────────────────────────────
+function findPageIndex(id) {
+  let idx = pages.findIndex(p => p.id === id);
+  if (idx !== -1) return idx;
+  const n = parseInt(id, 10);
+  if (!isNaN(n)) {
+    const padded = String(n).padStart(2, '0');
+    idx = pages.findIndex(p => p.id === padded || p.id === String(n));
+    if (idx !== -1) return idx;
+  }
+  return -1;
+}
+
+// ── Spread mapping ────────────────────────────────────────────
+function rightIdx(s) { return s === 0 ? 0 : s * 2; }
+function leftIdx(s)  { return s === 0 ? -1 : s * 2 - 1; }
+
+function totalSpreads() {
+  if (pages.length === 0) return 0;
+  return 1 + Math.ceil((pages.length - 1) / 2);
+}
+
+function spreadForPageIdx(pIdx) {
+  if (pIdx === 0) return 0;
+  if (pIdx % 2 === 1) return (pIdx + 1) / 2;
+  return pIdx / 2;
+}
+
+// ── Solo page detection ───────────────────────────────────────
+function soloPage(s) {
+  const li = leftIdx(s);
+  const ri = rightIdx(s);
+  const lPage = li >= 0 && li < pages.length ? pages[li] : null;
+  const rPage = ri >= 0 && ri < pages.length ? pages[ri] : null;
+  const lIsCoverOrBack = lPage && (lPage.id === 'COVER' || lPage.id === 'BACK');
+  const rIsCoverOrBack = rPage && (rPage.id === 'COVER' || rPage.id === 'BACK');
+  const lIsBlank = li < 0 || li >= pages.length;
+  const rIsBlank = ri < 0 || ri >= pages.length;
+  if (rIsCoverOrBack && lIsBlank) return 'right';
+  if (lIsCoverOrBack && rIsBlank) return 'left';
+  return null;
+}
+
+// ── Markup parser ─────────────────────────────────────────────
+function parseMarkup(text) {
+  let html = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+  html = html
+    .replace(/\[b\]/gi,      '<strong>')
+    .replace(/\[\/b\]/gi,    '</strong>')
+    .replace(/\[i\]/gi,      '<em>')
+    .replace(/\[\/i\]/gi,    '</em>')
+    .replace(/\[cent\]/gi,   '<span class="cent">')
+    .replace(/\[\/cent\]/gi, '</span>')
+    .replace(/\[ind\]/gi,    '<span class="ind">')
+    .replace(/\[\/ind\]/gi,  '</span>');
+  return html;
+}
+
+// ── Page scaling ──────────────────────────────────────────────
+function scalePages() {
+  const spreadRow = document.getElementById('spread-row');
+  const scaler    = document.getElementById('spread-scaler');
+  const spread    = document.getElementById('spread');
+  if (!spreadRow || !scaler || !spread) return;
+
+  const availH = spreadRow.getBoundingClientRect().height;
+  if (availH <= 0) return;
+
+  const scale     = availH / PAGE_H;
+  const solo      = soloPage(spreadIndex);
+  const pageCount = solo ? 1 : 2;
+  const scaledW   = PAGE_W * pageCount * scale;
+  const scaledH   = PAGE_H * scale;
+
+  spread.style.transform = `scale(${scale})`;
+  scaler.style.width  = `${scaledW}px`;
+  scaler.style.height = `${scaledH}px`;
+}
+
+window.addEventListener('resize', scalePages);
+
+// ── Rendering ─────────────────────────────────────────────────
+const GOTO_RE  = /(?:go to page|goto page|turn to page)\s+(\d+)/i;
+const ILLUS_RE = /^>>>\s*Illustration\s+(\d+)/i;
+const MINI_RE  = /^>>>\s*Mini(?:\s+Illustration)?\s+(\d+)/i;
+
+function renderPageContent(pIdx, slotEl, labelEl) {
+  const pageEl = slotEl.closest('.page');
+
+  if (pIdx < 0 || pIdx >= pages.length) {
+    slotEl.innerHTML = '';
+    labelEl.textContent = '';
+    pageEl.classList.add('blank');
+    pageEl.classList.remove('cover-page');
+    return;
+  }
+
+  pageEl.classList.remove('blank');
+  const page = pages[pIdx];
+  const isCover = page.id === 'COVER';
+  const isBack  = page.id === 'BACK';
+
+  if (isCover || isBack) {
+    pageEl.classList.add('cover-page');
+    labelEl.textContent = '';
+    slotEl.innerHTML = '';
+    const src = isCover
+      ? `${currentBook.cover}.${currentBook.coverExt}`
+      : `${currentBook.back}.${currentBook.coverExt}`;
+    const img = document.createElement('img');
+    img.className = 'cover-img';
+    img.alt = isCover ? 'Cover' : 'Back Cover';
+    img.src = src;
+    slotEl.appendChild(img);
+    return;
+  }
+
+  pageEl.classList.remove('cover-page');
+  labelEl.textContent = `Page ${page.id}`;
+
+  const lines = page.rawText.split('\n');
+  const fragment = document.createDocumentFragment();
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+
+    const miniMatch = trimmed.match(MINI_RE);
+    if (miniMatch) {
+      const div = document.createElement('div');
+      div.className = 'illus-block illus-mini';
+      div.textContent = trimmed.replace('>>> ', '');
+      tryLoadIllustration(div, miniPath(parseInt(miniMatch[1], 10)));
+      fragment.appendChild(div);
+      continue;
+    }
+
+    const illusMatch = trimmed.match(ILLUS_RE);
+    if (illusMatch) {
+      const div = document.createElement('div');
+      div.className = 'illus-block illus-full';
+      div.textContent = trimmed.replace('>>> ', '');
+      tryLoadIllustration(div, illustrationPath(parseInt(illusMatch[1], 10)));
+      fragment.appendChild(div);
+      continue;
+    }
+
+    if (trimmed === '') {
+      const spacer = document.createElement('span');
+      spacer.className = 'blank-line';
+      fragment.appendChild(spacer);
+      continue;
+    }
+
+    if (GOTO_RE.test(line)) {
+      const p = document.createElement('p');
+      const a = document.createElement('a');
+      a.className = 'goto-link';
+      a.innerHTML = parseMarkup(line);
+      const match = line.match(GOTO_RE);
+      a.addEventListener('click', () => gotoPage(match[1]));
+      p.appendChild(a);
+      fragment.appendChild(p);
+      continue;
+    }
+
+    const p = document.createElement('p');
+    p.innerHTML = parseMarkup(line);
+    fragment.appendChild(p);
+  }
+
+  slotEl.innerHTML = '';
+  slotEl.appendChild(fragment);
+}
+
+function renderSpread() {
+  const li = leftIdx(spreadIndex);
+  const ri = rightIdx(spreadIndex);
+  const leftPageEl  = document.getElementById('left-page');
+  const rightPageEl = document.getElementById('right-page');
+
+  renderPageContent(li, document.getElementById('left-content'),  document.getElementById('left-label'));
+  renderPageContent(ri, document.getElementById('right-content'), document.getElementById('right-label'));
+
+  const solo = soloPage(spreadIndex);
+  if (solo === 'right') {
+    leftPageEl.classList.add('hidden-page');
+    leftPageEl.classList.remove('solo-page');
+    rightPageEl.classList.remove('hidden-page');
+    rightPageEl.classList.remove('solo-page');
+  } else if (solo === 'left') {
+    rightPageEl.classList.add('hidden-page');
+    leftPageEl.classList.remove('hidden-page');
+    leftPageEl.classList.add('solo-page');
+  } else {
+    leftPageEl.classList.remove('hidden-page');
+    leftPageEl.classList.remove('solo-page');
+    rightPageEl.classList.remove('hidden-page');
+    rightPageEl.classList.remove('solo-page');
+  }
+
+  document.getElementById('btn-back').disabled    = spreadIndex === 0;
+  document.getElementById('btn-forward').disabled = spreadIndex >= totalSpreads() - 1;
+
+  scalePages();
+}
+
+// ── Navigation ────────────────────────────────────────────────
+document.getElementById('btn-back').addEventListener('click', () => {
+  if (spreadIndex > 0) { spreadIndex--; renderSpread(); }
+});
+
+document.getElementById('btn-forward').addEventListener('click', () => {
+  if (spreadIndex < totalSpreads() - 1) { spreadIndex++; renderSpread(); }
+});
+
+function gotoPage(idStr) {
+  const pIdx = findPageIndex(idStr);
+  if (pIdx < 0) { alert(`Page "${idStr}" not found.`); return; }
+  spreadIndex = spreadForPageIdx(pIdx);
+  renderSpread();
+}
+
+document.getElementById('btn-jump').addEventListener('click', () => {
+  const val = document.getElementById('jump-input').value.trim();
+  if (!val) return;
+  gotoPage(val);
+});
+
+document.getElementById('jump-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('btn-jump').click();
+});
+</script>
+</body>
+</html>

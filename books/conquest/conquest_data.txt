@@ -1,0 +1,1727 @@
+--- PAGE: COVER ---
+
+>>> Cover Illustration Goes Here
+
+
+
+
+--- PAGE: 00 ---
+
+
+
+
+
+
+
+
+
+[cent][i]This Page Intentionally Left Blank.[/i][/cent]
+
+--- PAGE: 01 ---
+
+
+
+
+
+
+
+
+
+[cent][b]Welcome to the Kingdom of Zork![/b][/cent]
+
+You are bored. There’s nothing on TV except stupid reruns. You wander into your local bookstore and pick up an interesting-looking book entitled “Zork: The Forces of Krill.” As usual, you turn to the first page and begin reading.
+
+The book is set in the magical land of Zork, where the evil and powerful warlock Krill is about to conquer the kingdom, and only YOU can save the day! There are trolls, gnomes, lizard warriors, sorcerers, and a giant empire to explore. It looks like this book is good!
+
+Do you choose to save the Kingdom? If so, purchase the book and turn to page 7.
+
+Or do you choose to go home and watch reruns? Turn to page 2.
+
+
+
+
+
+--- PAGE: 02 ---
+
+In front of the TV, your eyelids slowly close. A strange sound fills the room. Suddenly your eyes open; your realize that you have been snoring.  
+
+You can’t get that Zork book out of your mind, but the book store is already closed. Think again! 
+
+Wouldn’t it be wise to purchase the book now, and turn to page 7?
+
+[i]And watch for these WHAT-DO-I-DO-NOW Books available from Tor:[/i]
+
+ZORK: The Forces of Krill  
+ZORK: The Malifestro Quest  
+ZORK: The Cavern of Doom
+
+--- PAGE: 03 ---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[cent]ZORK #4[/cent]
+[cent]CONQUEST AT QUENDOR[/cent]
+
+
+
+[cent]BY S. ERIC MERETZKY[/cent]
+
+
+
+
+
+
+
+[cent]TOR[/cent]
+[cent]A TOM DOHERTY ASSOCIATES BOOK[/cent]
+
+
+
+
+
+--- PAGE: 04 ---
+
+This is a work of fiction. All the characters and events portrayed in this book are fictional, and any resemblance to real people or incidents is purely coincidental.
+
+ZORK #4: CONQUEST AT QUENDOR
+
+Copyright © 1984 by Infocom, Inc.
+
+ZORK is a registered trademark of Infocom, Inc.
+
+All rights reserved, including the right to reproduce this book or portions thereof in any form.
+
+Interior illustrations by Dell Harris.
+
+A TOR Book
+
+Published by Tom Doherty Associates, 8-10 W. 36th St., New York, New York 10018
+
+First printing, October 1984
+
+ISBN: 0-812-55989-4  
+CAN. ED.: 0-812-55990-8
+
+Printed in the United States of America
+
+--- PAGE: 05 ---
+>>> Illustration 01
+--- PAGE: 06 ---
+
+
+
+
+
+
+
+
+
+[cent][i]This Page Intentionally Left Blank.[/i][/cent]
+
+--- PAGE: 07 ---
+
+It’s an almost perfect day for the game, warm but with a light breeze. The trees surrounding the ballfield are beginning to display the dazzling colors of autumn. The visitors are leading 5 to 3, and are threatening to add to their lead, putting their first two batters on base to lead off the final inning.
+
+Bill stands on the pitcher’s mound and takes a deep breath. He looks into the dugout toward Mr. Rock, the coach, but there doesn’t seem to be any special instructions. June yells a few words of encouragement from her position at first base. Bill tosses the ball toward the plate.
+
+“Strike!” calls the umpire.
+
+Suddenly, distant thunder causes Bill to look skyward. A dark, black cloud is roiling across the sky toward the ballfield. The bright sunshine vanishes, and a cold wind begins whipping the dirt along the basepaths. Giant drops of rain begin to fall, and both teams rush toward the protection of the dugouts.
+
+“I’ve never seen a storm come up so fast!” June tells Bill as he jumps into the dugout next to her.
+
+Go to page 9.
+
+
+
+
+--- PAGE: 08 ---
+>>> Illustration 02
+--- PAGE: 09 ---
+
+A bolt of lightning explodes from the black cloud, and then another and another. The cloud swirls, changing shape until it is knotted into the form of an enormous hand! The giant hand reaches down from the sky, heading straight toward the home team dugout. Someone screams as the hand-cloud enters the dugout, flicking the roof aside in a spray of splintering wood. It envelops Bill and June, and they feel themselves being lifted...
+
+Bill and June had three times traveled to the Land of Frobozz in the magical world of Zork, where they were known as Bivotar and Juranda. On each visit they had participated in a grand adventure, most recently rescuing Prince Logrumethar from the enchantment of an evil warlock named Grawl. Logrumethar is the only son of Syovar, the wise king of Frobozz, and the “uncle” of Bivotar and Juranda in that alter-universe.
+
+After their first visit, Syovar gave them a powerful ring. The mere act of putting it on would transport them to Syovar’s castle. Never before had they been seized in quite so alarming a fashion as this!
+
+Go to page 10.
+
+
+
+--- PAGE: 10 ---
+
+Bivotar wakes slowly, as though from a drugged sleep, and notices Juranda kneeling over him. “Are you okay?” she asks.
+
+“Yup, I think so.” He sits up, and realizes that they are now wearing tattered, soiled garments. “Where are we? And what was that black hand thing?” He shivers at the memory.
+
+“It looks like we’re in some kind of shallow pit. I think we could climb out if you give me a boost.”
+
+Bivotar stands and brushes some clinging straws from his clothes. He helps lift Juranda up. Once over the rim, she reaches down and helps Bivotar scramble out.
+
+They look around. They seem to be in some kind of dungeon, its distant ceiling lost in gloom. The smell of rotting straw fills the air, and slimy moss covers a dank wall nearby. A winding stone stairway leads upward, out of sight. Scurrying sounds come from the darkened corners of the dungeon. A ray of light from a tiny, solitary window far above illuminates a heavy wooden box that rests on the floor. Several large rocks also lie strewn about.
+
+Suddenly, a strange creature appears, floating in the air above them. It looks, at first glance, like a giant cat with no legs, just a head and a tail stuck onto a huge, furry ball.
+
+Go to page 12.
+
+--- PAGE: 11 ---
+>>> Illustration 03
+--- PAGE: 12 ---
+
+But this creature has no whiskers, and the tail looks very powerful and is covered with suckers like the tentacles of an octopus. The creature is surrounded by a faint light, as though it were not really present, but merely a projection of some kind. After a moment, the creature smiles and speaks in a high-pitched, squeaky voice:
+
+[ind]“Poor Bivotar  [/ind]
+[ind]Will be dead soon,  [/ind]
+[ind]Unless he finds  [/ind]
+[ind]The silver spoon.”[/ind]
+
+The creature does a lazy somersault in mid-air, laughs curiously, and vanishes!
+
+“What in the world was that?” wonders Juranda aloud.
+
+“Beats me... OOWWW!” Bivotar leaps backward, and spots a large scorpion skittering away into the gloom. “That scorpion just stung me on the foot! Aren’t they poisonous?”
+
+“Yes, I think so!” Juranda’s eyes dart about wildly. “But look at this!” She points at the heavy wooden box.
+
+Go to page 13.
+
+--- PAGE: 13 ---
+
+Bivotar limps over to it and finds a label. It reads:
+
+
+[ind]FROBOZZ MAGIC SCORPION STING REMEDY[/ind]
+
+[ind]******** (Warning: Fragile) ******** [/ind]
+
+
+“I can’t seem to get it open,” Juranda says, pulling at the lid with her fingers. “Let’s search through the straw—maybe we’ll find something to pry it open with.”
+
+“That’ll take too long,” protests Bivotar, who is beginning to shake all over. “I’m starting to feel sick already. Just smash the box open with one of those rocks!”
+
+Search in the straw?  
+Go to page 14.
+
+Smash the box open with one of the rocks?  
+Go to page 17.
+
+
+
+--- PAGE: 14 ---
+
+Juranda frantically sifts through the straw on the floor of the dungeon.
+
+“Hurry!” moans Bivotar. “I’m feeling dizzy!”
+
+“Here’s something!” cries Juranda. “It’s a spoon!”
+
+Using the spoon, she quickly pries off the lid of the wooden box, and grabs a glass vial within. “Drink this! It’s labeled ‘Scorpion Antidote.’”
+
+Bivotar opens the vial and gulps down the greenish liquid inside it. Almost instantly, he stops shivering. “Thanks, Juran. I feel okay now. I was really scared.”
+
+Juranda glances into the wooden box. “There’s something else in here.” She pulls out a parchment scroll and begins reading it. “It’s a magic spell for summoning a messenger nymph, whatever that is.”
+
+“Maybe it could deliver a message to Syovar to come rescue us,” suggests Bivotar.
+
+“Sounds pretty far-fetched to me. I think we ought to try getting out of here on our own. Let’s see where that staircase leads.”
+
+Go to page 16.
+
+--- PAGE: 15 ---
+>>> Illustration 04
+--- PAGE: 16 ---
+
+Just then, the strange, limbless cat-creature appears floating in the air again. In the same squeaky voice, it intones:
+
+[ind]“Sharp fangs await  [/ind]
+[ind]The one who dares  [/ind]
+[ind]To climb and climb  [/ind]
+[ind]These winding stairs.”[/ind]
+
+Once again, it smiles oddly, and then disappears.  
+“See,” exclaims Bivotar, “those stairs are dangerous! Let’s summon the messenger nymph.”  
+“You’re going to listen to that weird thing?”  
+“Well, it was right about the silver spoon!”
+
+Summon the messenger nymph?  
+Go to page 19.
+
+See what lies atop the winding stair?  
+Go to page 26.
+
+--- PAGE: 17 ---
+
+Juranda grabs one of the large rocks and smashes it down on the wooden box. The box flies apart, and they hear the sound of shattering glass. Greenish liquid pours out of the wreckage and seeps into cracks of the floor. Juranda sifts frantically through the shards of wood and glass, severely cutting her fingers.
+
+“It looks like I destroyed the sting remedy when I smashed open the box.”
+
+Bivotar tries to scoop up a few drops of the greenish liquid with his hands, but it has almost completely soaked into the straw and the cracks. He shakes violently, falls to the ground, and soon becomes very still.
+
+Go to page 18.
+
+
+
+--- PAGE: 18 ---
+
+“Biv... ?” calls Juranda, a quaver in her voice, blood dripping from her lacerated fingers. Strange vermin, perhaps attracted by the smell of blood, begin creeping out of the shadows toward Juranda. Some of these prove to be even deadlier than the scorpion.
+
+[b][cent]THE END[/b][/cent]
+
+[i]Your score is 0 out of a possible 10 points. Well, you probably deserve another chance.  [/i]
+
+Turn to page 7 and try again.
+
+>>> Mini 01
+--- PAGE: 19 ---
+
+Juranda shrugs and says, “Okay, have it your way.” She recites the spell from the scroll. “Onvoiz posto homicus nymphite!”
+
+A tiny nymph, no more than three inches tall, appears with a little puff of smoke. It darts about the air in front of them, its miniature wings beating furiously.
+
+“Hello, I’m from the Frobozz Magic Messenger Nymph Bureau. Whom would you like me to deliver a message to?”
+
+“Syovar, King of the Land of Frobozz,” states Bivotar.
+
+“At the Castle of Zork,” adds Juranda.
+
+“And the message? Remember, it cannot exceed ten words.”
+
+Bivotar thinks for a moment, whispering to himself and counting on his fingers. “Syovar, help! Rescue us from this dungeon! Juranda and Bivotar.”
+
+“Okay, bye!” The nymph winks at them before vanishing.
+
+“We might have to wait awhile for our message to arrive,” comments Juranda. “Let’s try to get some sleep.”
+
+“Good idea,” agrees Bivotar, yawning. “I’m pretty tired.”
+
+Go to page 21.
+
+
+
+--- PAGE: 20 ---
+>>> Illustration 05
+--- PAGE: 21 ---
+
+They curl up in the straw, trying to find a comfortable position and forget about their predicament.
+
+Bivotar and Juranda awake from a restless sleep to hear shouting and the sounds of a struggle.
+
+“Get your hands off Max!”
+“Stop prodding Fred with spear!”
+
+The argument stops with the slamming of a distant door, echoing throughout the dungeon.
+
+“It’s Max and Fred!” says Juranda. Max and Fred were the two friendly but timid elves who had helped them on an earlier adventure in Zork.
+
+“Fred?” Juranda calls into the darkness.
+“Max?”
+
+“Who calls?” comes a reply.
+
+Two small, furry elves emerge from the gloom and, spotting Bivotar and Juranda, rush over in a wild frenzy of hugs and chatter.
+
+“Fred glad to see you again,” says Fred.
+“Max worried about you,” adds Max.
+
+“What are you doing here?” asks Bivotar.
+
+“And where is here, for that matter?”
+
+“This is ancient, deserted castle,” answers Fred.
+
+Go to page 23.
+
+
+
+
+--- PAGE: 22 ---
+>>> Illustration 06
+--- PAGE: 23 ---
+
+“Castle being used by evil warlock, Grawl,” adds Max.
+
+“Wasn’t Grawl that warlock who put the enchantment on Syovar’s son Logrumethar?” Bivotar asks.
+
+“Yes, same Grawl.”
+“Grawl angry with you for rescuing Logrumethar from Cavern of Doom.”
+“Captured you to get revenge.”
+“Perhaps plotting some terrible torture this very moment!”
+“Fred and Max captured also.”
+“Very careless.”
+“Wandered into enchanted woods without magic cloak!”
+
+Fred lowers his voice to a whisper. “Actually, elves captured on purpose.”
+
+“Right,” Max agrees, also in a whisper. “Forget magic cloak on purpose. Syovar wanted Max and Fred here for rescue.”
+
+“Rescue?” asks Juranda.
+
+“Yes, you must do exactly as we say.”
+“Rescue should happen at any...”
+
+Suddenly, a wall of the dungeon explodes into a cloud of smoke and mortar, and sunlight pours through a newly formed gaping hole! 
+
+Go to page 24.
+
+
+
+
+
+--- PAGE: 24 ---
+
+A moment later Syovar appears in the opening, locked in combat with another wizard.  
+
+“That’s Grawl!” shrieks Fred.  
+
+Lightning bolts flash from Grawl’s arms and explode harmlessly off Syovar’s invisible shield. Syovar conjures a huge monster, with venomous fangs as long as a man’s arm. As the monster leaps at Grawl, the evil warlock conjures an even fiercer monster which devours Syovar’s. Syovar and Grawl circle each other, edging toward the center of the room to avoid being cornered by the other.
+
+Go to page 25.
+
+>>> Mini 02
+--- PAGE: 25 ---
+
+“Hole clear now!” shouts Max.
+
+“Quick! Everyone through opening!” cries Fred, running toward the sunlight.
+
+“Wait! We can’t leave Syovar now!” Bivotar yells after the fleeing elves. “He needs help!”
+
+Stay and try to help Syovar in his battle against Grawl?
+
+Go to page 28.
+
+Listen to Max and Fred and leave the dungeon?
+
+Go to page 30.
+
+
+
+
+
+--- PAGE: 26 ---
+
+“Okay,” Bivotar says. “Onward and upward!”
+
+They mount the winding stone stairs, which are slippery and steep. Soon it is pitch black, and the two adventurers are forced to grope their way along. Skittering sounds can be heard nearby.
+
+Rats seem to be coming closer now, occasionally brushing Bivotar or Juranda on the leg. Juranda, hurrying too much in the dark, trips on the rough-hewn steps in the darkness.
+
+Go to page 27.
+
+>>> Mini 03
+--- PAGE: 27 ---
+
+“Hurry,” cries Bivotar, an edge of panic in his voice. “A rat just bit me on the foot!”
+
+Suddenly, in a wave of fur and teeth, thousands of rats begin leaping upon them from all directions, their tiny teeth working with amazing ferocity. Soon, all that remains are some well-picked bones, and a few thousand well-fed rats.
+
+[b][cent]THE END[/b][/cent]
+
+[i]Your score is 1 out of a possible 10 points. Well, you probably deserve another chance.  [/i]
+
+Turn to page 14 and try again.
+
+
+
+
+--- PAGE: 28 ---
+
+Reluctant to leave Syovar during his battle, Bivotar and Juranda linger in the dungeon.  
+
+“Hurry!” yells one of the elves from beyond the opening in the wall.  
+
+Syovar notices them and pauses in battle, calling to them to follow Max and Fred. Grawl, taking quick advantage of Syovar’s lapse, hurls an enormous ball of fire. The fireball strikes Syovar in the chest, and he is reduced to a smoking pile of ash!  
+
+Eyes gleaming with hatred and desire for revenge, Grawl turns toward Bivotar and Juranda. Two more fireballs fly through the air....
+
+[b][cent]THE END[/b][/cent]
+
+[i]Your score is 2 out of a possible 10 points.  Well, you probably deserve another chance.  [/i]
+
+Turn to page 19 and try again.
+
+--- PAGE: 29 ---
+>>> Illustration 07
+--- PAGE: 30 ---
+
+Bivotar and Juranda follow the elves through the opening, and pause just beyond it to look back. The battle reaches a climax; walls of fire leap across the dungeon. Suddenly, it is over, and the flames begin to disperse. Juranda cheers as she spots Grawl, lying motionless on the dungeon floor. But the cheer dies in her throat when she sees that Syovar is staggering, his body burned in many places.
+
+The cat-like apparition appears in the air above the body of Grawl. Its huge eyes, usually impassive, betray a hint of anger as it speaks to Syovar.
+
+[ind]“My servant Grawl lies here[/ind]
+[ind]Defeated by your hand  [/ind]
+[ind]But soon you’ll see the end  [/ind]
+[ind]Of everything you’ve planned.”[/ind]
+
+As before, the creature vanishes as it utters the last word. Syovar stumbles backward and falls to the ground.
+
+Before Bivotar and Juranda have time to move, a great white light surrounds them. When it fades, they are in one of the turret rooms of the Castle of Zork. Syovar lies on a canopied bed at the other end of the room, asleep or unconscious. 
+
+Go to page 31.
+
+--- PAGE: 31 ---
+
+Logrumethar is leaning over his father, applying ointment to his burns. Max and Fred are just disappearing down the winding stairs of the turret, presumably in search of a healer.
+
+Logrumethar crosses the room to greet Bivotar and Juranda. “It looks very bad,” he says. “The wounds are very serious, and Syovar is no longer a young man.” He shakes his head. “I don’t understand it. Grawl is... was... a very powerful warlock, but we never dreamed that he could put up such a determined struggle.”
+
+“Um, I’m not sure it means anything,” Juranda says, “but there was another... being of some sort, who appeared several times while we were in the dungeon, including once just after Grawl was killed.”
+
+A troubled look passes across Logrumethar’s face. “Describe for me this creature,” he asks. Bivotar describes the cat-like apparition, and Juranda relates the three rhymes it spoke.
+
+“Worse and worse,” says Logrumethar, shaking his head. “Your description of this creature sounds like the ancient demon Jeearr. I thought it was only a legend — a great power who lives in a void beyond our world, and who literally feeds on war and suffering. 
+
+Go to page 32.
+
+
+
+
+--- PAGE: 32 ---
+
+It must have been Jeearr’s protective powers that allowed Grawl to inflict such damage on Syovar. It is dreadful to think that Grawl, one of the most powerful warlocks ever to appear in our land, is in thrall to this demon from the void. Jeearr must be powerful and terrible indeed.”
+
+A healer comes in carrying a tray of potions, and begins tending to Syovar.
+
+“Also,” continues Logrumethar, “this means that we were wrong about why you were snatched away to that dungeon prison.”
+
+“You mean, it wasn’t merely Grawl seeking revenge on us for breaking your enchantment?”
+
+“No, but that was what Jeearr wanted us to think. The real reason is the Conference of Quendor.”
+
+According to Logrumethar, Syovar has been working for many years to unite the neighboring lands in peace, ending the wars that have sapped the lives and resources of all. Peace would benefit all the lands; water-rich Antharia could irrigate the deserts of Kovalli in exchange for the Kovalli’s secret insect-extermination spells that would cure Antharia’s perennial locust plagues.
+
+Go to page 33.
+
+--- PAGE: 33 ---
+
+Finally, Syovar’s dream seems to be coming true. The leaders of all the lands have agreed to meet several days hence at Quendor, an old city in the northlands. There, if everything goes according to Syovar’s plan, they will sign a treaty proclaiming a union between the lands.
+
+As the conference approaches, a truce between all the warring neighbors has been observed—but instead of working toward peace, the nations have merely used this time to build huge armies, poised to attack should the treaty not be signed.
+
+“The tremendous respect that the leaders feel for Syovar has made this conference possible. That was Jeearr’s true reason for capturing you two—to lure Syovar into a trap that would prevent him from being at that conference. If he cannot attend, the treaty will not be signed and Quendor will merely be the prelude to the worst bloodshed that the Land of Frobozz has ever seen.”
+
+The healer approached Logrumethar. “He may live, he may die. It is in the hands of the gods. However,” the healer adds, “one thing is certain. Syovar will not be at Quendor.”
+
+Go to page 34.
+
+
+
+
+--- PAGE: 34 ---
+
+“Then Jeearr has won. War will spread across the face of the earth — enough fighting and bloodshed to keep Jeearr fed and powerful for a thousand years.” A faint glimmer of hope pops into his eyes. “Unless... unless we could find the Helm of Zork!”
+
+“What’s that?” asks Bivotar.
+
+“It’s a golden helmet which allows the wearer to impersonate anyone he chooses. Its powers are so great that the illusion cannot be detected even by the most wise of magic users. If I had the Helm, I could go to Quendor and pose as Syovar.”
+
+“Where is the Helm?” Juranda inquires.
+
+“Alas, it has been lost since antiquity. Some say the Helm’s location is far beyond the distant desert. Others think it rests in a shipwreck in the deepest reaches of the ocean. Still others say it lies in caverns deep underground.”
+
+“If it’s the only chance to salvage the treaty, let’s go search for it,” suggests Juranda.
+
+Logrumethar shakes his head slowly. “I cannot leave my father on his sickbed, so close to death.”
+
+“I guess that Juranda and I could go,” Bivotar says.
+
+Go to page 35.
+
+--- PAGE: 35 ---
+
+“But I don’t want to leave Syovar like this, either,” Juranda counters. “I’d feel like I was deserting him.”
+
+“That’s true—our help might be needed here. After all, we both took that first aid course last year.”
+
+“I doubt you could do anything more than our healers can,” Logrumethar points out.
+
+Go to page 36.
+
+>>> Mini 04
+--- PAGE: 36 ---
+
+“However, I would never ask you to undertake so perilous and difficult a quest. The decision must be your own.”
+
+Journey forth to search for the Helm of Zork?  
+Go to page 37.
+
+Stay at Syovar’s bedside?  
+Go to page 41.
+
+--- PAGE: 37 ---
+
+After a brief, whispered discussion, Bivotar and Juranda decide to seek the Helm. Logrumethar nods solemnly, and leads them down the turret stairs to his own bedchamber.
+
+“Here is a magic bead,” he says, handing Juranda a small glass sphere which she places in her belt pouch. “When you find the Helm, or when you wish to return, merely break the bead upon the ground, and you will return here to the castle. And take this lantern—you’ll probably need it.”
+
+Logrumethar reaches into a cabinet and removes a brittle-looking scroll. “I will use a powerful spell of mine, which will transport you somewhere into the vicinity of the Helm. From that point, you’ll be totally on your own. Also, Jeearr will probably visit you again. It may seem like a harmless jokester, but keep in mind that it is totally demonic.”
+
+“Why does it spout those riddles?” Bivotar asks.
+
+“Who knows what goes on inside that inhuman mind? Perhaps the fiend simply enjoys taunting you; perhaps it hopes to confuse you. Maybe giving these little hints somehow amuses it. In any case, I’ll wish you good adventuring, my young friends.”
+
+Go to page 39.
+
+
+
+--- PAGE: 38 ---
+>>> Illustration 08
+--- PAGE: 39 ---
+
+He begins reading the spell from the scroll.  
+“Telepo Juranda, telepo Bivotar, beamic redissk aimfiz Helm of Zork.”
+
+In a flash, the two adventurers are standing at the base of a towering cliff. A huge waterfall pours out of a hole in the face of the cliff far above them and forms a wide river which rushes away from the falls. A red buoy, moored to some sharp rocks near the bank of the river, bounces in the swirling current.
+
+Across the river is a thick forest. In the distance, rising above the forest, they can barely see the crumbling spire of a deserted castle. A breathtaking rainbow arches high above the falls, ending at the river bank just in front of them!
+
+As Bivotar and Juranda stare at the beautiful rainbow, a familiar voice from behind them intones:
+
+[ind]“It bobs and sways upon the spray  [/ind]
+[ind]Warning sailors—stay away!  [/ind]
+[ind]Walk upon the rainbow mist  [/ind]
+[ind]But not before the sceptre’s twist!”[/ind]
+
+They spin around just as Jeearr vanishes into thin air.
+
+Go to page 40.
+
+
+
+--- PAGE: 40 ---
+
+“Another riddle,” says Juranda, glumly.  
+“It seemed like it was saying we could walk on the rainbow.”  
+“Don’t be a dolt. Let’s go over and look at that buoy.”  
+“Hey, look!” Bivotar steps onto the lowest part of the rainbow. “You can walk on it! It feels like walking on a mattress, or on foam rubber.” He takes a few more steps up the rainbow.  
+“Come back down, Biv. I think we ought to look at that buoy first.”
+
+Examine the buoy?  
+Go to page 43.
+
+Try to cross the rainbow?  
+Go to page 45.
+
+Try to swim across the river?  
+Go to page 46.
+
+--- PAGE: 41 ---
+
+Unable to bear the thought of leaving Syovar’s side during his fight for life, Bivotar and Juranda elect to stay in the castle. Syovar remains unconscious during the following days, but his wounds seem to be healing.
+
+The Quendor Conference comes and goes without a treaty, and sure enough, fighting breaks out among virtually all the neighboring lands.
+
+Syovar regains consciousness for a few brief minutes, long enough to find out that his life-long hopes have been dashed. After that, Syovar’s condition worsens daily, and a week after the conference, during a night of terrible storms, he dies.
+
+Go to page 42.
+
+
+
+
+--- PAGE: 42 ---
+
+Bloodshed and chaos continue to spread throughout the Land of Frobozz. And each night, in their dreams, Bivotar and Juranda see a limbless cat-like creature, taunting them and laughing, its wide eyes growing brighter, laughing at them, growing stronger...
+
+[b][cent]THE END[/b][/cent]
+
+[i]Your score is 3 out of a possible 10 points. Well, you probably deserve another chance.  [/i]
+
+Turn to page 30 and try again.
+
+>>> Mini 05
+--- PAGE: 43 ---
+
+Bivotar steps reluctantly off the rainbow and follows Juranda toward the buoy. They wade through shallow water to the outcropping of rock where the buoy is moored.
+
+“Listen,” Juranda says, cupping her ear toward the bobbing red float. “You can hear something rattling around inside it.”
+
+“There’s a seam here.” Bivotar points to a line running around the center of the buoy.
+
+Juranda grasps the top part of the buoy and gives it a tug. It squeaks a bit, and then suddenly flies off. Juranda almost falls backward into the river, but fortunately recovers her balance in time. Meanwhile, Bivotar reaches into the hollow buoy, and discovers a golden sceptre, studded with huge jewels of every sort: emeralds, rubies, diamonds, sapphires. He waves it through the air, and rainbows of color leap from the sceptre’s point.
+
+“It’s beautiful,” gasps Bivotar.
+
+“Sure is,” agrees Juranda, replacing the top of the buoy. “Let’s try climbing that rainbow now.”
+
+Go to page 45.
+
+
+
+
+
+--- PAGE: 44 ---
+>>> Illustration 09
+--- PAGE: 45 ---
+
+Their feet sink into the mists of the rainbow, but it does provide enough support to allow them to climb it. Each step higher provides an ever more stunning view of the waterfall and the river valley below.
+
+As they approach the apex of the rainbow’s arc, Juranda stops, looking frightened. 
+
+“Biv, our feet are sinking further into the rainbow! Look, you can see the rainbow getting thinner as you watch it! It’s... dissolving!”
+
+If you found the jeweled sceptre, go to page 48.
+
+Otherwise, go to page 56.
+
+>>> Mini 06
+--- PAGE: 46 ---
+
+“Let’s forget about the rainbow and the buoy,” says Juranda. “Let’s cross the river. I want to get to that castle beyond the forest.”
+
+“The current looks very strong,” argues Bivotar, a poor swimmer.
+
+“So, we’ll get carried downstream a bit. We’ll just walk back upstream along the other bank of the river.”
+
+Bivotar looks resigned and follows Juranda into the river. The swift current sweeps them away from the bank toward the center of the water. 
+
+Go to page 47.
+
+>>> Mini 07
+--- PAGE: 47 ---
+
+The river narrows and forms a series of swirling rapids. The current smashes them against some particularly nasty rocks.
+
+[b][cent]THE END[/b][/cent]
+
+[i]Your score is 4 out of a possible 10 points. Well, you probably deserve another chance.  [/i]
+
+Turn to page 37 and try again.
+
+
+
+--- PAGE: 48 ---
+
+Bivotar looks around in a panic. “We’ll never make it back down in time! And if we fall, we’ll be killed in the rapids at the bottom of that waterfall!”
+
+Juranda has a sudden inspiration. “The sceptre—remember how it gave off that rainbow of colors when you waved it? It might have some magical powers! Try waving it over the rainbow.”
+
+Bivotar holds the sceptre out at arm’s length and waves it slowly back and forth several times. At first, nothing seems to happen. Then a ripple races along the entire length of the rainbow, and Bivotar drops the sceptre! It plummets into the river, but a moment later the rainbow hardens into a comfortable walking surface.
+
+“It worked!” Juranda shouts.
+
+“Yes, but I wish I hadn’t dropped the sceptre.”
+
+“Well, let’s just hope we won’t need it again.”
+
+They continue along the rainbow, eventually reaching a cave opening in the wall of the cliff. Clambering inside, Juranda points out how lucky they are. “We never could have made it up here without that rainbow.”
+
+“I’d better turn the lamp on now,” comments Bivotar. 
+
+Go to page 49.
+
+--- PAGE: 49 ---
+
+The light reveals a tunnel leading farther into the cliff wall, sloping gently downwards.
+
+They begin walking down the tunnel, and as their footsteps echo in the passage, dust and pebbles fall from the roof of the tunnel.
+
+“The roof doesn’t look too sturdy,” Bivotar points out. “It’s just loose dirt.”
+
+“Don’t make any loud noises.”
+
+After a few more minutes of walking, the passage turns a corner. Bivotar and Juranda stop in fright, beholding a fearsome looking monster: an enormous dog with three heads!
+
+Go to page 50.
+
+>>> Mini 08
+--- PAGE: 50 ---
+
+It is wearing a gigantic collar, connected by a chain to a spike in the floor of the tunnel.
+
+A huge bone lies on the ground, apparently just beyond the dog-monster’s reach. The bone is covered with hunks of meat.
+
+The creature notices them and strains at the chain, barking at the top of its enormous lungs, saliva pouring from three powerful jaws!
+
+The barks resound down the corridor. The roof behind them begins to shake, and then suddenly a huge section collapses. When the dust from the cave-in settles, they can see that the tunnel is completely closed off.
+
+“We can’t go back that way,” says Bivotar, stating the obvious.
+
+“But he’ll never let us by either.” Juranda points toward the three-headed canine.
+
+Suddenly, a familiar shape appears floating before them. Jeearr chuckles a few times before speaking:
+
+> “You will always be a winner  
+> If you give a puppy dog his dinner!”
+
+The demon whips its sucker-covered tail through the air, and then disappears.
+
+Go to page 52.
+
+--- PAGE: 51 ---
+>>> Illustration 10
+--- PAGE: 52 ---
+
+The dog-monster strains against its chain, which makes ominous creaking noises as though the metal were about to snap.
+
+“What do you suppose that riddle means?” asks Bivotar.
+
+“I don’t know,” Juranda responds. “Does it matter? We’re trapped between the cave-in and that monster. We’d better use our glass bead to return to the castle, before the dog-thing breaks its chain and makes mincemeat out of us.”
+
+“Perhaps Logrumethar will have an idea on how we can continue,” she adds.
+
+Use the magic bead and return now to the Castle of Zork?  
+Go to page 53.
+
+Stay and tackle the three-headed dog?  
+Go to page 58.
+
+--- PAGE: 53 ---
+
+Juranda removes the magic bead from her pouch. Tiny rays of colored light flash outwards from under its transparent surface.
+
+“Here goes.” She throws the tiny sphere against the ground. It smashes open, and light beams of every color stream forth and surround them. The beams spin around them in a whirlpool of light, and then fade away, revealing Logrumethar standing beside Syovar’s sickbed.
+
+Logrumethar looks at them, expectantly. “Did you find... No, I see that you do not have the Helm. And Quendor begins on the morrow.”
+
+“We tried,” says Bivotar, feeling miserable. “How is Syovar?” asks Juranda.
+
+Logrumethar looks downcast. “He grows worse. The healers are not optimistic.”
+
+“Couldn’t we try again?” asks Bivotar. “Couldn’t we have another chance to find the Helm?”
+
+“What makes you think that you would succeed where you failed before?” replies Logrumethar. “Besides, the spell I used to send you to the region of the Helm was only good for one casting; it is all used up, now.”
+
+Go to page 55.
+
+
+
+
+
+--- PAGE: 54 ---
+>>> Illustration 11
+--- PAGE: 55 ---
+
+The next day, while Bivotar and Juranda are with Logrumethar at Syovar’s bedside, they are visited by Jeearr.
+
+[ind]“The meeting is over  [/ind]
+[ind]With treaty suspended  [/ind]
+[ind]The armies start marching  [/ind]
+[ind]As Quendor has ended!”[/ind]
+
+The demon vanishes, leaving behind a faint odor that stings the nostrils. Before the odor has even faded, a messenger rushes into the turret chamber.
+
+“Logrumethar! The conference has broken up in acrimony! The army of Galepath is massing on our border, and the armada of Mareilon is blockading our harbors!”
+
+“I must leave to organize the defense of the kingdom,” Logrumethar tells them. “Syovar’s dream has become a nightmare. Jeearr has won.”
+
+[b][cent]THE END[/b][/cent]
+
+[i]Your score is 6 out of a possible 10 points. Well, you probably deserve another chance. [/i] 
+
+Turn to page 48 and try again.
+
+
+
+
+--- PAGE: 56 ---
+
+The rainbow continues to dissipate, and a minute later it becomes too tenuous to hold them any longer. They plunge, several hundred feet into the rapids below, never to be seen again.
+
+[b][cent]THE END[/b][/cent]
+
+[i]Your score is 5 out of a possible 10 points. Well, you probably deserve another chance. [/i]
+
+Turn to page 37 and try again.
+
+--- PAGE: 57 ---
+>>> Illustration 12
+--- PAGE: 58 ---
+
+“Wait, Juran. I’ve got an idea. If we tossed the dog-creature that bone, it just might leave us alone.”
+
+“It’s worth a try,” Juranda agrees. She edges toward the bone, keeping a wary eye on the three-headed beast. It strains madly at the collar, but remains chained.
+
+“This bone weighs a ton,” puffs Juranda, who sometimes exaggerates slightly. “Better give me a hand with it.”
+
+Bivotar and Juranda each grab one end of the bone, and begin swinging it back and forth.
+
+“On the count of three,” instructs Juranda. “One... and... two... and... three!” The bone flies toward the dog, which catches it. Immediately, all three heads begin tearing at the hunks of meat. In just a matter of seconds, the entire bone is picked clean!
+
+Six eyes focus on Bivotar and Juranda, and in a wild frenzy, the creature leaps toward them, snapping the chain!
+
+“Look out, it’s loose,” screams Bivotar. “Run!”
+
+“Run where? The cave-in...”
+
+They close their eyes, expecting to be torn apart by canine teeth...
+
+Go to page 59.
+
+--- PAGE: 59 ---
+
+...and a second later, three rather large and wet tongues begin slobbering all over them.
+  
+The creature’s tail wags furiously back and forth with doggish joy, creating a mighty wind.  
+
+“Why, it’s just an overgrown puppy,” says Bivotar, scratching one of the heads between its ears. The dog whines with pleasure and wags its tail even faster.  
+
+“Enough!” cries Juranda, pushing away a tongue the size of a throw rug. “Let’s get going. I see a doorway ahead.”  
+They leave the three-headed dog behind, staring after them through baleful eyes.
+
+Go to page 60.
+
+>>> Mini 09
+--- PAGE: 60 ---
+
+Bivotar gives one last glimpse back: its powerful forelegs are clawing furiously at the tunnel floor in an attempt to bury the huge bone.
+
+Once through the doorway, they find themselves inside what appears to be an artist’s studio. The walls and floor are splattered with paint. Empty hooks and broken picture frames indicate that the room has been extensively vandalized. One large picture seems to have miraculously escaped the vandals, and hangs proudly in the center of one wall. Another doorway lies at the opposite end of the room.
+
+“I can see the tunnel continuing beyond that doorway,” says Juranda. “Let’s get going.”
+
+“I want to look around here first,” Bivotar complains.
+
+Stay around the studio for a while?  
+Go to page 61.
+
+Continue along the tunnel right away?  
+Go to page 63.
+
+--- PAGE: 61 ---
+
+“Okay, let’s have a look around,” agrees Juranda. “Do you have anything in mind?”
+
+“Well, aren’t paintings often used to hide safes and things like that?”
+
+Juranda snaps her fingers. “Good thinking, Biv. Let’s have a look behind it.”
+
+They approach the painting, which depicts an orange-colored hot-air balloon sailing over a wooded area. They lift the heavy painting off the hook and place it on the ground. The wall behind the painting is featureless except for the same spatterings of paint that cover the rest of the room.
+
+“Oh, well,” sighs Juranda. “It was worth the try.”
+
+“Right,” Bivotar agrees, adding, “nothing ventured, nothing gained. Anyway, let’s get moving again.”
+
+Go to page 63.
+
+
+
+--- PAGE: 62 ---
+>>> Illustration 13
+--- PAGE: 63 ---
+
+As Bivotar and Juranda continue down the long tunnel, it makes several winding turns, and starts sloping sharply downward. A distant roar, like the sound of rushing water, echoes faintly down the passage.
+
+The noise grows louder, and soon they come to a branch point, where a smaller side tunnel leads off to the left. The roaring noise emanates from the side tunnel.
+
+Go to page 64.
+
+>>> Mini 10
+--- PAGE: 64 ---
+
+“I think we should check out that smaller passage,” says Bivotar.
+
+Investigate the small side passage as Bivotar suggests?  
+Go to page 65.
+
+Ignore the side passage and continue down the main passage?  
+Go to page 70.
+
+--- PAGE: 65 ---
+
+They enter the side tunnel, ducking slightly because of its lower ceiling.
+
+The side passage ends just a few steps later, opening into a huge high-roofed cavern. A mighty waterfall cascades down the far side of the cavern, forming a swirling pool which pours into a huge hole in the cavern floor. A rectangular object in the center of the cavern glints in the light of the lantern.
+
+The noise of the pouring water is overwhelming, reverberating around the cavern, shaking the walls, vibrating through their heads. Almost instantly after entering the cavern, Bivotar and Juranda clamp their hands over their ears and dash back out. Bivotar almost drops the lamp in his haste to escape the overpowering noise.
+
+“Wow!” Juranda exclaims, once they are back in the relative quiet of the main tunnel. “I’ve never heard anything so loud in my life.”
+
+“Now I know what the expression ‘too loud to think’ means,” adds Bivotar.
+
+“Did you see something on the floor in there?”
+
+“Yes!” says Bivotar with excitement. “It looked like a block of metal.
+
+Go to page 67.
+
+
+--- PAGE: 66 ---
+>>> Illustration 14
+--- PAGE: 67 ---
+
+ Based on the color, I’d say it was a bar of platinum or silver!”
+
+“That might come in handy later. You never know when you’re going to have to strike a bargain with some greedy gnome or something.”
+
+“I’m not going back in there, at least not without some heavy-duty earmuffs!”
+
+Did you find the scroll with the Silence Spell on it?
+
+Go to page 68.
+
+If not, go to page 70.
+
+
+--- PAGE: 68 ---
+
+The pages of Conquest at Quendor begin vibrating wildly, and then, in an explosion of smoke and ash, the book is gone! In its place is a swirling vortex of black smoke, stretching into the distance like an infinite tunnel. A face zooms toward you out of the blackness, closer and closer, huger and huger, until it almost seems to surround you in its immensity! The face is twisted into a scowl of anger, its red eyes pulsing with flashes of hatred. It is Insidious Insectus, the Demon of Infinite Loops! In a voice almost too deep to hear, and too hideous to describe, it speaks!
+
+“You have been cheating, O foul one! There is no magic spell of that sort anywhere in these pages. You have fallen into the trap I set for weak-willed readers such as you. Now, for your punishment, I doom you to an eternity of making the wrong decision!”
+
+Go to page 70.
+
+--- PAGE: 69 ---
+>>> Illustration 15
+--- PAGE: 70 ---
+
+Bivotar and Juranda leave the roar of the side tunnel behind and continue down the main passage.
+
+The tunnel, already sloping steeply downward, begins sloping more and more. To make matters worse, the floor of the tunnel is covered with loose pebbles and other rubble. Each step is dangerous, threatening to send the two adventurers sliding down the passage into the darkness ahead.
+
+In fact, this is exactly what happens. Bivotar loses his footing on a patch of gravelly ground. He grabs at Juranda for support, but this merely causes her to lose her balance as well. They begin sliding down the sloping corridor, gaining speed in an avalanche of tiny rocks. Suddenly they land on a level surface, and lie there for a moment, stunned.
+
+“Are you hurt?” asks Juranda, recovering first.
+
+“I think I’m okay,” answers Bivotar, standing slowly. “But the lantern looks damaged. It’s pretty battered, and the bulb is flickering.” He looks around. “Where are we?”
+
+It appears that they are in a small rectangular room with wooden walls.
+
+Go to page 72.
+
+--- PAGE: 71 ---
+>>> Illustration 16
+--- PAGE: 72 ---
+
+The ceiling above — where they fell in from the sloping tunnel — is open. In the center of one of the short walls is a narrow door.
+
+Juranda tries to open the door. It opens outward an inch or so, and then stops.
+
+“It feels like it’s hitting something.” She squirms her hand through the crack between the door and the frame. “Yup, there’s a wall right behind the door. Why would someone build a door next to a wall?”
+
+“Who cares? We’d better use that magic bead to get out of here before the lamp goes out. There’s no other way out. Maybe we can get another lamp from Logrumethar and try again tomorrow.”
+
+Use the magic bead and return now to the Castle of Zork?
+
+Go to page 53.
+
+Stay here in the room with wooden walls?
+
+Go to page 75.
+
+--- PAGE: 73 ---
+
+The demon grows even angrier as it speaks.
+
+“So that you may know the evil of your deed, I will visit you again and again throughout all time!” With an explosion of light and flame unlike anything you have ever imagined, the demon is gone and you are left holding Conquest at Quendor again.
+
+Go to page 75.
+
+
+
+
+
+--- PAGE: 74 ---
+>>> Illustration 17
+--- PAGE: 75 ---
+
+“Let’s not give up so easily,” says Juranda, walking slowly around the perimeter of the room. She knocks on one of the longer walls. “It sounds hollow, like there’s just air on the other side. It feels pretty flimsy, also.”
+
+“Can we break through it?” asks Bivotar.
+
+“Let’s try.” Juranda bangs harder against the wooden wall. “Ouch! No, I don’t think it’s thin enough to break.”
+
+“Let me try,” says Bivotar. He runs toward the wall, throwing all his weight against it. He bounces off and lands on the floor, gently massaging his shoulder. “I think I’m going to have a doozy of a black-and-blue mark.”
+
+“Biv, when you hit the wall, it looked like, well, like the whole room turned a little bit. If we could get the room to turn ninety degrees, then the door would open into the space beyond this hollow panel!”
+
+“That’s silly, Juran. You can’t turn a room!”
+
+“And you can’t walk on a rainbow. Now stand up and help me push on this wall.”
+
+Looking slightly contrite, Bivotar helps Juranda push the wooden panel. Nothing seems to happen.
+
+“I told you so...” begins Bivotar.
+
+“Let’s just try it once more,” begs Juranda.
+
+Go to page 76.
+
+
+
+--- PAGE: 76 ---
+
+They try again, pushing on the wall as hard as they can. Slowly, the room begins to turn. After the first few inches it begins to swing more easily.
+
+“That should be enough,” says Juranda. “Let me try the door again.” It opens, revealing a somewhat circular area, dimly lit from above.
+
+“Good thing there’s light ahead,” comments Bivotar. “The lamp is just about to go out.”
+
+“Click,” goes the lamp as it sputters and dies.
+
+Bivotar and Juranda enter the circular area. It is a wide ledge extending about halfway across a vertical cylindrical shaft. The walls of the shaft are smooth and shiny, not like the work of human engineering, but as though a tremendous heat had melted the very rock of the walls. The shaft extends upward, with light filtering down from above, and descends into inky blackness.
+
+Of more immediate interest is an unusual item on the ledge in front of them. It begins with a straw basket, large enough for several people to stand inside. A metal frame is attached to the top of the basket. A giant bag of orange cloth, apparently empty, lies draped over the side of the basket. 
+
+Go to page 77.
+
+--- PAGE: 77 ---
+
+The mouth of the bag is affixed to the metal frame. Hanging from the metal frame, just under the mouth of the bag, is a metal receptacle about two feet square and one foot deep.
+
+Lying on the ground next to the basket is a small pile of wood. Near the wood is a small box labeled
+
+[cent]MATCHES[/cent]
+
+“The walls look weird,” says Bivotar, running his hand over the smooth surface.
+
+With the usual lack of warning, Jeearr appears, floating in the center of the shaft beyond the ledge.
+
+[ind]“One of nature’s quaint surprises  [/ind]
+[ind]Is that hot air always rises.”[/ind]
+
+The demon floats upward into the shaft and slowly fades out of sight.
+
+“Look, you can see the sky up above,” Juranda points out, indicating a tiny circle of blue far overhead.
+
+“You know where we are?” exclaims Bivotar, suddenly. “This is the bottom of an old volcano, one that probably hasn’t erupted for centuries!
+
+Go to page 79.
+
+
+--- PAGE: 78 ---
+>>> Illustration 18
+--- PAGE: 79 ---
+
+And that’s the mouth of the volcano, way up there!”
+
+“That’s why the walls look like melted rock!” says Juranda, nodding in agreement. “It’s hardened lava!”
+
+“But there’s nowhere to go from here,” moans Bivotar. “We can’t climb these walls, and if we go back we’ll just be stuck in that rotating room. What should we do? Use the magic bead?”
+
+“Maybe we could tear up this cloth bag here to make a rope, and then use it to climb farther down into the volcano.”
+
+Use the magic bead to return to the Castle of Zork?  
+Go to page 53.
+
+Try to figure out a way to get to the mouth of the volcano, far above?  
+Go to page 80.
+
+Tear up the cloth bag to make a rope?  
+Go to page 86.
+
+
+--- PAGE: 80 ---
+
+Bivotar studies the basket-bag object for a moment. Suddenly his eyes light up. "I know what this contraption is! It's a hot-air balloon!"
+
+"Right! We can use this wood here to build a fire in the receptacle..."
+". . . Which will fill the bag with hot air..."
+". . . And lift the basket up and out of the volcano!"
+
+Bivotar quickly dumps the sticks of wood into the receptacle, and Juranda strikes a match and touches it to one of the smaller pieces. In a flash, the other sticks catch fire as well. The bag begins to billow outward and expand.
+
+"Quick, get into the basket," says Bivotar, as it begins to float off the ground. They scramble into the basket. A moment later the balloon twitches and begins rising majestically up the lava tube of the volcano.
+
+They rise swiftly through the dormant volcano, and soon emerge out of the mouth, into a cloudless, sunny day.
+
+A brisk wind immediately begins sweeping the balloon away from the volcano's mouth, and over a lush forest below. Distant mountains with jagged peaks swing into view over the curve of the earth.
+
+Go to page 82.
+
+--- PAGE: 81 ---
+>>> Illustration 19
+--- PAGE: 82 ---
+
+The forest ends, revealing a wide grassland between it and the fast-approaching mountains.
+
+“I think we should try to land the balloon,” cautions Bivotar. “Those mountains are getting awfully close.”
+
+“But this is such a glorious ride!” Juranda protests. “Besides, we’ll make it over the mountains!”
+
+Continue toward the mountains?  
+Go to page 88.
+
+Try to land the balloon now?  
+Go to page 83.
+
+--- PAGE: 83 ---
+
+"On second thought, let's play it safe and land the balloon," says Juranda.
+
+"Aye, aye, Captain!" yells Bivotar. He closes the lid of the metal receptacle, quickly quenching the fire. Almost immediately, the balloon begins losing altitude, dropping out of the fast-moving layer of air into a more placid stream. As it drifts lower it approaches the ruins of a small castle overgrown with ivy.
+
+The balloon brushes across the grass and finally comes to rest and the bag slowly sags to the ground. Bivotar and Juranda climb out of the basket and walk toward the ruined castle.
+
+The castle is nearly covered with overgrowth, and many of the walls are starting to crumble. The entire castle is surrounded by a wide moat full of murky water. Occasional bubbles break the surface of the moat. A narrow drawbridge of extremely rotted wood crosses the moat. Lying in the grass, near the end of the drawbridge, is a canvas sack. 
+
+While gazing at the ruined castle, the demon Jeearr appears in the air before them, seeming almost transparent in the bright sunlight.
+
+Go to page 85.
+
+
+
+
+
+--- PAGE: 84 ---
+>>> Illustration 20
+--- PAGE: 85 ---
+
+[ind]“Within these ruins lie  [/ind]
+[ind]The object of your quest  [/ind]
+[ind]But to cross the moat you must  [/ind]
+[ind]Pass one final spelling test!”[/ind]
+
+It finishes the riddle and, as always, fades slowly away. The faint sound of evil laughter lingers for a moment, and then fades as well.  
+
+“‘The object of our quest’... does that mean that the Helm of Zork is inside this castle, Biv?”  
+
+“We won’t know until we get there,” Bivotar replies. “Let’s go inside.” He begins walking toward the drawbridge.  
+Juranda hesitates. “That bridge looks like it’s about to collapse. I don’t think it’s safe. Maybe we should just swim across the moat. It’s not that wide.”  
+
+“What’s inside this bag?” Bivotar wonders aloud, nudging the canvas sack with his toe.
+
+Cross the wooden drawbridge?  
+Go to page 90.
+
+Swim the moat?  
+Go to page 92.
+
+Look inside the canvas sack?  
+Go to page 94.
+
+
+
+
+
+--- PAGE: 86 ---
+
+"Let's do as you suggest," agrees Bivotar, tearing at the cloth bag.
+
+The cloth tears easily, and within minutes they have torn the entire bag into long, thin strips. By tying the strips together, they soon have quite a lengthy "rope."
+
+"We can tie it to the metal frame of the basket contraption," says Juranda. "I'll stand in the basket to anchor it while you climb down the rope."
+
+Bivotar begins to descend into the darkness. Suddenly, despite Juranda's weight, the basket begins sliding toward the edge of the ledge. Juranda shrieks as it topples into the shaft. Both adventurers plunge into the black depths of the volcano.
+
+[b][cent]THE END[/b][/cent]
+
+[i]Your score is 6 out of a possible 10 points. Well, you probably deserve another chance. [/i]
+
+Turn to page 75 and try again.
+
+--- PAGE: 87 ---
+>>> Illustration 21
+--- PAGE: 88 ---
+
+"Okay," agrees Bivotar. "I guess it does look like we're a little higher than the mountain peaks."
+
+The winds grow stronger and the balloon travels even faster as they approach the mountains. Suddenly, a powerful downdraft catches the balloon and sends it hurtling straight at one of the sharpest peaks!
+
+The basket strikes the mountain with tremendous force. Bivotar and Juranda are hurled down the mountainside, their bodies tumbling thousands of feet into a deep canyon between two peaks.
+
+[b][cent]THE END[/b][/cent]
+
+[i]Your score is 6 out of a possible 10 points.  Well, you probably deserve another chance.  [/i]
+
+Turn to page 80 and try again.
+
+--- PAGE: 89 ---
+>>> Illustration 22
+--- PAGE: 90 ---
+
+Juranda steps out onto the drawbridge first, gingerly putting her weight onto the rotting boards. They creak loudly, but seem sturdy enough.
+
+“It looks safe, Biv,” she says, waving him along.
+
+Bivotar follows Juranda onto the bridge. As they reach the center of the bridge, it suddenly collapses with a scream of splintering wood. They plunge ten feet or so into the cold waters of the moat, and are almost immediately set upon by some of the fiercest flesh-eating fish known to man.
+
+[b][cent]THE END[/b][/cent]
+
+[i]Your score is 7 out of a possible 10 points.  Well, you probably deserve another chance.  [/i]
+
+Turn to page 83 and try again.
+
+--- PAGE: 91 ---
+>>> Illustration 23
+--- PAGE: 92 ---
+
+"The drawbridge looks pretty rotted away," frets Juranda. "We might get creamed if it collapsed while we were on it."
+
+"But you know what a lousy swimmer I am," argues Bivotar.
+
+"Oh, come on. It’s only about twenty feet across!"
+
+"All right, all right, we’ll swim across."
+
+They clamber down the steep bank of the moat, and plunge into the murky water.
+
+"Brrr, it’s freezing," complains Bivotar.
+
+Go to page 93.
+
+>>> Mini 11
+--- PAGE: 93 ---
+
+“Then swim faster, dummy!” calls Juranda, paddling out to the center of the moat.
+
+“Ow!” yells Bivotar. “Something just bit me on the leg!”
+
+“Youch! Me too!”
+
+“Let’s get out of here!” Bivotar begins splashing toward the bank in a panic.
+
+Unfortunately, they are surrounded by a large school of vicious flesh-eating fish. Less than a minute later some human bones settle to the bottom of the moat.
+
+[b][cent]THE END[/b][/cent]
+
+[i]Your score is 7 out of a possible 10 points.  Well, you probably deserve another chance.  [/i]
+
+Turn to page 83 and try again.
+
+
+--- PAGE: 94 ---
+
+Bivotar opens the canvas sack and looks inside. “It’s a parchment scroll with some writing on it,” he tells Juranda, and begins to read.
+
+He looks up a moment later. “It’s a magic spell that allows the spellcaster to leap tremendous distances. According to the instructions, it can be used on two people as long as they are holding hands. We could use the spell to leap across the moat!”
+
+Go to page 95.
+
+>>> Mini 12
+--- PAGE: 95 ---
+
+Juranda hesitates. “It sounds ridiculously dangerous to me. I say we forget about the spell and just swim across the moat.”
+
+“Or use the drawbridge.”
+
+Cross the drawbridge?  
+Go to page 90.
+
+Swim across the moat?  
+Go to page 92.
+
+Use the magic leaping spell?  
+Go to page 96.
+
+
+--- PAGE: 96 ---
+
+Bivotar and Juranda argue for a while about the relative merits of the drawbridge versus swimming. Eventually, they realize that all their options involve a certain amount of danger, and they decide that they might as well try the magic spell.
+
+Grasping Juranda’s hand tightly, Bivotar recites the words of the spell. “Vawltus hurdlo soria boundik breep!” A tickling feeling of energy spreads through their legs. Before they even realize that anything has happened, they are soaring in a graceful arc through the air over the moat. Higher and higher they climb, sailing over the crumbling ramparts of the castle, and, finally, descending into the castle’s courtyard. They land gently amidst the rubble.
+
+“What a blast!” cries Bivotar.
+
+Juranda nods in agreement, and begins to look around. “It’ll take a while to explore this place. Let’s split up and search around, and then meet back here, in, uh, ten minutes.”
+
+Bivotar agrees with Juranda’s suggestion, and they head off in separate directions to explore the ruins. A few minutes later, they meet back at the courtyard.
+
+“I found a whole bunch of neat things,” says Bivotar. “This stepladder was in a closet, and I came across this explosive in the armory.”
+
+Go to page 97.
+
+--- PAGE: 97 ---
+
+He holds up a brick of clay-like material with a fuse protruding from it. “And in one of the bedrooms I found this scroll with instructions for a magic spell that shrinks you down to the size of an insect!”
+
+Juranda looks slightly downcast. “All I found was a stupid letter opener and a doormat.”
+
+“Hey, cheer up. They might be useful,” says Bivotar, without much conviction.
+
+“We’ve been all over every part of the castle except that tower,” says Juranda, pointing to the one turret still standing. “If the Helm isn’t up there, then it’s not here anywhere!”
+
+“Then let’s head up there and find out!”
+
+They climb a narrow, winding stair within the tower, lugging the items they found while searching the castle. At the top of the stair they discover a wide landing. Rats scurry away into the dim corners of the landing. At the far end of the landing is a heavy wooden door. Bivotar tries to open it.
+
+“Locked,” he says, with disappointment.
+
+They study the wooden door. A small window, barred with iron, is set into the upper part of the door.
+
+Go to page 99.
+
+
+--- PAGE: 98 ---
+>>> Illustration 24
+--- PAGE: 99 ---
+
+There is a large gap under the door, perhaps two inches between the bottom of the door and the floor. Above the door is a glass transom, which looks as though it can’t be opened from this side. Juranda tries looking through the keyhole, but it seems to be blocked by something. However, by standing on his tiptoes, Bivotar is just able to see through the grated window.
+
+“There’s a golden helmet in there!” Bivotar tells Juranda. “It must be the Helm of Zork! It’s absolutely dazzling! It’s resting on a pedestal in the center of the room. There’s a mirror on the far wall of the room. I can see myself peeking through the window. And I can see what’s blocking the keyhole—the key is in the keyhole on the other side of the door!”
+
+“We’ve got to get past this door, Biv!”
+
+Try to figure out a way to get through the locked door, keeping in mind the items found while exploring the castle. 
+
+When you think you have a way, turn to page 100.
+
+
+
+--- PAGE: 100 ---
+
+Use the ladder to reach the glass transom?  
+Go to page 101.
+
+Use the doormat and letter opener to get the key from the other side of the door?  
+Go to page 104.
+
+Use the shrinking spell to get under the door?  
+Go to page 108.
+
+Use the explosive to blast down the door?  
+Go to page 110.
+
+If you couldn’t think of a way to get through the locked door, go to page 112.
+
+--- PAGE: 101 ---
+
+“No problem, Juran. I can reach that transom with the stepladder.”
+
+“But it doesn’t look like it opens from this side,” argues Juranda.
+
+“Then I’ll just break the glass,” Bivotar responds, “and climb through.”
+
+As Bivotar sets up the ladder next to the door, Juranda warns, “Be careful—don’t cut yourself or anything.”
+
+Bivotar climbs to the top of the stepladder, and, wrapping his tunic around his fist for protection, smashes the glass of the transom.
+
+Immediately, an ear-splitting alarm pierces the air. Startled, Bivotar tumbles from the stepladder and falls painfully to the floor. A moment later steel doors slam shut behind them, blocking their escape.
+
+Go to Page 103.
+
+
+
+
+--- PAGE: 102 ---
+>>> Illustration 25
+--- PAGE: 103 ---
+
+As the alarm continues blaring, tiny jets of poison gas begin puffing forth from holes in the wall. Salvo after salvo of poison-tipped darts sail through the room as robots bearing laser guns emerge from secret panels in the wall. Their last sight is the chainsaws descending from the ceiling.
+
+[b][cent]THE END[/b][/cent]
+
+[i]Your score is 8 out of a possible 10 points. Well, you probably deserve another chance.  [/i]
+
+Turn to page 96 and try again.
+
+
+
+
+--- PAGE: 104 ---
+
+“Biv, remember that mystery we read last year in English class? Remember how that detective got through the door that was locked from the inside?”
+
+“You mean the one where he put a placemat under the door to catch the key as it fell from the lock?”
+
+“Right. We could use the doormat I found and do the same thing with this door!”
+
+“What a great idea, Juran. Let’s try it!”
+
+Juranda slides the doormat halfway through the space under the door, positioning it just under the lock. Then she pokes the letter opener into the keyhole. There is a faint thud, and a tiny cloud of dust rises from the doormat. Juranda slowly pulls the doormat out from under the door. Sitting right in the middle of the mat is a rusty iron key!
+
+“You’re a genius, Juran!” Bivotar slaps her gleefully on the back, then picks up the key and easily unlocks the door. They enter the room and gasp at the shining radiance of the golden Helm of Zork. Juranda gingerly picks up the Helm, turning it from side to side to admire its beauty.
+
+Suddenly, a cold wind blows through the room. The wooden door slams shut behind them. 
+
+Go to page 106.
+
+--- PAGE: 105 ---
+>>> Illustration 26
+--- PAGE: 106 ---
+
+They whirl around, and see Jeearr floating in the air behind them. For once its face is unsmiling, but frozen in a mask of cold hatred. It speaks in a voice dripping with malevolence.
+
+[ind]“Your victory now turns sour  [/ind]
+[ind]The Helm’s not yours for long  [/ind]
+[ind]’Twill be buried with this tower  [/ind]
+[ind]When the whirlwind sings its song!”[/ind]
+
+This time the creature fails to disappear after finishing its cryptic message. Instead, its sucker-covered tail begins to whip back and forth, faster and faster. From outside the room comes the sound of a powerful wind, wailing ’round and ’round the turret. The floor of the room begins to quiver as the noise of the wind rises to a crescendo. Bits of mortar from the ceiling crumble down on top of them.
+
+Go to page 107.
+
+--- PAGE: 107 ---
+
+“The tower is collapsing!” screams Juranda, barely making herself heard above the roar of the wind.
+
+“The bead! Use the magic bead!” yells Bivotar.
+
+Do you have the magic spell for stealing the power of the wind?  
+Go to page 68.
+
+If you don’t, but want to stay here in the tower of the ruined castle anyway, go to page 114.
+
+If you want to use the magic bead to return to the Castle of Zork, go to page 116.
+
+
+
+
+--- PAGE: 108 ---
+
+Bivotar snaps his fingers. “I know how we can get past this door! The shrinking spell I found!”
+
+“Yes! We could make ourselves tiny enough to fit through this space under the door!” agrees Juranda. “Read the spell.”
+
+Bivotar unrolls the scroll and begins reading. “Dwindoid miniatus redoosic bibsio densafye.” Silently, the walls and ceiling begin moving away from them, an illusion caused by their shrinking. Within seconds, they are only an inch tall!
+
+The rats, which were cowering in the shadows of the landing, suddenly realize that Bivotar and Juranda aren’t nearly as frightening as they first thought. As the rats move in to investigate, the two tiny adventurers run toward the gap under the doorway, which now seems like it’s hundreds of feet away across the floor. The rats race after them. The rats are faster. And hungry as well.
+
+[b][cent]THE END[/b][/cent]
+
+[i]Your score is 8 out of a possible 10 points. Well, you probably deserve another chance.  [/i]
+
+Turn to page 96 and try again.
+
+--- PAGE: 109 ---
+>>> Illustration 27
+--- PAGE: 110 ---
+
+"Do you still have the matches from the balloon?" asks Juranda.
+
+Bivotar digs into his pocket. "Yes, here they are."
+
+"Let's use the explosive you found. We'll blast right through this door."
+
+Bivotar studies the heavy wooden door. "Hmmm... The door looks pretty sturdy, but I guess it's worth a try." He places the explosive brick at the base of the door. "Be ready to run down the stairs," he cautions.
+
+He strikes a match and lights the end of the fuse. "Go!" he shouts, running after Juranda down the stairs.
+
+Go to page 111.
+
+--- PAGE: 111 ---
+
+The brick detonates as they are nearing the base of the tower. The explosion proves a bit too much for the ancient turret, which proceeds to crumble down on top of them.
+
+[b][cent]THE END[/b][/cent]
+
+[i]Your score is 8 out of a possible 10 points. Well, you probably deserve another chance.  [/i]
+
+Turn to page 96 and try again.
+
+>>> Mini 13
+--- PAGE: 112 ---
+
+Bivotar shrugs. “I can’t think of any way to get the door open. It’s locked from the other side, and it’s certainly too sturdy to break down.”
+
+“I don’t have any ideas either,” adds Juranda glumly.
+
+“It’s frustrating! To come so close, only to fail.”
+
+Go to page 113.
+
+>>> Mini 14
+--- PAGE: 113 ---
+
+Juranda fingers the magic bead in her pouch.  
+“Should I use the glass bead now?”  
+
+“I guess so,” mutters Bivotar. “Anyhow, I’m starting to get pretty hungry.”
+
+Go to page 114.
+
+
+--- PAGE: 114 ---
+
+Juranda fingers the magic bead in her pocket. “Let’s not chicken out, Biv.” Suddenly, with a flash of anger, she yells, “I’ve had it with this joker once and for all!”
+
+She hurls the Helm straight at Jeearr. It passes right through the shimmering figure of the demon, hits the wall of the tower room, and crashes to the floor. It shatters into a thousand tiny fragments of gold.
+
+Jeearr howls with high-pitched laughter. The laughter is swallowed up by the shrieking wind as the demon vanishes. A second later, the entire tower collapses, burying Bivotar and Juranda in a cairn of rubble.
+
+[b][cent]THE END[/b][/cent]
+
+[i]Your score is 8 out of a possible 10 points. Well, you probably deserve another chance.  [/i]
+
+Turn to page 104 and try again.
+
+--- PAGE: 115 ---
+>>> Illustration 28
+--- PAGE: 116 ---
+
+Juranda reaches into her tunic pocket and grabs the bead. She dashes it against the stone floor. A swirl of colored light surrounds the two adventurers. It grows brighter and brighter, until they are forced to cover their eyes. Suddenly the light is gone, and they are standing in Syovar’s chamber in the Castle of Zork.
+
+Logrumethar leaps from his chair at Syovar’s bedside. “You’ve found the Helm! Fluttering Frobnoids, you two are amazing! This treasure has defied the greatest adventurers for centuries, and you two find it in the wink of an eye.”
+
+“How is Syovar?” asks Bivotar.
+
+Logrumethar’s excitement fades instantly. “Very bad. His condition worsens hourly.” He looks off into the distance, and Bivotar spots a tear forming in the corner of his eye.
+
+Logrumethar takes the Helm from Juranda and says, “I must leave at once. Quendor is a day’s journey, and the conference begins at midday tomorrow.” He glances at Syovar. “It hurts me to leave my father, knowing I may never see him again; yet I know that I am doing what he would want.”
+
+Go to page 117.
+
+--- PAGE: 117 ---
+
+After a brief hesitation, Logrumethar adds, “If my father should die before the treaty is signed, all we have done will be for naught. The assembled leaders would feel the passing of so great a wizard and would know of my charade. It would mean the end of Quendor and all that Syovar has worked for.
+
+“I ask one final favor. Stay here and watch after my father, as I wish that I could do.”
+
+“We will, Logrumethar,” says Juranda, earnestly.
+
+Logrumethar strides out of the room, and as he descends the stairs they hear him calling for his swiftest steed.
+
+The next day, Bivotar and Juranda are sitting by Syovar’s bedside when the healer enters to examine him. Syovar is almost as pale as his white silk bedsheets, and his breathing is shallow and irregular.
+
+After a brief examination, the healer motions them to the other end of the room. “He has taken another turn for the worse,” the healer begins. “He will not last the night.”
+
+“Isn’t there anything we can do?” asks Bivotar.
+
+Go to page 119.
+
+
+
+--- PAGE: 118 ---
+>>> Illustration 29
+--- PAGE: 119 ---
+
+“There is one thing we could try. Our alchemists have been working day and night developing a procedure of potions and magic spells that might work to save Syovar.”
+
+“What are we waiting for?” asks Juranda.
+
+“Wait!” cries the healer. “And listen. This procedure is completely experimental. It has not even been tried on the alchemists’ test animals. It could help Syovar—or it could kill him on the spot! Logrumethar has left Syovar in your care; the decision is up to you.”
+
+Forbid the healer to use this experimental procedure?
+
+Go to page 120.
+
+Allow it?
+
+Go to page 122.
+
+
+
+--- PAGE: 120 ---
+
+“It’s dangerous. I don’t think we should try it,” says Bivotar.
+
+Juranda concurs. “If Syovar dies now, it would endanger the chances for the treaty. Let’s wait until Logrumethar gets back. He’ll be able to make the correct decision.”
+
+With the healer and his assistants hovering over him, Syovar fades as evening approaches. Finally, his labored breathing stops and the healer slowly draws the silken curtains that surround the bed.
+
+Go to page 121.
+
+>>> Mini 15
+--- PAGE: 121 ---
+
+Minutes later Logrumethar returns to the castle, exhausted. “The Helm worked its magic; the treaty is signed.” He displays a handsomely penned parchment document.
+
+Sadly, Bivotar and Juranda tell Logrumethar of Syovar’s passing. Logrumethar weeps, and says, “If only he had lived long enough to know that his dream had become a reality.”
+
+[b][cent]THE END[/b][/cent]
+
+[i]Your score is 9 out of a possible 10 points. Well, you probably deserve another chance.  [/i]
+
+Turn to page 116 and try again.
+
+
+--- PAGE: 122 ---
+
+“Without this experimental treatment Syovar will die!” says Juranda. “I say we give permission to the healer.”
+
+Bivotar nods. “Even though it’s risky, it’s the only chance he has.”
+
+The healer asks Bivotar and Juranda to wait outside the room while he and his assistants work. Muffled noises like tiny explosions can be heard through the closed door. Occasionally, bursts of light, accompanied by strange odors that burn the nostrils, stream through the cracks around the door.
+
+After what seems like an eternity—but was in fact less than an hour—the healer opens the door and motions them inside.
+
+Syovar is still lying in bed, deeply unconscious. However, there is color in his cheeks again, and his breathing is deep and regular. “It is too early to say anything with certainty,” explains the healer, “but I think that Syovar will now recover.”
+
+Several hours later, Logrumethar rides into the courtyard of the castle, treaty in hand. “The Helm of Zork fooled everyone at Quendor,” he calls to them, waving the treaty. “They really thought I was Syovar!”
+
+Go to page 124.
+
+--- PAGE: 123 ---
+>>> Illustration 30
+--- PAGE: 124 ---
+
+The next day, Syovar regains consciousness for the first time since his battle with Grawl. Logrumethar tells him all that transpired during his illness. Syovar calls Bivotar and Juranda to his bedside. Beaming, he humbly thanks them for their courageous help. “I love you as I love my own son,” he says.
+
+“We love you too,” says Juranda, sniffling a bit.
+
+“Congratulations for the Treaty of Quendor,” adds Bivotar, sniffling even more than Juranda.
+
+“You deserve the congratulations as much as I do,” says Syovar. “Return again to see the blossoms of the seed we have planted at Quendor.” He nods, and they suddenly find themselves behind the dugout of the ballfield back home! Once again, they’re wearing their uniforms.
+
+The sky is clear, and the game is still in progress. One of their teammates spots them as they slip back into the dugout. “Hey, Bill! June! I can’t believe you guys ran off during that lightning storm. It only lasted five minutes. What a pair of cowards!”
+
+Bill, smiling knowingly at June, asks, “What inning?”
+
+“Bottom of the ninth... we’re behind by two runs. 
+
+Go to page 125.
+
+--- PAGE: 125 ---
+
+Two outs already, and Ed’s at bat.” Ed is the weakest hitter on the team.
+
+Just then Ed lines the ball into deep left field, legging it out for a double.
+
+“June!” yells Coach Rock. “Quit napping and get up to the plate. Bill! You’re supposed to be in the on-deck circle!”
+
+The pitcher, who seems rattled by the sudden extra-base hit, throws four pitches in the dirt to June. She drops the bat and trots down to first base.
+
+Bill steps up to the plate. The first pitch is far outside, but Bill swings anxiously at it.
+
+“Strike one!” cries the umpire.
+
+“Let him walk you,” calls Coach Rock from the dugout.
+
+The next pitch is right down the heart of the plate. Bill, slightly shaken, takes it for strike two.
+
+“Concentrate, Bill,” the coach yells.
+
+The pitcher tosses the ball toward the plate. Bill connects solidly with the ball. It sails high into the air over the outfield. The center-fielder runs back toward the fence. He leaps for the ball! It nips the edge of his glove and falls over the fence for a home run!
+
+Go to page 127.
+
+
+--- PAGE: 126 ---
+>>> Illustration 31
+--- PAGE: 127 ---
+
+Coach Rock is waiting as June and Bill cross the plate with the tying and winning runs.  
+
+“Way to go,” he says, slapping them on the back. “I guess you two will have something to talk about for a while, eh?”
+
+[b][cent]THE END[/b][/cent]
+
+[i]Your score is 10 out of a possible 10 points. Congratulations! You would make a fine adventurer.[/i]
+
+
+--- PAGE: 128 ---
+
+
+
+
+
+[cent][b]Bivotars and Jurandas everywhere, your adventures have just begun![/b][/cent]
+
+
+
+If you’ve been brave and clever and lucky enough to get this far in the book, you may be ready for ZORK computer games from Infocom.
+
+
+
+You’ll find more excitement behind the magic door to ZORK than you’ll ever find in any arcade. Infocom makes three ZORK games in all, as well as thrilling mysteries like DEADLINE™ and The WITNESS™, and science fiction games like STARCROSS™, SUSPENDED™, and PLANETFALL™.
+
+
+
+You can get Infocom games at just about any computer store. We make them for all kinds of computers: Apple II, Atari, Commodore 64, CP/M 8", DEC Rainbow, DEC RT-11, IBM Personal Computer, NEC APC, NEC PC-8000, Osborne, TI Professional, TRS-80 Model I, and TRS-80 Model III. Be sure to buy the specially marked Infocom game that’s right for your computer. And happy adventuring!
+
+
+
+>>> Mini 16
+--- PAGE: BACK ---
+
+

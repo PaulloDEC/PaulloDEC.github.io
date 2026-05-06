@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zork Books - Ortho Gallery</title>
+    <style>
+        body { margin: 0; background: #000; overflow: hidden; font-family: sans-serif; }
+        canvas { display: block; cursor: default; }
+    </style>
+</head>
+<body>
+
+<script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+    }
+</script>
+
+<script type="module">
+    import * as THREE from 'three';
+    import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+
+    const booksData = [
+        { id: 'krill', file: 'krill' },
+        { id: 'malifestro', file: 'malifestro' },
+        { id: 'cavern', file: 'cavern' },
+        { id: 'conquest', file: 'conquest' }
+    ];
+
+    let scene, camera, renderer, raycaster, mouse;
+    const books = [];
+    let hoveredGroup = null;
+
+    // Create the rotation icon texture (a simple circular arrow)
+    function createIconTexture() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 128; canvas.height = 128;
+        const ctx = canvas.getContext('2d');
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 8;
+        ctx.beginPath();
+        ctx.arc(64, 64, 40, 0, Math.PI * 1.6);
+        ctx.stroke();
+        // Arrow head
+        ctx.fillStyle = 'white';
+        ctx.beginPath();
+        ctx.moveTo(90, 30); ctx.lineTo(110, 60); ctx.lineTo(70, 60);
+        ctx.fill();
+        return new THREE.CanvasTexture(canvas);
+    }
+
+    const iconTex = createIconTexture();
+
+    init();
+    animate();
+
+    function init() {
+        scene = new THREE.Scene();
+
+        // Orthographic Camera for that 2D "Sticker" look
+        const aspect = window.innerWidth / window.innerHeight;
+        const d = 5; 
+        camera = new THREE.OrthographicCamera(-d * aspect, d * aspect, d, -d, 0.1, 1000);
+        camera.position.set(0, 0, 10);
+
+        renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.body.appendChild(renderer.domElement);
+
+        raycaster = new THREE.Raycaster();
+        mouse = new THREE.Vector2();
+
+        scene.add(new THREE.AmbientLight(0xffffff, 1.0));
+        const light = new THREE.DirectionalLight(0xffffff, 0.5);
+        light.position.set(0, 5, 10);
+        scene.add(light);
+
+        const loader = new OBJLoader();
+        
+        booksData.forEach((data, index) => {
+            loader.load('book_mesh.obj', (obj) => {
+                const group = new THREE.Group();
+                const bookMesh = obj.children[0];
+                
+                // Position the group
+                group.position.x = (index - 1.5) * 3.5;
+                
+                // Create Rotation Icon Sprite
+                const iconMat = new THREE.SpriteMaterial({ 
+                    map: iconTex, 
+                    transparent: true, 
+                    opacity: 0 
+                });
+                const iconSprite = new THREE.Sprite(iconMat);
+                iconSprite.position.y = -2.5; // Below the book
+                iconSprite.scale.set(0.6, 0.6, 1);
+                iconSprite.name = "rotate_icon";
+
+                group.add(obj);
+                group.add(iconSprite);
+
+                group.userData = { 
+                    id: data.id, 
+                    icon: iconSprite,
+                    isFlipped: false,
+                    targetRotationY: 0,
+                    targetScale: 1.0
+                };
+
+                scene.add(group);
+                books.push(group);
+            });
+        });
+
+        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('click', onClick);
+        window.addEventListener('resize', onWindowResize);
+    }
+
+    function onMouseMove(event) {
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+        raycaster.setFromCamera(mouse, camera);
+        const intersects = raycaster.intersectObjects(books, true);
+
+        if (intersects.length > 0) {
+            let target = intersects[0].object;
+            // Find parent group
+            while(target.parent && !target.userData.id) { target = target.parent; }
+            hoveredGroup = target;
+            document.body.style.cursor = 'pointer';
+        } else {
+            hoveredGroup = null;
+            document.body.style.cursor = 'default';
+        }
+
+        // Apply visual updates
+        books.forEach(group => {
+            const isHovered = (group === hoveredGroup);
+            group.userData.targetScale = isHovered ? 1.08 : 1.0;
+            group.userData.icon.material.opacity = isHovered ? 0.6 : 0;
+
+            // Auto-reset if mouse leaves
+            if (!isHovered) {
+                group.userData.targetRotationY = 0;
+                group.userData.isFlipped = false;
+            }
+        });
+    }
+
+    function onClick() {
+        if (!hoveredGroup) return;
+
+        raycaster.setFromCamera(mouse, camera);
+        const intersects = raycaster.intersectObjects(hoveredGroup.children, true);
+
+        if (intersects.length > 0) {
+            const hitObject = intersects[0].object;
+
+            if (hitObject.name === "rotate_icon") {
+                // Clicked the icon: Flip 180 degrees
+                hoveredGroup.userData.isFlipped = !hoveredGroup.userData.isFlipped;
+                hoveredGroup.userData.targetRotationY = hoveredGroup.userData.isFlipped ? Math.PI : 0;
+            } else {
+                // Clicked the book mesh: Navigate
+                window.location.href = `book_viewer.html?book=${encodeURIComponent(hoveredGroup.userData.id)}`;
+            }
+        }
+    }
+
+    function onWindowResize() {
+        const aspect = window.innerWidth / window.innerHeight;
+        const d = 5;
+        camera.left = -d * aspect;
+        camera.right = d * aspect;
+        camera.top = d;
+        camera.bottom = -d;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+
+        books.forEach(group => {
+            // Scale the whole group
+            const s = THREE.MathUtils.lerp(group.scale.x, group.userData.targetScale, 0.1);
+            group.scale.set(s, s, s);
+
+            // Rotate ONLY the book mesh (the first child), not the icon
+            const bookObj = group.children[0];
+            bookObj.rotation.y = THREE.MathUtils.lerp(bookObj.rotation.y, group.userData.targetRotationY, 0.1);
+        });
+
+        renderer.render(scene, camera);
+    }
+</script>
+</body>
+</html>

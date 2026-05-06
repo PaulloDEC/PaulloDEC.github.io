@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Book Editor</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: Georgia, serif;
+    background: #c8c0b0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    padding: 12px 20px;
+    gap: 12px;
+    overflow: hidden;
+  }
+
+  /* ── Top bar ── */
+  #top-bar {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+    font-size: 0.85em;
+  }
+
+  #top-bar button, #top-bar label {
+    padding: 4px 12px;
+    font-size: 0.95em;
+    cursor: pointer;
+    background: #f0ece4;
+    border: 1px solid #999;
+    border-radius: 3px;
+    font-family: Georgia, serif;
+  }
+
+  #top-bar input[type="file"] {
+    display: none;
+  }
+
+  #book-title {
+    font-size: 0.95em;
+    color: #444;
+    font-style: italic;
+    flex: 1;
+  }
+
+  /* ── Main row: spread + editor ── */
+  #main-row {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 16px;
+    flex: 1;
+    min-height: 0;
+  }
+
+  /* ── Spread side ── */
+  #spread-col {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    flex-shrink: 0;
+    min-height: 0;
+  }
+
+  #spread-row {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 8px;
+    flex: 1;
+    min-height: 0;
+  }
+
+  #spread-row button {
+    width: 36px;
+    height: 36px;
+    font-size: 1.1em;
+    cursor: pointer;
+    background: #f0ece4;
+    border: 1px solid #999;
+    border-radius: 4px;
+    align-self: center;
+    flex-shrink: 0;
+  }
+
+  #spread-row button:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+
+  #spread {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 0;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.35);
+  }
+
+  .page {
+    width: 340px;
+    height: 100%;
+    background: #faf6ef;
+    padding: 10px 20px 20px 20px;
+    font-size: 0.72em;
+    line-height: 1.6;
+    color: #222;
+    overflow-y: auto;
+    border: 1px solid #bbb;
+    position: relative;
+  }
+
+  .page.left-page  { border-right: 2px solid #999; }
+  .page.right-page { border-left: none; }
+  .page.blank      { background: #f0ece4; }
+
+  .page.cover-page {
+    background: #000;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .cover-page .page-label { display: none; }
+
+  .cover-img {
+    width: 90%;
+    height: 90%;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+
+  .page-label {
+    font-size: 0.7em;
+    color: #888;
+    text-align: center;
+    margin-bottom: 4px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .page-content {
+    white-space: normal;
+  }
+
+  .page-content p {
+    margin: 0;
+    white-space: pre-wrap;
+  }
+
+  .page-content .blank-line {
+    display: block;
+    height: 0.6em;
+  }
+
+  .page-content .cent {
+    display: block;
+    text-align: center;
+  }
+
+  .page-content .ind {
+    display: block;
+    margin-left: 2.5em;
+  }
+
+  .illus-block {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px dashed #aaa;
+    background: #ede9e0;
+    color: #888;
+    font-size: 0.8em;
+    font-style: italic;
+    text-align: center;
+    margin: 8px 0;
+    padding: 8px;
+    width: 100%;
+  }
+
+  .illus-block.has-image {
+    border: none;
+    background: none;
+    padding: 0;
+    margin: 8px 0;
+  }
+
+  .illus-full img {
+    width: 100%;
+    height: auto;
+    max-height: 60vh;
+    object-fit: contain;
+    display: block;
+  }
+
+  .illus-mini img {
+    width: 100%;
+    height: auto;
+    max-height: 30vh;
+    object-fit: contain;
+    display: block;
+  }
+
+  .illus-full:not(.has-image)  { height: 160px; }
+  .illus-mini:not(.has-image)  { height: 70px; }
+
+  .goto-link {
+    color: #1a4a8a;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+
+  .goto-link:hover { color: #0d2d57; }
+
+  /* Nav + jump below spread */
+  #spread-bottom {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85em;
+    flex-shrink: 0;
+  }
+
+  #spread-bottom input {
+    width: 60px;
+    padding: 3px 6px;
+    font-size: 0.9em;
+    border: 1px solid #999;
+    background: #faf6ef;
+    border-radius: 3px;
+    text-align: center;
+  }
+
+  #spread-bottom button {
+    padding: 3px 8px;
+    font-size: 0.85em;
+    cursor: pointer;
+    background: #f0ece4;
+    border: 1px solid #999;
+    border-radius: 3px;
+  }
+
+  /* ── Editor side ── */
+  #editor-col {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+  }
+
+  #editor-toolbar {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 5px;
+    flex-shrink: 0;
+  }
+
+  #editor-toolbar button {
+    padding: 3px 10px;
+    font-size: 0.82em;
+    cursor: pointer;
+    background: #f0ece4;
+    border: 1px solid #999;
+    border-radius: 3px;
+    font-family: Georgia, serif;
+  }
+
+  #editor-toolbar button:hover {
+    background: #e0dcd4;
+  }
+
+  .toolbar-bold   { font-weight: bold; }
+  .toolbar-italic { font-style: italic; }
+
+  #editor-textarea {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.72em;
+    line-height: 1.55;
+    border: 1px solid #999;
+    background: #fdfbf7;
+    padding: 10px 12px;
+    resize: none;
+    color: #222;
+    border-radius: 2px;
+  }
+
+  #editor-status {
+    font-size: 0.75em;
+    color: #666;
+    flex-shrink: 0;
+    height: 1.2em;
+  }
+</style>
+</head>
+<body>
+
+<div id="top-bar">
+  <label for="file-input" title="Open a .txt book file">&#128194; Open file</label>
+  <input type="file" id="file-input" accept=".txt">
+  <button id="btn-save" disabled title="Save full book as a new .txt file">&#128190; Save as .txt</button>
+  <span id="book-title">No file loaded</span>
+</div>
+
+<div id="main-row">
+
+  <!-- Left: spread preview -->
+  <div id="spread-col">
+    <div id="spread-row">
+      <button id="btn-back" title="Previous spread">&#8592;</button>
+      <div id="spread">
+        <div class="page left-page" id="left-page">
+          <div class="page-label" id="left-label"></div>
+          <div class="page-content" id="left-content"></div>
+        </div>
+        <div class="page right-page" id="right-page">
+          <div class="page-label" id="right-label"></div>
+          <div class="page-content" id="right-content"></div>
+        </div>
+      </div>
+      <button id="btn-forward" title="Next spread">&#8594;</button>
+    </div>
+
+    <div id="spread-bottom">
+      <label for="jump-input">Go to page:</label>
+      <input type="text" id="jump-input" placeholder="e.g. 16">
+      <button id="btn-jump">Go</button>
+    </div>
+  </div>
+
+  <!-- Right: editor -->
+  <div id="editor-col">
+    <div id="editor-toolbar">
+      <button class="toolbar-bold"   id="fmt-b"    title="Bold: wraps selection in [b]...[/b]">[b] Bold</button>
+      <button class="toolbar-italic" id="fmt-i"    title="Italic: wraps selection in [i]...[/i]">[i] Italic</button>
+      <button                        id="fmt-cent"  title="Centre: wraps selection in [cent]...[/cent]">[ ] Centre</button>
+      <button                        id="fmt-ind"   title="Indent: wraps selection in [ind]...[/ind]">[ ] Indent</button>
+      <button                        id="fmt-clear" title="Remove all formatting tags from selection">&#10005; Clear tags</button>
+    </div>
+    <textarea id="editor-textarea" spellcheck="true" placeholder="Open a .txt file to begin editing..."></textarea>
+    <div id="editor-status"></div>
+  </div>
+
+</div>
+
+<script>
+let pages = [];         // [{id, rawText}, ...]
+let spreadIndex = 0;
+let fileName = '';      // original filename for save suggestion
+let editorDirty = false;// true if textarea has unsaved changes
+
+// ── File load ────────────────────────────────────────────────
+document.getElementById('file-input').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  fileName = file.name;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    parseBook(ev.target.result);
+    spreadIndex = 0;
+    renderSpread();
+    syncEditorToSpread();
+    document.getElementById('book-title').textContent = file.name;
+    document.getElementById('btn-save').disabled = false;
+    editorDirty = false;
+    setStatus('');
+  };
+  reader.readAsText(file);
+});
+
+// ── Save ─────────────────────────────────────────────────────
+document.getElementById('btn-save').addEventListener('click', () => {
+  // Flush editor before saving
+  flushEditorToPages();
+  const fullText = serializeBook();
+  const blob = new Blob([fullText], { type: 'text/plain' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  // Suggest a new filename: original name with _edited inserted before .txt
+  const suggested = fileName.replace(/\.txt$/i, '_edited.txt') || 'book_edited.txt';
+  a.href = url;
+  a.download = suggested;
+  a.click();
+  URL.revokeObjectURL(url);
+  editorDirty = false;
+  setStatus('Saved.');
+});
+
+// ── Parser ───────────────────────────────────────────────────
+function parseBook(text) {
+  pages = [];
+  const headerRe = /^---\s*PAGE:\s*(.+?)\s*---/;
+  const lines = text.split('\n');
+  let current = null;
+  for (const line of lines) {
+    const m = line.match(headerRe);
+    if (m) {
+      if (current) pages.push(current);
+      current = { id: m[1].trim(), rawText: '' };
+    } else if (current) {
+      current.rawText += line + '\n';
+    }
+  }
+  if (current) pages.push(current);
+}
+
+// ── Serialiser ───────────────────────────────────────────────
+// Rebuilds the full .txt content from pages[]
+function serializeBook() {
+  return pages.map(p => `--- PAGE: ${p.id} ---\n${p.rawText}`).join('');
+}
+
+// ── Editor ↔ pages[] sync ────────────────────────────────────
+// The textarea shows the raw text for the two pages of the current spread,
+// including their --- PAGE: --- headers so the user can see context.
+
+function spreadPageIndices() {
+  const li = leftIdx(spreadIndex);
+  const ri = rightIdx(spreadIndex);
+  // Collect valid indices only
+  return [li, ri].filter(i => i >= 0 && i < pages.length);
+}
+
+function syncEditorToSpread() {
+  const indices = spreadPageIndices();
+  const text = indices.map(i =>
+    `--- PAGE: ${pages[i].id} ---\n${pages[i].rawText}`
+  ).join('');
+  document.getElementById('editor-textarea').value = text;
+  editorDirty = false;
+  setStatus('');
+}
+
+// Parse the textarea back into pages[] for the visible spread pages.
+// Re-uses the same header regex so edits to page content (not headers)
+// flow back into the correct page slots.
+function flushEditorToPages() {
+  const ta = document.getElementById('editor-textarea');
+  const text = ta.value;
+  const headerRe = /^---\s*PAGE:\s*(.+?)\s*---/;
+  const lines = text.split('\n');
+
+  let current = null;
+  const edited = []; // [{id, rawText}]
+  for (const line of lines) {
+    const m = line.match(headerRe);
+    if (m) {
+      if (current) edited.push(current);
+      current = { id: m[1].trim(), rawText: '' };
+    } else if (current) {
+      current.rawText += line + '\n';
+    }
+  }
+  if (current) edited.push(current);
+
+  // Write edited pages back into the matching slots in pages[]
+  const indices = spreadPageIndices();
+  for (let i = 0; i < Math.min(edited.length, indices.length); i++) {
+    // Only update rawText — preserve the original page id
+    if (edited[i].id === pages[indices[i]].id) {
+      pages[indices[i]].rawText = edited[i].rawText;
+    }
+  }
+}
+
+// When the textarea changes, update the preview after a short debounce
+let debounceTimer = null;
+document.getElementById('editor-textarea').addEventListener('input', () => {
+  editorDirty = true;
+  setStatus('Unsaved changes.');
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => {
+    flushEditorToPages();
+    renderSpread();
+  }, 400);
+});
+
+// ── Formatting toolbar ────────────────────────────────────────
+function wrapSelection(open, close) {
+  const ta = document.getElementById('editor-textarea');
+  const start = ta.selectionStart;
+  const end   = ta.selectionEnd;
+  if (start === end) {
+    setStatus('Select some text first.');
+    return;
+  }
+  const before = ta.value.slice(0, start);
+  const sel    = ta.value.slice(start, end);
+  const after  = ta.value.slice(end);
+  ta.value = before + open + sel + close + after;
+  // Restore selection around the newly wrapped text
+  ta.selectionStart = start;
+  ta.selectionEnd   = end + open.length + close.length;
+  ta.focus();
+  // Trigger preview update
+  ta.dispatchEvent(new Event('input'));
+}
+
+function clearTagsFromSelection() {
+  const ta = document.getElementById('editor-textarea');
+  const start = ta.selectionStart;
+  const end   = ta.selectionEnd;
+  if (start === end) {
+    setStatus('Select some text first.');
+    return;
+  }
+  const before = ta.value.slice(0, start);
+  const sel    = ta.value.slice(start, end);
+  const after  = ta.value.slice(end);
+  const cleaned = sel.replace(/\[\/?(b|i|cent|ind)\]/gi, '');
+  ta.value = before + cleaned + after;
+  ta.selectionStart = start;
+  ta.selectionEnd   = start + cleaned.length;
+  ta.focus();
+  ta.dispatchEvent(new Event('input'));
+}
+
+document.getElementById('fmt-b').addEventListener('click',    () => wrapSelection('[b]', '[/b]'));
+document.getElementById('fmt-i').addEventListener('click',    () => wrapSelection('[i]', '[/i]'));
+document.getElementById('fmt-cent').addEventListener('click', () => wrapSelection('[cent]', '[/cent]'));
+document.getElementById('fmt-ind').addEventListener('click',  () => wrapSelection('[ind]', '[/ind]'));
+document.getElementById('fmt-clear').addEventListener('click', clearTagsFromSelection);
+
+// ── Page lookup ──────────────────────────────────────────────
+function findPageIndex(id) {
+  let idx = pages.findIndex(p => p.id === id);
+  if (idx !== -1) return idx;
+  const n = parseInt(id, 10);
+  if (!isNaN(n)) {
+    const padded = String(n).padStart(2, '0');
+    idx = pages.findIndex(p => p.id === padded || p.id === String(n));
+    if (idx !== -1) return idx;
+  }
+  return -1;
+}
+
+// ── Spread mapping ───────────────────────────────────────────
+function rightIdx(s) { return s === 0 ? 0 : s * 2; }
+function leftIdx(s)  { return s === 0 ? -1 : s * 2 - 1; }
+
+function totalSpreads() {
+  if (pages.length === 0) return 0;
+  return 1 + Math.ceil((pages.length - 1) / 2);
+}
+
+function spreadForPageIdx(pIdx) {
+  if (pIdx === 0) return 0;
+  if (pIdx % 2 === 1) return (pIdx + 1) / 2;
+  return pIdx / 2;
+}
+
+// ── Markup parser ─────────────────────────────────────────────
+function parseMarkup(text) {
+  let html = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+  html = html
+    .replace(/\[b\]/gi,    '<strong>')
+    .replace(/\[\/b\]/gi,  '</strong>')
+    .replace(/\[i\]/gi,    '<em>')
+    .replace(/\[\/i\]/gi,  '</em>')
+    .replace(/\[cent\]/gi,   '<span class="cent">')
+    .replace(/\[\/cent\]/gi, '</span>')
+    .replace(/\[ind\]/gi,    '<span class="ind">')
+    .replace(/\[\/ind\]/gi,  '</span>');
+  return html;
+}
+
+// ── Rendering ────────────────────────────────────────────────
+const GOTO_RE  = /(?:go to page|goto page|turn to page)\s+(\d+)/i;
+const ILLUS_RE = /^>>>\s*Illustration\s+(\d+)/i;
+const MINI_RE  = /^>>>\s*Mini(?:\s+Illustration)?\s+(\d+)/i;
+
+function renderPageContent(pIdx, slotEl, labelEl) {
+  const pageEl = slotEl.closest('.page');
+
+  if (pIdx < 0 || pIdx >= pages.length) {
+    slotEl.innerHTML = '';
+    labelEl.textContent = '';
+    pageEl.classList.add('blank');
+    pageEl.classList.remove('cover-page');
+    return;
+  }
+
+  pageEl.classList.remove('blank');
+  const page = pages[pIdx];
+  const isCover = page.id === 'COVER';
+  const isBack  = page.id === 'BACK';
+
+  if (isCover || isBack) {
+    pageEl.classList.add('cover-page');
+    labelEl.textContent = '';
+    slotEl.innerHTML = '';
+    // In the editor we have no book_list.json context, so just show a placeholder
+    const ph = document.createElement('div');
+    ph.style.cssText = 'color:#666;font-size:0.8em;font-style:italic;';
+    ph.textContent = isCover ? '[Cover]' : '[Back Cover]';
+    slotEl.appendChild(ph);
+    return;
+  }
+
+  pageEl.classList.remove('cover-page');
+  labelEl.textContent = `Page ${page.id}`;
+
+  const lines = page.rawText.split('\n');
+  const fragment = document.createDocumentFragment();
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+
+    const miniMatch = trimmed.match(MINI_RE);
+    if (miniMatch) {
+      const div = document.createElement('div');
+      div.className = 'illus-block illus-mini';
+      div.textContent = trimmed.replace('>>> ', '');
+      fragment.appendChild(div);
+      continue;
+    }
+
+    const illusMatch = trimmed.match(ILLUS_RE);
+    if (illusMatch) {
+      const div = document.createElement('div');
+      div.className = 'illus-block illus-full';
+      div.textContent = trimmed.replace('>>> ', '');
+      fragment.appendChild(div);
+      continue;
+    }
+
+    if (trimmed === '') {
+      const spacer = document.createElement('span');
+      spacer.className = 'blank-line';
+      fragment.appendChild(spacer);
+      continue;
+    }
+
+    if (GOTO_RE.test(line)) {
+      const p = document.createElement('p');
+      const a = document.createElement('a');
+      a.className = 'goto-link';
+      a.innerHTML = parseMarkup(line);
+      const match = line.match(GOTO_RE);
+      a.addEventListener('click', () => gotoPage(match[1]));
+      p.appendChild(a);
+      fragment.appendChild(p);
+      continue;
+    }
+
+    const p = document.createElement('p');
+    p.innerHTML = parseMarkup(line);
+    fragment.appendChild(p);
+  }
+
+  slotEl.innerHTML = '';
+  slotEl.appendChild(fragment);
+}
+
+function renderSpread() {
+  const li = leftIdx(spreadIndex);
+  const ri = rightIdx(spreadIndex);
+
+  renderPageContent(li, document.getElementById('left-content'),  document.getElementById('left-label'));
+  renderPageContent(ri, document.getElementById('right-content'), document.getElementById('right-label'));
+
+  document.getElementById('btn-back').disabled    = spreadIndex === 0;
+  document.getElementById('btn-forward').disabled = spreadIndex >= totalSpreads() - 1;
+}
+
+// ── Navigation ───────────────────────────────────────────────
+function navigateTo(newSpread) {
+  // Flush editor before leaving this spread
+  flushEditorToPages();
+  spreadIndex = newSpread;
+  renderSpread();
+  syncEditorToSpread();
+}
+
+document.getElementById('btn-back').addEventListener('click', () => {
+  if (spreadIndex > 0) navigateTo(spreadIndex - 1);
+});
+
+document.getElementById('btn-forward').addEventListener('click', () => {
+  if (spreadIndex < totalSpreads() - 1) navigateTo(spreadIndex + 1);
+});
+
+function gotoPage(idStr) {
+  const pIdx = findPageIndex(idStr);
+  if (pIdx < 0) { alert(`Page "${idStr}" not found.`); return; }
+  navigateTo(spreadForPageIdx(pIdx));
+}
+
+document.getElementById('btn-jump').addEventListener('click', () => {
+  const val = document.getElementById('jump-input').value.trim();
+  if (!val) return;
+  gotoPage(val);
+});
+
+document.getElementById('jump-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('btn-jump').click();
+});
+
+// ── Status bar ───────────────────────────────────────────────
+function setStatus(msg) {
+  document.getElementById('editor-status').textContent = msg;
+}
+
+// ── Warn before closing with unsaved changes ─────────────────
+window.addEventListener('beforeunload', e => {
+  if (editorDirty) {
+    e.preventDefault();
+    e.returnValue = '';
+  }
+});
+</script>
+</body>
+</html>

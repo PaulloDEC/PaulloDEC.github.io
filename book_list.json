@@ -1,0 +1,42 @@
+[
+  {
+    "codename": "krill",
+    "title": "#1 - The Forces of Krill",
+    "folder": "books/krill",
+    "data": "books/krill/krill_data.txt",
+    "cover": "books/krill/krill_cover",
+    "back": "books/krill/krill_back",
+    "coverExt": "jpg",
+    "imageExt": "png"
+  },
+  {
+    "codename": "malifestro",
+    "title": "#2 - The Malifestro Quest",
+    "folder": "books/malifestro",
+    "data": "books/malifestro/malifestro_data.txt",
+    "cover": "books/malifestro/malifestro_cover",
+    "back": "books/malifestro/malifestro_back",
+    "coverExt": "jpg",
+    "imageExt": "png"
+  },
+  {
+    "codename": "cavern",
+    "title": "#3 - The Cavern of Doom",
+    "folder": "books/cavern",
+    "data": "books/cavern/cavern_data.txt",
+    "cover": "books/cavern/cavern_cover",
+    "back": "books/cavern/cavern_back",
+    "coverExt": "jpg",
+    "imageExt": "png"
+  },
+  {
+    "codename": "conquest",
+    "title": "#4 - Conquest at Quendor",
+    "folder": "books/conquest",
+    "data": "books/conquest/conquest_data.txt",
+    "cover": "books/conquest/conquest_cover",
+    "back": "books/conquest/conquest_back",
+    "coverExt": "jpg",
+    "imageExt": "png"
+  }
+]

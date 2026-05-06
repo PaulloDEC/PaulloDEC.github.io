@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DN1 and DN2 Asset Viewer</title>
+    <style>
+        body {
+            background-color: #000000;
+            color: #808080;
+            font-family: sans-serif;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .launcher-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 120px; 
+            padding: 20px;
+        }
+
+        .project-link {
+            display: block;
+            text-decoration: none;
+            /* No margins needed */
+        }
+
+        .project-link img {
+            /* THE FIX: We lock the height, and let width figure itself out.
+               This ensures both Dukes stand exactly the same height on screen. */
+            height: 220px; 
+            width: auto;
+            
+            display: block;
+                        
+            /* Smooth pop effect */
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Hover Effect: Scale up slightly */
+        .project-link:hover img {
+            transform: scale(1.1);
+            cursor: pointer;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 14px;
+            padding: 20px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="launcher-container">
+        
+        <a href="DN1/index_dn1.html" class="project-link">
+            <img src="duke1.png" alt="Duke Nukem 1 Viewer">
+        </a>
+
+        <a href="DN2/index_dn2.html" class="project-link">
+            <img src="duke2.png" alt="Duke Nukem 2 Viewer">
+        </a>
+
+    </div>
+
+    <footer>
+        These projects were written by Google's Gemini 3 Pro and Anthropic's Claude Sonnet 4.5 models. 
+        Send me a message on Github for more information.
+    </footer>
+
+</body>
+</html>
