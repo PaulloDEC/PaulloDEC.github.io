@@ -1,0 +1,385 @@
+<style>
+  /* ── Colour tokens ── */
+  :root {
+    --backdrop:        #C8C0B0;
+    --page-bg:         #FAF6EF;
+    --page-blank-bg:   #F0ECE4;
+    --page-text:       #1E1B13;
+    --page-label:      #999;
+    --page-spine:      #999;
+    --jump-link:       #BE2E0D;
+    --jump-link-hover: #E85530;
+    --illus-border:    #bbb;
+    --illus-bg:        #EDE9E0;
+    --illus-text:      #999;
+    --ui-bg:           #F0ECE4;
+    --ui-border:       #999;
+    --ui-text:         #666;
+    --ui-text-hover:   #222;
+    --ui-btn-text:     #1E1B13;
+    --spread-shadow:   rgba(0,0,0,0.35);
+    --toggle-track:    #bbb;
+    --toggle-track-on: #888;
+    --toggle-knob:     #fff;
+    --divider:         #aaa;
+    --error-text:      #800;
+    --error-link:      #1a4a8a;
+  }
+
+  [data-theme="dark"] {
+    --backdrop:        #1A1814;
+    --page-bg:         #2A2824;
+    --page-blank-bg:   #222018;
+    --page-text:       #D1CEC7;
+    --page-label:      #666;
+    --page-spine:      #444;
+    --jump-link:       #fff440;
+    --jump-link-hover: #fffaa7;
+    --illus-border:    #444;
+    --illus-bg:        #222018;
+    --illus-text:      #666;
+    --ui-bg:           #222018;
+    --ui-border:       #444;
+    --ui-text:         #888;
+    --ui-text-hover:   #ccc;
+    --ui-btn-text:     #D1CEC7;
+    --spread-shadow:   rgba(0,0,0,0.6);
+    --toggle-track:    #444;
+    --toggle-track-on: #777;
+    --toggle-knob:     #ccc;
+    --divider:         #555;
+    --error-text:      #c66;
+    --error-link:      #7a9fcc;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+
+    background-color: #5a462f;
+    opacity: 0.05;
+
+    -webkit-mask-image: url('backdrop_texture.svg');
+    -webkit-mask-repeat: repeat;
+
+    mask-image: url('backdrop_texture.svg');
+    mask-repeat: repeat;
+
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  body {
+    font-family: Georgia, serif;
+    background: var(--backdrop);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 12px 20px;
+    gap: 12px;
+    transition: background 0.3s ease;
+  }
+
+  #error-area {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    color: var(--error-text);
+    font-size: 1em;
+    margin-top: 40px;
+  }
+
+  #error-area a {
+    color: var(--error-link);
+  }
+
+  #book-container {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    width: 100%;
+    min-height: 0;
+  }
+
+  #spread-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-height: 0;
+  }
+
+  #spread-row button {
+    width: 44px;
+    height: 44px;
+    font-size: 1.3em;
+    cursor: pointer;
+    background: var(--ui-bg);
+    border: 1px solid var(--ui-border);
+    border-radius: 4px;
+    color: var(--ui-btn-text);
+    flex-shrink: 0;
+    transition: background 0.2s, border-color 0.2s;
+  }
+
+  #spread-row button:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+
+  #spread-scaler {
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  #spread {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    transform-origin: top left;
+    box-shadow: 0 4px 24px var(--spread-shadow);
+  }
+
+  .page {
+    width: 218px;
+    height: 325px;
+    background: var(--page-bg);
+    padding: 6px 16px 14px 16px;
+    font-size: 0.38em;
+    line-height: 1.65;
+    color: var(--page-text);
+    overflow-y: hidden;
+    border: none;
+    position: relative;
+    flex-shrink: 0;
+    transition: background 0.3s ease, color 0.3s ease;
+  }
+
+  .page.left-page  { border-right: 2px solid var(--page-spine); }
+  .page.right-page { border-left: none; }
+  .page.hidden-page { display: none; }
+  .page.solo-page  { border-right: none; }
+  .page.blank      { background: var(--page-blank-bg); }
+
+  .page.cover-page {
+    background: #000;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  
+	.page.cover-page::after,
+	.page.cover-page::before {
+	display: none;
+	}
+
+  .cover-page .page-label { display: none; }
+
+  .cover-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .page-label {
+    font-size: 0.7em;
+    color: var(--page-label);
+    text-align: center;
+    margin-bottom: 4px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .page-content { white-space: normal; }
+
+  .page-content p {
+    margin: 0;
+    white-space: pre-wrap;
+  }
+
+  .page-content .blank-line {
+    display: block;
+    height: 0.6em;
+  }
+
+  .page-content .cent {
+    display: block;
+    text-align: center;
+  }
+
+  .page-content .ind {
+    display: block;
+    margin-left: 2.5em;
+  }
+
+  .illus-block {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px dashed var(--illus-border);
+    background: var(--illus-bg);
+    color: var(--illus-text);
+    font-size: 0.8em;
+    font-style: italic;
+    text-align: center;
+    margin: 8px 0;
+    padding: 8px;
+    width: 100%;
+  }
+
+  .illus-block.has-image {
+    border: none;
+    background: none;
+    padding: 0;
+    margin: 8px 0;
+  }
+
+  .illus-full img {
+    width: 100%;
+    height: auto;
+    max-height: 280px;
+    object-fit: contain;
+    display: block;
+  }
+
+  .illus-mini img {
+    width: 100%;
+    height: auto;
+    max-height: 120px;
+    object-fit: contain;
+    display: block;
+  }
+
+  .illus-full:not(.has-image) { height: 200px; }
+  .illus-mini:not(.has-image) { height: 90px; }
+
+  /* Jump links — option 7: bold with tighter letter-spacing */
+  .goto-link {
+    color: var(--jump-link);
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: bold;
+    letter-spacing: -0.03em;
+    transition: color 0.15s;
+  }
+
+  .goto-link:hover {
+    color: var(--jump-link-hover);
+  }
+
+  /* ── Bottom bar ── */
+  #bottom-bar {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
+    font-size: 0.82em;
+    color: var(--ui-text);
+    flex-shrink: 0;
+    padding: 2px 0;
+  }
+
+  #bottom-bar a,
+  #bottom-bar label,
+  #bottom-bar span.bar-label {
+    color: var(--ui-text);
+    text-decoration: none;
+    font-size: 1em;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color 0.15s;
+  }
+
+  #bottom-bar a:hover,
+  #bottom-bar label:hover {
+    color: var(--ui-text-hover);
+  }
+
+  .bar-divider {
+    color: var(--divider);
+    font-size: 0.85em;
+    user-select: none;
+  }
+
+  #jump-input {
+    width: 60px;
+    padding: 3px 6px;
+    font-size: 1em;
+    border: 1px solid var(--ui-border);
+    background: var(--page-bg);
+    color: var(--page-text);
+    border-radius: 3px;
+    text-align: center;
+    font-family: Georgia, serif;
+  }
+
+  #btn-jump {
+    padding: 3px 10px;
+    font-size: 1em;
+    cursor: pointer;
+    background: var(--ui-bg);
+    border: 1px solid var(--ui-border);
+    color: var(--ui-btn-text);
+    border-radius: 3px;
+    font-family: Georgia, serif;
+  }
+
+  /* Toggle switch */
+  .toggle-switch {
+    position: relative;
+    width: 28px;
+    height: 15px;
+    flex-shrink: 0;
+  }
+
+  .toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+  }
+
+  .toggle-track {
+    position: absolute;
+    inset: 0;
+    background: var(--toggle-track);
+    border-radius: 15px;
+    transition: background 0.2s;
+    cursor: pointer;
+  }
+
+  .toggle-switch input:checked + .toggle-track {
+    background: var(--toggle-track-on);
+  }
+
+  .toggle-track::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 11px;
+    height: 11px;
+    background: var(--toggle-knob);
+    border-radius: 50%;
+    transition: transform 0.2s;
+  }
+
+  .toggle-switch input:checked + .toggle-track::after {
+    transform: translateX(13px);
+  }
+</style>
