@@ -11,14 +11,14 @@
     --page-bg:            #FAF6EF;
     --heading-dark:       #5A462F;
     --heading-light:      #B19F7C;
-    --ui-text:            #777;
-    --ui-text-hover:      #444;
+    --ui-text:            #5A462F;
+    --ui-text-hover:      #5A462F;
     --cover-border:       #5A462F;
     --cover-shadow:       rgba(0,0,0,0.3);
     --cover-shadow-hover: rgba(0,0,0,0.45);
     --cover-placeholder:  #aaa;
-    --toggle-track:       #bbb;
-    --toggle-track-on:    #888;
+    --toggle-track:       #B19F7C;
+    --toggle-track-on:    #5A462F;
     --toggle-knob:        #fff;
     --divider:            #aaa;
     --error-text:         #800;
@@ -29,14 +29,14 @@
     --page-bg:            #2A2824;
     --heading-dark:       #B19F7C;
     --heading-light:      #332e23;
-    --ui-text:            #999;
-    --ui-text-hover:      #ccc;
+    --ui-text:            #B19F7C;
+    --ui-text-hover:      #B19F7C;
     --cover-border:       #332e23;
     --cover-shadow:       rgba(0,0,0,0.5);
     --cover-shadow-hover: rgba(0,0,0,0.7);
     --cover-placeholder:  #666;
-    --toggle-track:       #444;
-    --toggle-track-on:    #777;
+    --toggle-track:       #332e23;
+    --toggle-track-on:    #B19F7C;
     --toggle-knob:        #ccc;
     --divider:            #555;
     --error-text:         #c66;
@@ -105,7 +105,7 @@
 
   .book-card:hover .cover-wrap {
     box-shadow: 0 6px 20px var(--cover-shadow-hover);
-    transform: translateY(-3px);
+    transform: translateY(-6px);
   }
 
   .cover-wrap {
@@ -281,7 +281,7 @@
 <script>
   const DESIGN_W = 968;
   const DESIGN_H = 540;
-  const PADDING  = 80;
+  const PADDING  = 20;
 
   let wornMode = false;
   let bookData = [];

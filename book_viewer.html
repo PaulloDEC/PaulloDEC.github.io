@@ -152,20 +152,26 @@
   }
 
   #spread {
-    position: absolute;
-    top: 0;
-    left: 0;
-    display: flex;
-    flex-direction: row;
-    align-items: stretch;
-    transform-origin: top left;
-    box-shadow: 0 4px 24px var(--spread-shadow);
-  }
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  transform-origin: top left;
+  box-shadow: 0 4px 24px var(--spread-shadow);
+  background: linear-gradient(to right, #eee8df 0%, #efe8df 44.46%, #efeae0 44.51%, #efeae0 44.55%, #efe8df 44.6%, #efeae0 49.13%, #efe8df 49.17%, #eee8de 49.93%, #ebe4d9 49.98%, #e6ded1 50.02%, #e6dcd0 50.07%, #e6ded2 50.35%, #e8ded2 50.4%, #ebe2d9 51.77%, #ebe4d9 51.82%, #ece6db 53.09%, #ece4db 53.14%, #ece6db 53.18%, #ede6dd 54.55%, #eee8dd 54.6%, #eee8df 100%);
+}
+
+[data-theme="dark"] #spread {
+  background: linear-gradient(to right, #252320 0%, #24221f 49.93%, #22201d 49.98%, #201e1b 50.02%, #242320 100%);
+}
+
 
   .page {
     width: 218px;
     height: 325px;
-    background: var(--page-bg);
+    background: transparent;
     padding: 6px 16px 14px 16px;
     font-size: 0.38em;
     line-height: 1.65;
@@ -175,13 +181,14 @@
     position: relative;
     flex-shrink: 0;
     transition: background 0.3s ease, color 0.3s ease;
+	z-index: 0;
   }
 
   .page.left-page  { border-right: none; }
   .page.right-page { border-left: none; }
   .page.hidden-page { display: none; }
   .page.solo-page  { border-right: none; }
-  .page.blank      { background: var(--page-blank-bg); }
+  .page.blank      { background: rgba(0,0,0,0.03); }
 
   .page.cover-page {
     background: #000;
@@ -191,33 +198,6 @@
     justify-content: center;
     overflow: hidden;
   }
-  
-	.page.cover-page::after,
-	.page.cover-page::before {
-	display: none;
-	}
-
-.page.left-page::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 5%;
-  height: 100%;
-  background: linear-gradient(to right, var(--page-bg), var(--spine-gutter));
-  pointer-events: none;
-}
-
-.page.right-page::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 5%;
-  height: 100%;
-  background: linear-gradient(to left, var(--page-bg), var(--spine-gutter));
-  pointer-events: none;
-}
 
   .cover-page .page-label { display: none; }
 
@@ -693,7 +673,7 @@ function renderPageContent(pIdx, slotEl, labelEl) {
   }
 
   pageEl.classList.remove('cover-page');
-  labelEl.textContent = `Page ${page.id}`;
+  labelEl.textContent =  page.id;
 
   const lines = page.rawText.split('\n');
   const fragment = document.createDocumentFragment();
