@@ -549,13 +549,36 @@ function renderPageContent(pIdx, slotEl, labelEl) {
 }
 
 function renderSpread() {
-  renderPageContent(leftIdx(spreadIndex), document.getElementById('left-content'), document.getElementById('left-label'));
-  renderPageContent(rightIdx(spreadIndex), document.getElementById('right-content'), document.getElementById('right-label'));
+  renderPageContent(
+    leftIdx(spreadIndex),
+    document.getElementById('left-content'),
+    document.getElementById('left-label')
+  );
+
+  renderPageContent(
+    rightIdx(spreadIndex),
+    document.getElementById('right-content'),
+    document.getElementById('right-label')
+  );
+
   const solo = soloPage(spreadIndex);
-  document.getElementById('left-page').className = `page left-page ${solo === 'right' ? 'hidden-page' : (solo === 'left' ? 'solo-page' : '')}`;
-  document.getElementById('right-page').className = `page right-page ${solo === 'left' ? 'hidden-page' : ''}`;
+
+  const leftPage = document.getElementById('left-page');
+  const rightPage = document.getElementById('right-page');
+
+  leftPage.classList.remove('hidden-page', 'solo-page');
+  rightPage.classList.remove('hidden-page', 'solo-page');
+
+  if (solo === 'right') {
+    leftPage.classList.add('hidden-page');
+  } else if (solo === 'left') {
+    leftPage.classList.add('solo-page');
+    rightPage.classList.add('hidden-page');
+  }
+
   document.getElementById('btn-back').disabled = spreadIndex === 0;
   document.getElementById('btn-forward').disabled = spreadIndex >= totalSpreads() - 1;
+
   scalePages();
 }
 
