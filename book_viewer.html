@@ -30,8 +30,6 @@
     --divider:         #aaa;
     --error-text:      #800;
     --error-link:      #1a4a8a;
-	--spine-line:   	#BFB29D;
-	--spine-gutter: 	#C5BBAA;
   }
 
   [data-theme="dark"] {
@@ -58,8 +56,6 @@
     --divider:         #555;
     --error-text:      #c66;
     --error-link:      #7a9fcc;
-	--spine-line:   	#131211;
-	--spine-gutter: 	#151413;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -68,16 +64,12 @@
     content: "";
     position: fixed;
     inset: 0;
-
     background-color: #5a462f;
     opacity: 0.05;
-
     -webkit-mask-image: url('backdrop_texture.svg');
     -webkit-mask-repeat: repeat;
-
     mask-image: url('backdrop_texture.svg');
     mask-repeat: repeat;
-
     pointer-events: none;
     z-index: -1;
   }
@@ -105,9 +97,7 @@
     margin-top: 40px;
   }
 
-  #error-area a {
-    color: var(--error-link);
-  }
+  #error-area a { color: var(--error-link); }
 
   #book-container {
     display: none;
@@ -152,21 +142,31 @@
   }
 
   #spread {
-  position: absolute;
-  top: 0;
-  left: 0;
-  display: flex;
-  flex-direction: row;
-  align-items: stretch;
-  transform-origin: top left;
-  box-shadow: 0 4px 24px var(--spread-shadow);
-  background: linear-gradient(to right, #eee8df 0%, #efe8df 44.46%, #efeae0 44.51%, #efeae0 44.55%, #efe8df 44.6%, #efeae0 49.13%, #efe8df 49.17%, #eee8de 49.93%, #ebe4d9 49.98%, #e6ded1 50.02%, #e6dcd0 50.07%, #e6ded2 50.35%, #e8ded2 50.4%, #ebe2d9 51.77%, #ebe4d9 51.82%, #ece6db 53.09%, #ece4db 53.14%, #ece6db 53.18%, #ede6dd 54.55%, #eee8dd 54.6%, #eee8df 100%);
-}
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    transform-origin: top left;
+    box-shadow: 0 4px 24px var(--spread-shadow);
+    background: linear-gradient(to right, #eee8df 0%, #efe8df 44.46%, #efe8df 44.6%, #efeae0 49.13%, #eee8de 49.93%, #e6ded1 50.02%, #e6ded2 50.35%, #ebe4d9 51.82%, #ece6db 53.09%, #ede6dd 54.55%, #eee8df 100%);
+  }
 
-[data-theme="dark"] #spread {
-  background: linear-gradient(to right, #252320 0%, #24221f 49.93%, #22201d 49.98%, #201e1b 50.02%, #242320 100%);
-}
+  [data-theme="dark"] #spread {
+    background: linear-gradient(to right, #252320 0%, #24221f 49.93%, #22201d 49.98%, #201e1b 50.02%, #242320 100%);
+  }
 
+  /* ── Content Fading ── */
+  .page-label, .page-content {
+    opacity: 1;
+    transition: opacity 0.15s ease-in-out;
+  }
+
+  .page-turning .page-label, 
+  .page-turning .page-content {
+    opacity: 0;
+  }
 
   .page {
     width: 218px;
@@ -181,7 +181,7 @@
     position: relative;
     flex-shrink: 0;
     transition: background 0.3s ease, color 0.3s ease;
-	z-index: 0;
+    z-index: 0;
   }
 
   .page.left-page  { border-right: none; }
@@ -190,16 +190,22 @@
   .page.solo-page  { border-right: none; }
   .page.blank      { background: rgba(0,0,0,0.03); }
 
+  /* FIX: Full bleed for covers */
   .page.cover-page {
     background: #000;
     padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
   }
 
-  .cover-page .page-label { display: none; }
+  .page.cover-page .page-label {
+    display: none;
+  }
+
+  .page.cover-page .page-content {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
 
   .cover-img {
     width: 100%;
@@ -218,34 +224,11 @@
   }
 
   .page-content { white-space: normal; }
-
-  .page-content p {
-    margin: 0;
-    white-space: pre-wrap;
-  }
-
-  .page-content .blank-line {
-    display: block;
-    height: 0.6em;
-  }
-
- .page-content .cent {
-  display: inline-block;
-  width: 100%;
-  text-align: center;
-}
-
-.page-content .ind {
-  display: inline-block;
-  width: 100%;
-  margin-left: 2.5em;
-  width: calc(100% - 2.5em);
-}
-
-.page-content .big {
-  font-size: 2em;
-  line-height: 1.2;
-}
+  .page-content p { margin: 0; white-space: pre-wrap; }
+  .page-content .blank-line { display: block; height: 0.6em; }
+  .page-content .cent { display: inline-block; width: 100%; text-align: center; }
+  .page-content .ind { display: inline-block; margin-left: 2.5em; width: calc(100% - 2.5em); }
+  .page-content .big { font-size: 2em; line-height: 1.2; }
 
   .illus-block {
     display: flex;
@@ -260,6 +243,15 @@
     margin: 8px 0;
     padding: 8px;
     width: 100%;
+    position: relative;
+  }
+
+  .illus-placeholder-text {
+    transition: opacity 0.2s;
+  }
+
+  .illus-block.has-image .illus-placeholder-text {
+    display: none;
   }
 
   .illus-block.has-image {
@@ -269,40 +261,30 @@
     margin: 8px 0;
   }
 
-  .illus-full img {
-    width: 100%;
-    height: auto;
-    max-height: 280px;
-    object-fit: contain;
-    display: block;
+  .illus-block img {
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
   }
 
-  .illus-mini img {
-    width: 100%;
-    height: auto;
-    max-height: 120px;
-    object-fit: contain;
-    display: block;
+  .illus-block.has-image img {
+    opacity: 1;
   }
 
+  .illus-full img { width: 100%; height: auto; max-height: 280px; object-fit: contain; display: block; }
+  .illus-mini img { width: 100%; height: auto; max-height: 120px; object-fit: contain; display: block; }
   .illus-full:not(.has-image) { height: 200px; }
   .illus-mini:not(.has-image) { height: 90px; }
 
-  /* Jump links — option 7: bold with tighter letter-spacing */
   .goto-link {
     color: var(--jump-link);
     cursor: pointer;
     text-decoration: none;
     font-weight: bold;
-    letter-spacing: -0.03em;
     transition: color 0.15s;
   }
 
-  .goto-link:hover {
-    color: var(--jump-link-hover);
-  }
+  .goto-link:hover { color: var(--jump-link-hover); }
 
-  /* ── Bottom bar ── */
   #bottom-bar {
     display: flex;
     flex-direction: row;
@@ -311,35 +293,21 @@
     font-size: 0.82em;
     color: var(--ui-text);
     flex-shrink: 0;
-    padding: 2px 0;
   }
 
-  #bottom-bar a,
-  #bottom-bar label,
-  #bottom-bar span.bar-label {
+  #bottom-bar a, #bottom-bar label {
     color: var(--ui-text);
     text-decoration: none;
-    font-size: 1em;
-    white-space: nowrap;
     cursor: pointer;
     transition: color 0.15s;
   }
 
-  #bottom-bar a:hover,
-  #bottom-bar label:hover {
-    color: var(--ui-text-hover);
-  }
-
-  .bar-divider {
-    color: var(--divider);
-    font-size: 0.85em;
-    user-select: none;
-  }
+  #bottom-bar a:hover, #bottom-bar label:hover { color: var(--ui-text-hover); }
+  .bar-divider { color: var(--divider); user-select: none; }
 
   #jump-input {
     width: 60px;
     padding: 3px 6px;
-    font-size: 1em;
     border: 1px solid var(--ui-border);
     background: var(--page-bg);
     color: var(--page-text);
@@ -350,7 +318,6 @@
 
   #btn-jump {
     padding: 3px 10px;
-    font-size: 1em;
     cursor: pointer;
     background: var(--ui-bg);
     border: 1px solid var(--ui-border);
@@ -359,34 +326,16 @@
     font-family: Georgia, serif;
   }
 
-  /* Toggle switch */
-  .toggle-switch {
-    position: relative;
-    width: 28px;
-    height: 15px;
-    flex-shrink: 0;
-  }
-
-  .toggle-switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-    position: absolute;
-  }
-
+  .toggle-switch { position: relative; width: 28px; height: 15px; }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; }
   .toggle-track {
     position: absolute;
     inset: 0;
     background: var(--toggle-track);
     border-radius: 15px;
-    transition: background 0.2s;
     cursor: pointer;
   }
-
-  .toggle-switch input:checked + .toggle-track {
-    background: var(--toggle-track-on);
-  }
-
+  .toggle-switch input:checked + .toggle-track { background: var(--toggle-track-on); }
   .toggle-track::after {
     content: '';
     position: absolute;
@@ -398,10 +347,7 @@
     border-radius: 50%;
     transition: transform 0.2s;
   }
-
-  .toggle-switch input:checked + .toggle-track::after {
-    transform: translateX(13px);
-  }
+  .toggle-switch input:checked + .toggle-track::after { transform: translateX(13px); }
 </style>
 </head>
 <body>
@@ -431,15 +377,11 @@
 
   <div id="bottom-bar">
     <a href="index.html">&larr; Books</a>
-
     <span class="bar-divider">|</span>
-
     <label for="jump-input">Go to page:</label>
     <input type="text" id="jump-input" placeholder="e.g. 16">
     <button id="btn-jump">Go</button>
-
     <span class="bar-divider">|</span>
-
     <label for="theme-toggle">Dark mode</label>
     <label class="toggle-switch">
       <input type="checkbox" id="theme-toggle">
@@ -456,7 +398,10 @@ let currentBook = null;
 const PAGE_W = 218;
 const PAGE_H = 325;
 
-// ── Theme persistence ─────────────────────────────────────────
+const GOTO_RE  = /(?:go to page|goto page|turn to page)\s+(\d+)/i;
+const ILLUS_RE = /^>>>\s*Illustration\s+(\d+)/i;
+const MINI_RE  = /^>>>\s*Mini(?:\s+Illustration)?\s+(\d+)/i;
+
 function applyTheme(dark) {
   document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
   document.getElementById('theme-toggle').checked = dark;
@@ -464,64 +409,33 @@ function applyTheme(dark) {
 }
 
 applyTheme(localStorage.getItem('theme') === 'dark');
+document.getElementById('theme-toggle').addEventListener('change', e => applyTheme(e.target.checked));
 
-document.getElementById('theme-toggle').addEventListener('change', e => {
-  applyTheme(e.target.checked);
+// Restore Keyboard Navigation
+window.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') return;
+  if (e.key === 'ArrowLeft') document.getElementById('btn-back').click();
+  if (e.key === 'ArrowRight') document.getElementById('btn-forward').click();
 });
-
-// ── Startup ───────────────────────────────────────────────────
-function showError(msg) {
-  document.getElementById('error-msg').textContent = msg;
-  document.getElementById('error-area').style.display = 'flex';
-}
 
 async function init() {
   const params = new URLSearchParams(window.location.search);
   const codename = params.get('book');
+  if (!codename) return;
 
-  if (!codename) {
-    showError('No book specified. Use ?book=codename in the URL.');
-    return;
-  }
-
-  let bookList;
   try {
     const r = await fetch('book_list.json?v=' + Date.now());
-    if (!r.ok) throw new Error();
-    bookList = await r.json();
-  } catch {
-    showError('Could not load book_list.json.');
-    return;
+    const list = await r.json();
+    currentBook = list.find(b => b.codename === codename);
+    const txtR = await fetch(currentBook.data + '?v=' + Date.now());
+    parseBook(await txtR.text());
+    document.getElementById('book-container').style.display = 'flex';
+    renderSpread();
+  } catch (e) {
+    document.getElementById('error-area').style.display = 'flex';
   }
-
-  const book = bookList.find(b => b.codename === codename);
-  if (!book) {
-    showError(`Book "${codename}" not found in book list.`);
-    return;
-  }
-
-  currentBook = book;
-  document.title = book.title;
-
-  let text;
-  try {
-    const r = await fetch(book.data + '?v=' + Date.now());
-    if (!r.ok) throw new Error();
-    text = await r.text();
-  } catch {
-    showError(`Could not load data file for "${book.title}".`);
-    return;
-  }
-
-  parseBook(text);
-  spreadIndex = 0;
-  document.getElementById('book-container').style.display = 'flex';
-  renderSpread();
 }
 
-init();
-
-// ── Parser ────────────────────────────────────────────────────
 function parseBook(text) {
   pages = [];
   const headerRe = /^---\s*PAGE:\s*(.+?)\s*---/;
@@ -532,270 +446,149 @@ function parseBook(text) {
     if (m) {
       if (current) pages.push(current);
       current = { id: m[1].trim(), rawText: '' };
-    } else if (current) {
-      current.rawText += line + '\n';
-    }
+    } else if (current) current.rawText += line + '\n';
   }
   if (current) pages.push(current);
 }
 
-// ── Image path helpers ────────────────────────────────────────
-function illustrationPath(n) {
-  const num = String(n).padStart(2, '0');
-  return `${currentBook.folder}/illustrations/${currentBook.codename}_illustration_${num}.${currentBook.imageExt}`;
-}
-
-function miniPath(n) {
-  const num = String(n).padStart(2, '0');
-  return `${currentBook.folder}/minis/${currentBook.codename}_mini_${num}.${currentBook.imageExt}`;
-}
-
 function tryLoadIllustration(div, src) {
   const img = document.createElement('img');
-  img.onload = () => {
-    div.innerHTML = '';
-    div.classList.add('has-image');
-    div.appendChild(img);
-  };
+  img.onload = () => div.classList.add('has-image');
   img.src = src;
+  div.appendChild(img);
 }
 
-// ── Page lookup ───────────────────────────────────────────────
-function findPageIndex(id) {
-  let idx = pages.findIndex(p => p.id === id);
-  if (idx !== -1) return idx;
-  const n = parseInt(id, 10);
-  if (!isNaN(n)) {
-    const padded = String(n).padStart(2, '0');
-    idx = pages.findIndex(p => p.id === padded || p.id === String(n));
-    if (idx !== -1) return idx;
-  }
-  return -1;
-}
-
-// ── Spread mapping ────────────────────────────────────────────
-function rightIdx(s) { return s === 0 ? 0 : s * 2; }
-function leftIdx(s)  { return s === 0 ? -1 : s * 2 - 1; }
-
-function totalSpreads() {
-  if (pages.length === 0) return 0;
-  return 1 + Math.ceil((pages.length - 1) / 2);
-}
-
-function spreadForPageIdx(pIdx) {
-  if (pIdx === 0) return 0;
-  if (pIdx % 2 === 1) return (pIdx + 1) / 2;
-  return pIdx / 2;
-}
-
-// ── Solo page detection ───────────────────────────────────────
-function soloPage(s) {
-  const li = leftIdx(s);
-  const ri = rightIdx(s);
-  const lPage = li >= 0 && li < pages.length ? pages[li] : null;
-  const rPage = ri >= 0 && ri < pages.length ? pages[ri] : null;
-  const lIsCoverOrBack = lPage && (lPage.id === 'COVER' || lPage.id === 'BACK');
-  const rIsCoverOrBack = rPage && (rPage.id === 'COVER' || rPage.id === 'BACK');
-  const lIsBlank = li < 0 || li >= pages.length;
-  const rIsBlank = ri < 0 || ri >= pages.length;
-  if (rIsCoverOrBack && lIsBlank) return 'right';
-  if (lIsCoverOrBack && rIsBlank) return 'left';
-  return null;
-}
-
-// ── Markup parser ─────────────────────────────────────────────
 function parseMarkup(text) {
-  let html = text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
-  html = html
-    .replace(/\[b\]/gi,      '<strong>')
-    .replace(/\[\/b\]/gi,    '</strong>')
-    .replace(/\[i\]/gi,      '<em>')
-    .replace(/\[\/i\]/gi,    '</em>')
-    .replace(/\[cent\]/gi,   '<span class="cent">')
-    .replace(/\[\/cent\]/gi, '</span>')
-    .replace(/\[ind\]/gi,    '<span class="ind">')
-    .replace(/\[\/ind\]/gi,  '</span>')
-	.replace(/\[big\]/gi,   '<span class="big">')
-	.replace(/\[\/big\]/gi, '</span>');
-  return html;
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/\[b\]/gi, '<strong>').replace(/\[\/b\]/gi, '</strong>')
+    .replace(/\[i\]/gi, '<em>').replace(/\[\/i\]/gi, '</em>')
+    .replace(/\[cent\]/gi, '<span class="cent">').replace(/\[\/cent\]/gi, '</span>')
+    .replace(/\[ind\]/gi, '<span class="ind">').replace(/\[\/ind\]/gi, '</span>')
+    .replace(/\[big\]/gi, '<span class="big">').replace(/\[\/big\]/gi, '</span>');
 }
-
-// ── Page scaling ──────────────────────────────────────────────
-function scalePages() {
-  const spreadRow = document.getElementById('spread-row');
-  const scaler    = document.getElementById('spread-scaler');
-  const spread    = document.getElementById('spread');
-  if (!spreadRow || !scaler || !spread) return;
-
-  const availH = spreadRow.getBoundingClientRect().height;
-  if (availH <= 0) return;
-
-  const scale     = availH / PAGE_H;
-  const solo      = soloPage(spreadIndex);
-  const pageCount = solo ? 1 : 2;
-  const scaledW   = PAGE_W * pageCount * scale;
-  const scaledH   = PAGE_H * scale;
-
-  spread.style.transform = `scale(${scale})`;
-  scaler.style.width  = `${scaledW}px`;
-  scaler.style.height = `${scaledH}px`;
-}
-
-window.addEventListener('resize', scalePages);
-
-// ── Rendering ─────────────────────────────────────────────────
-const GOTO_RE  = /(?:go to page|goto page|turn to page)\s+(\d+)/i;
-const ILLUS_RE = /^>>>\s*Illustration\s+(\d+)/i;
-const MINI_RE  = /^>>>\s*Mini(?:\s+Illustration)?\s+(\d+)/i;
 
 function renderPageContent(pIdx, slotEl, labelEl) {
   const pageEl = slotEl.closest('.page');
-
   if (pIdx < 0 || pIdx >= pages.length) {
-    slotEl.innerHTML = '';
-    labelEl.textContent = '';
-    pageEl.classList.add('blank');
-    pageEl.classList.remove('cover-page');
+    slotEl.innerHTML = ''; labelEl.textContent = '';
+    pageEl.classList.add('blank'); pageEl.classList.remove('cover-page');
     return;
   }
-
   pageEl.classList.remove('blank');
   const page = pages[pIdx];
-  const isCover = page.id === 'COVER';
-  const isBack  = page.id === 'BACK';
+  const isCover = page.id === 'COVER' || page.id === 'BACK';
 
-  if (isCover || isBack) {
+  if (isCover) {
     pageEl.classList.add('cover-page');
     labelEl.textContent = '';
-    slotEl.innerHTML = '';
-    const src = isCover
-      ? `${currentBook.cover}.${currentBook.coverExt}`
-      : `${currentBook.back}.${currentBook.coverExt}`;
-    const img = document.createElement('img');
-    img.className = 'cover-img';
-    img.alt = isCover ? 'Cover' : 'Back Cover';
-    img.src = src;
-    slotEl.appendChild(img);
+    const src = page.id === 'COVER' ? `${currentBook.cover}.${currentBook.coverExt}` : `${currentBook.back}.${currentBook.coverExt}`;
+    slotEl.innerHTML = `<img class="cover-img" src="${src}">`;
     return;
   }
 
   pageEl.classList.remove('cover-page');
-  labelEl.textContent =  page.id;
-
+  labelEl.textContent = page.id;
   const lines = page.rawText.split('\n');
-  const fragment = document.createDocumentFragment();
-
+  const frag = document.createDocumentFragment();
   for (const line of lines) {
     const trimmed = line.trim();
-
     const miniMatch = trimmed.match(MINI_RE);
-    if (miniMatch) {
-      const div = document.createElement('div');
-      div.className = 'illus-block illus-mini';
-      div.textContent = trimmed.replace('>>> ', '');
-      tryLoadIllustration(div, miniPath(parseInt(miniMatch[1], 10)));
-      fragment.appendChild(div);
-      continue;
-    }
-
     const illusMatch = trimmed.match(ILLUS_RE);
-    if (illusMatch) {
+    if (miniMatch || illusMatch) {
+      const type = miniMatch ? 'mini' : 'full';
       const div = document.createElement('div');
-      div.className = 'illus-block illus-full';
-      div.textContent = trimmed.replace('>>> ', '');
-      tryLoadIllustration(div, illustrationPath(parseInt(illusMatch[1], 10)));
-      fragment.appendChild(div);
+      div.className = `illus-block illus-${type}`;
+      div.innerHTML = `<span class="illus-placeholder-text">${trimmed.replace('>>> ', '')}</span>`;
+      tryLoadIllustration(div, miniMatch ? miniPath(parseInt(miniMatch[1], 10)) : illustrationPath(parseInt(illusMatch[1], 10)));
+      frag.appendChild(div);
       continue;
     }
-
     if (trimmed === '') {
-      const spacer = document.createElement('span');
-      spacer.className = 'blank-line';
-      fragment.appendChild(spacer);
+      const s = document.createElement('span'); s.className = 'blank-line'; frag.appendChild(s);
       continue;
     }
-
-    if (GOTO_RE.test(line)) {
-      const p = document.createElement('p');
-      const a = document.createElement('a');
-      a.className = 'goto-link';
-      a.innerHTML = parseMarkup(line);
-      const match = line.match(GOTO_RE);
-      a.addEventListener('click', () => gotoPage(match[1]));
-      p.appendChild(a);
-      fragment.appendChild(p);
-      continue;
-    }
-
     const p = document.createElement('p');
-    p.innerHTML = parseMarkup(line);
-    fragment.appendChild(p);
+    if (GOTO_RE.test(line)) {
+      const a = document.createElement('a'); a.className = 'goto-link'; a.innerHTML = parseMarkup(line);
+      a.onclick = () => gotoPage(line.match(GOTO_RE)[1]); p.appendChild(a);
+    } else p.innerHTML = parseMarkup(line);
+    frag.appendChild(p);
   }
-
-  slotEl.innerHTML = '';
-  slotEl.appendChild(fragment);
+  slotEl.innerHTML = ''; slotEl.appendChild(frag);
 }
 
 function renderSpread() {
-  const li = leftIdx(spreadIndex);
-  const ri = rightIdx(spreadIndex);
-  const leftPageEl  = document.getElementById('left-page');
-  const rightPageEl = document.getElementById('right-page');
+  renderPageContent(
+    leftIdx(spreadIndex),
+    document.getElementById('left-content'),
+    document.getElementById('left-label')
+  );
 
-  renderPageContent(li, document.getElementById('left-content'),  document.getElementById('left-label'));
-  renderPageContent(ri, document.getElementById('right-content'), document.getElementById('right-label'));
+  renderPageContent(
+    rightIdx(spreadIndex),
+    document.getElementById('right-content'),
+    document.getElementById('right-label')
+  );
 
   const solo = soloPage(spreadIndex);
+
+  const leftPage = document.getElementById('left-page');
+  const rightPage = document.getElementById('right-page');
+
+  leftPage.classList.remove('hidden-page', 'solo-page');
+  rightPage.classList.remove('hidden-page', 'solo-page');
+
   if (solo === 'right') {
-    leftPageEl.classList.add('hidden-page');
-    leftPageEl.classList.remove('solo-page');
-    rightPageEl.classList.remove('hidden-page');
-    rightPageEl.classList.remove('solo-page');
+    leftPage.classList.add('hidden-page');
   } else if (solo === 'left') {
-    rightPageEl.classList.add('hidden-page');
-    leftPageEl.classList.remove('hidden-page');
-    leftPageEl.classList.add('solo-page');
-  } else {
-    leftPageEl.classList.remove('hidden-page');
-    leftPageEl.classList.remove('solo-page');
-    rightPageEl.classList.remove('hidden-page');
-    rightPageEl.classList.remove('solo-page');
+    leftPage.classList.add('solo-page');
+    rightPage.classList.add('hidden-page');
   }
 
-  document.getElementById('btn-back').disabled    = spreadIndex === 0;
+  document.getElementById('btn-back').disabled = spreadIndex === 0;
   document.getElementById('btn-forward').disabled = spreadIndex >= totalSpreads() - 1;
 
   scalePages();
 }
 
-// ── Navigation ────────────────────────────────────────────────
-document.getElementById('btn-back').addEventListener('click', () => {
-  if (spreadIndex > 0) { spreadIndex--; renderSpread(); }
-});
-
-document.getElementById('btn-forward').addEventListener('click', () => {
-  if (spreadIndex < totalSpreads() - 1) { spreadIndex++; renderSpread(); }
-});
-
-function gotoPage(idStr) {
-  const pIdx = findPageIndex(idStr);
-  if (pIdx < 0) { alert(`Page "${idStr}" not found.`); return; }
-  spreadIndex = spreadForPageIdx(pIdx);
-  renderSpread();
+function changeSpread(newIdx) {
+  const spreadEl = document.getElementById('spread');
+  spreadEl.classList.add('page-turning');
+  setTimeout(() => {
+    spreadIndex = newIdx;
+    renderSpread();
+    requestAnimationFrame(() => spreadEl.classList.remove('page-turning'));
+  }, 150);
 }
 
-document.getElementById('btn-jump').addEventListener('click', () => {
-  const val = document.getElementById('jump-input').value.trim();
-  if (!val) return;
-  gotoPage(val);
-});
+function leftIdx(s) { return s === 0 ? -1 : s * 2 - 1; }
+function rightIdx(s) { return s === 0 ? 0 : s * 2; }
+function totalSpreads() { return 1 + Math.ceil((pages.length - 1) / 2); }
+function soloPage(s) { const li = leftIdx(s), ri = rightIdx(s); if (ri >= 0 && (pages[ri].id === 'COVER' || pages[ri].id === 'BACK') && li < 0) return 'right'; if (li >= 0 && (pages[li].id === 'COVER' || pages[li].id === 'BACK') && ri >= pages.length) return 'left'; return null; }
+function illustrationPath(n) { return `${currentBook.folder}/illustrations/${currentBook.codename}_illustration_${String(n).padStart(2, '0')}.${currentBook.imageExt}`; }
+function miniPath(n) { return `${currentBook.folder}/minis/${currentBook.codename}_mini_${String(n).padStart(2, '0')}.${currentBook.imageExt}`; }
+function scalePages() {
+  const spreadRow = document.getElementById('spread-row');
+  const scaler = document.getElementById('spread-scaler');
+  const spread = document.getElementById('spread');
+  const availH = spreadRow.getBoundingClientRect().height;
+  if (availH <= 0) return;
+  const scale = availH / PAGE_H;
+  const pCount = soloPage(spreadIndex) ? 1 : 2;
+  spread.style.transform = `scale(${scale})`;
+  scaler.style.width = `${PAGE_W * pCount * scale}px`;
+  scaler.style.height = `${PAGE_H * scale}px`;
+}
+function gotoPage(id) { 
+  const idx = pages.findIndex(p => p.id === id || p.id === String(id).padStart(2, '0'));
+  if (idx >= 0) changeSpread(idx === 0 ? 0 : (idx % 2 === 1 ? (idx + 1) / 2 : idx / 2));
+}
 
-document.getElementById('jump-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter') document.getElementById('btn-jump').click();
-});
+document.getElementById('btn-back').onclick = () => spreadIndex > 0 && changeSpread(spreadIndex - 1);
+document.getElementById('btn-forward').onclick = () => spreadIndex < totalSpreads() - 1 && changeSpread(spreadIndex + 1);
+document.getElementById('btn-jump').onclick = () => gotoPage(document.getElementById('jump-input').value.trim());
+window.onresize = scalePages;
+init();
 </script>
 </body>
 </html>
