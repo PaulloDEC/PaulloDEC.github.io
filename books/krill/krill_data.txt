@@ -58,6 +58,13 @@ ZORK: The Cavern of Doom
 
 
 
+>>> Mini 31
+[b][big][cent]#1[/cent][/big][/b]
+[b][big][cent]THE FORCES OF KRILL[/cent][/big][/b]
+
+
+
+[big][cent]BY S. ERIC MERETZKY[/cent][/big]
 
 
 
@@ -65,31 +72,7 @@ ZORK: The Cavern of Doom
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-[cent]ZORK #1[/cent]
-[cent]THE FORCES OF KRILL[/cent]
-
-
-
-[cent]BY S. ERIC MERETZKY[/cent]
-
-
-
-
-
-
-
-[cent]TOR[/cent]
+>>> Mini 32
 [cent]A TOM DOHERTY ASSOCIATES BOOK[/cent]
 
 

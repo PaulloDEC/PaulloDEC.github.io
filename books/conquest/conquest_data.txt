@@ -61,6 +61,13 @@ ZORK: The Cavern of Doom
 
 
 
+>>> Mini 17
+[b][big][cent]#4[/cent][/big][/b]
+[b][big][cent]CONQUEST AT QUENDOR[/cent][/big][/b]
+
+
+
+[big][cent]BY S. ERIC MERETZKY[/cent][/big]
 
 
 
@@ -68,31 +75,7 @@ ZORK: The Cavern of Doom
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-[cent]ZORK #4[/cent]
-[cent]CONQUEST AT QUENDOR[/cent]
-
-
-
-[cent]BY S. ERIC MERETZKY[/cent]
-
-
-
-
-
-
-
-[cent]TOR[/cent]
+>>> Mini 18
 [cent]A TOM DOHERTY ASSOCIATES BOOK[/cent]
 
 

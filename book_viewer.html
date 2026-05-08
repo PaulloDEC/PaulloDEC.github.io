@@ -229,15 +229,23 @@
     height: 0.6em;
   }
 
-  .page-content .cent {
-    display: block;
-    text-align: center;
-  }
+ .page-content .cent {
+  display: inline-block;
+  width: 100%;
+  text-align: center;
+}
 
-  .page-content .ind {
-    display: block;
-    margin-left: 2.5em;
-  }
+.page-content .ind {
+  display: inline-block;
+  width: 100%;
+  margin-left: 2.5em;
+  width: calc(100% - 2.5em);
+}
+
+.page-content .big {
+  font-size: 2em;
+  line-height: 1.2;
+}
 
   .illus-block {
     display: flex;
@@ -609,7 +617,9 @@ function parseMarkup(text) {
     .replace(/\[cent\]/gi,   '<span class="cent">')
     .replace(/\[\/cent\]/gi, '</span>')
     .replace(/\[ind\]/gi,    '<span class="ind">')
-    .replace(/\[\/ind\]/gi,  '</span>');
+    .replace(/\[\/ind\]/gi,  '</span>')
+	.replace(/\[big\]/gi,   '<span class="big">')
+	.replace(/\[\/big\]/gi, '</span>');
   return html;
 }
 

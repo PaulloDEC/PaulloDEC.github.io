@@ -61,6 +61,13 @@ ZORK #4: CONQUEST AT QUENDOR
 
 
 
+>>> Mini 19
+[b][big][cent]#2[/cent][/big][/b]
+[b][big][cent]THE MALIFESTRO QUEST[/cent][/big][/b]
+
+
+
+[big][cent]BY S. ERIC MERETZKY[/cent][/big]
 
 
 
@@ -68,33 +75,8 @@ ZORK #4: CONQUEST AT QUENDOR
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-[cent]ZORK #2[/cent]
-[cent]THE MALIFESTRO QUEST[/cent]
-
-
-
-[cent]BY S. ERIC MERETZKY[/cent]
-
-
-
-
-
-
-
-[cent]TOR[/cent]
+>>> Mini 20
 [cent]A TOM DOHERTY ASSOCIATES BOOK[/cent]
-
 
 
 

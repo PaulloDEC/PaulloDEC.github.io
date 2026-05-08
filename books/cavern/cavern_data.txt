@@ -58,6 +58,13 @@ ZORK: The Malifestro Quest
 
 
 
+>>> Mini 37
+[b][big][cent]#3[/cent][/big][/b]
+[b][big][cent]THE CAVERN OF DOOM[/cent][/big][/b]
+
+
+
+[big][cent]BY S. ERIC MERETZKY[/cent][/big]
 
 
 
@@ -65,32 +72,9 @@ ZORK: The Malifestro Quest
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-[cent]ZORK #3[/cent]
-[cent]THE CAVERN OF DOOM[/cent]
-
-
-
-[cent]BY S. ERIC MERETZKY[/cent]
-
-
-
-
-
-
-
-[cent]TOR[/cent]
+>>> Mini 38
 [cent]A TOM DOHERTY ASSOCIATES BOOK[/cent]
+
 
 
 
