@@ -411,7 +411,7 @@ function applyTheme(dark) {
 applyTheme(localStorage.getItem('theme') === 'dark');
 document.getElementById('theme-toggle').addEventListener('change', e => applyTheme(e.target.checked));
 
-// Restore Keyboard Navigation
+// Keyboard Navigation
 window.addEventListener('keydown', e => {
   if (e.target.tagName === 'INPUT') return;
   if (e.key === 'ArrowLeft') document.getElementById('btn-back').click();
@@ -429,6 +429,10 @@ async function init() {
     currentBook = list.find(b => b.codename === codename);
     const txtR = await fetch(currentBook.data + '?v=' + Date.now());
     parseBook(await txtR.text());
+    
+    // START PRELOADING IMMEDIATELY
+    preloadBookAssets();
+
     document.getElementById('book-container').style.display = 'flex';
     renderSpread();
   } catch (e) {
@@ -449,6 +453,33 @@ function parseBook(text) {
     } else if (current) current.rawText += line + '\n';
   }
   if (current) pages.push(current);
+}
+
+// ── PRELOADING LOGIC ──────────────────────────────────────
+function preloadBookAssets() {
+  const imagePaths = new Set();
+
+  // 1. Add Covers
+  imagePaths.add(`${currentBook.cover}.${currentBook.coverExt}`);
+  imagePaths.add(`${currentBook.back}.${currentBook.coverExt}`);
+
+  // 2. Scan pages for illustrations/minis
+  pages.forEach(page => {
+    const lines = page.rawText.split('\n');
+    lines.forEach(line => {
+      const trimmed = line.trim();
+      const miniMatch = trimmed.match(MINI_RE);
+      const illusMatch = trimmed.match(ILLUS_RE);
+      if (miniMatch) imagePaths.add(miniPath(parseInt(miniMatch[1], 10)));
+      if (illusMatch) imagePaths.add(illustrationPath(parseInt(illusMatch[1], 10)));
+    });
+  });
+
+  // 3. Trigger fetch
+  imagePaths.forEach(path => {
+    const img = new Image();
+    img.src = path;
+  });
 }
 
 function tryLoadIllustration(div, src) {
@@ -518,36 +549,13 @@ function renderPageContent(pIdx, slotEl, labelEl) {
 }
 
 function renderSpread() {
-  renderPageContent(
-    leftIdx(spreadIndex),
-    document.getElementById('left-content'),
-    document.getElementById('left-label')
-  );
-
-  renderPageContent(
-    rightIdx(spreadIndex),
-    document.getElementById('right-content'),
-    document.getElementById('right-label')
-  );
-
+  renderPageContent(leftIdx(spreadIndex), document.getElementById('left-content'), document.getElementById('left-label'));
+  renderPageContent(rightIdx(spreadIndex), document.getElementById('right-content'), document.getElementById('right-label'));
   const solo = soloPage(spreadIndex);
-
-  const leftPage = document.getElementById('left-page');
-  const rightPage = document.getElementById('right-page');
-
-  leftPage.classList.remove('hidden-page', 'solo-page');
-  rightPage.classList.remove('hidden-page', 'solo-page');
-
-  if (solo === 'right') {
-    leftPage.classList.add('hidden-page');
-  } else if (solo === 'left') {
-    leftPage.classList.add('solo-page');
-    rightPage.classList.add('hidden-page');
-  }
-
+  document.getElementById('left-page').className = `page left-page ${solo === 'right' ? 'hidden-page' : (solo === 'left' ? 'solo-page' : '')}`;
+  document.getElementById('right-page').className = `page right-page ${solo === 'left' ? 'hidden-page' : ''}`;
   document.getElementById('btn-back').disabled = spreadIndex === 0;
   document.getElementById('btn-forward').disabled = spreadIndex >= totalSpreads() - 1;
-
   scalePages();
 }
 
