@@ -160,11 +160,16 @@
   /* ── Content Fading ── */
   .page-label, .page-content {
     opacity: 1;
+  }
+
+  /* Only transition when fade is enabled */
+  body.fade-enabled .page-label, 
+  body.fade-enabled .page-content {
     transition: opacity 0.15s ease-in-out;
   }
 
-  .page-turning .page-label, 
-  .page-turning .page-content {
+  body.fade-enabled .page-turning .page-label, 
+  body.fade-enabled .page-turning .page-content {
     opacity: 0;
   }
 
@@ -382,6 +387,12 @@
     <input type="text" id="jump-input" placeholder="e.g. 16">
     <button id="btn-jump">Go</button>
     <span class="bar-divider">|</span>
+    <label for="fade-toggle">Page fade</label>
+    <label class="toggle-switch">
+      <input type="checkbox" id="fade-toggle">
+      <div class="toggle-track"></div>
+    </label>
+    <span class="bar-divider">|</span>
     <label for="theme-toggle">Dark mode</label>
     <label class="toggle-switch">
       <input type="checkbox" id="theme-toggle">
@@ -394,6 +405,7 @@
 let pages = [];
 let spreadIndex = 0;
 let currentBook = null;
+let useFade = true;
 
 const PAGE_W = 218;
 const PAGE_H = 325;
@@ -408,8 +420,20 @@ function applyTheme(dark) {
   localStorage.setItem('theme', dark ? 'dark' : 'light');
 }
 
+function applyFade(enabled) {
+  useFade = enabled;
+  document.body.classList.toggle('fade-enabled', enabled);
+  document.getElementById('fade-toggle').checked = enabled;
+  localStorage.setItem('book-fade', enabled);
+}
+
+// Apply settings immediately
 applyTheme(localStorage.getItem('theme') === 'dark');
+const savedFade = localStorage.getItem('book-fade');
+applyFade(savedFade === null ? true : savedFade === 'true');
+
 document.getElementById('theme-toggle').addEventListener('change', e => applyTheme(e.target.checked));
+document.getElementById('fade-toggle').addEventListener('change', e => applyFade(e.target.checked));
 
 // Keyboard Navigation
 window.addEventListener('keydown', e => {
@@ -430,7 +454,6 @@ async function init() {
     const txtR = await fetch(currentBook.data + '?v=' + Date.now());
     parseBook(await txtR.text());
     
-    // START PRELOADING IMMEDIATELY
     preloadBookAssets();
 
     document.getElementById('book-container').style.display = 'flex';
@@ -455,15 +478,11 @@ function parseBook(text) {
   if (current) pages.push(current);
 }
 
-// ── PRELOADING LOGIC ──────────────────────────────────────
 function preloadBookAssets() {
   const imagePaths = new Set();
-
-  // 1. Add Covers
   imagePaths.add(`${currentBook.cover}.${currentBook.coverExt}`);
   imagePaths.add(`${currentBook.back}.${currentBook.coverExt}`);
 
-  // 2. Scan pages for illustrations/minis
   pages.forEach(page => {
     const lines = page.rawText.split('\n');
     lines.forEach(line => {
@@ -475,7 +494,6 @@ function preloadBookAssets() {
     });
   });
 
-  // 3. Trigger fetch
   imagePaths.forEach(path => {
     const img = new Image();
     img.src = path;
@@ -549,20 +567,9 @@ function renderPageContent(pIdx, slotEl, labelEl) {
 }
 
 function renderSpread() {
-  renderPageContent(
-    leftIdx(spreadIndex),
-    document.getElementById('left-content'),
-    document.getElementById('left-label')
-  );
-
-  renderPageContent(
-    rightIdx(spreadIndex),
-    document.getElementById('right-content'),
-    document.getElementById('right-label')
-  );
-
+  renderPageContent(leftIdx(spreadIndex), document.getElementById('left-content'), document.getElementById('left-label'));
+  renderPageContent(rightIdx(spreadIndex), document.getElementById('right-content'), document.getElementById('right-label'));
   const solo = soloPage(spreadIndex);
-
   const leftPage = document.getElementById('left-page');
   const rightPage = document.getElementById('right-page');
 
@@ -578,12 +585,18 @@ function renderSpread() {
 
   document.getElementById('btn-back').disabled = spreadIndex === 0;
   document.getElementById('btn-forward').disabled = spreadIndex >= totalSpreads() - 1;
-
   scalePages();
 }
 
 function changeSpread(newIdx) {
   const spreadEl = document.getElementById('spread');
+  
+  if (!useFade) {
+    spreadIndex = newIdx;
+    renderSpread();
+    return;
+  }
+
   spreadEl.classList.add('page-turning');
   setTimeout(() => {
     spreadIndex = newIdx;
