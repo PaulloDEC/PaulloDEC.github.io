@@ -1,412 +1,435 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Zork Game Books</title>
-<style>
-  /* ── Colour tokens ── */
-  :root {
-    --backdrop:           #C8C0B0;
-    --page-bg:            #FAF6EF;
-    --heading-dark:       #5A462F;
-    --heading-light:      #B19F7C;
-    --ui-text:            #5A462F;
-    --ui-text-hover:      #5A462F;
-    --cover-border:       #5A462F;
-    --cover-shadow:       rgba(0,0,0,0.3);
-    --cover-shadow-hover: rgba(0,0,0,0.45);
-    --cover-placeholder:  #aaa;
-    --toggle-track:       #B19F7C;
-    --toggle-track-on:    #5A462F;
-    --toggle-knob:        #fff;
-    --divider:            #aaa;
-    --error-text:         #800;
-  }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zork Game Books</title>
+  <style>
+    /* ── Colour tokens ── */
+    :root {
+      --backdrop:           #C8C0B0;
+      --page-bg:            #FAF6EF;
+      --heading-dark:       #5A462F;
+      --heading-light:      #B19F7C;
+      --ui-text:            #5A462F;
+      --ui-text-hover:      #5A462F;
+      --cover-border:       #5A462F;
+      --cover-shadow:       rgba(0,0,0,0.3);
+      --cover-shadow-hover: rgba(0,0,0,0.45);
+      --cover-placeholder:  #aaa;
+      --toggle-track:       #B19F7C;
+      --toggle-track-on:    #5A462F;
+      --toggle-knob:        #fff;
+      --divider:            #aaa;
+      --error-text:         #800;
+      --progress-dot:       #B19F7C;
+      --progress-text:      #B19F7C;
+    }
 
-  [data-theme="dark"] {
-    --backdrop:           #1A1814;
-    --page-bg:            #2A2824;
-    --heading-dark:       #B19F7C;
-    --heading-light:      #332e23;
-    --ui-text:            #B19F7C;
-    --ui-text-hover:      #B19F7C;
-    --cover-border:       #332e23;
-    --cover-shadow:       rgba(0,0,0,0.5);
-    --cover-shadow-hover: rgba(0,0,0,0.7);
-    --cover-placeholder:  #666;
-    --toggle-track:       #332e23;
-    --toggle-track-on:    #B19F7C;
-    --toggle-knob:        #ccc;
-    --divider:            #555;
-    --error-text:         #c66;
-  }
+    [data-theme="dark"] {
+      --backdrop:           #1A1814;
+      --page-bg:            #2A2824;
+      --heading-dark:       #B19F7C;
+      --heading-light:      #332e23;
+      --ui-text:            #B19F7C;
+      --ui-text-hover:      #B19F7C;
+      --cover-border:       #332e23;
+      --cover-shadow:       rgba(0,0,0,0.5);
+      --cover-shadow-hover: rgba(0,0,0,0.7);
+      --cover-placeholder:  #666;
+      --toggle-track:       #332e23;
+      --toggle-track-on:    #B19F7C;
+      --toggle-knob:        #ccc;
+      --divider:            #555;
+      --error-text:         #c66;
+      --progress-dot:       #5A462F;
+      --progress-text:      #5A462F;
+    }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
-  body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
+    /* Subtle background texture overlay */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-color: #5a462f;
+      opacity: 0.05;
+      -webkit-mask-image: url('backdrop_texture.svg');
+      mask-image: url('backdrop_texture.svg');
+      mask-repeat: repeat;
+      pointer-events: none;
+      z-index: -1;
+    }
 
-    background-color: #5a462f;
-    opacity: 0.05;
+    body {
+      font-family: Georgia, serif;
+      background: var(--backdrop);
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.3s ease;
+    }
 
-    -webkit-mask-image: url('backdrop_texture.svg');
-    -webkit-mask-repeat: repeat;
+    /* Fixed design container that scales to fit any screen */
+    #grid-inner {
+      width: 968px;
+      height: 540px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      transform-origin: center center;
+      flex-shrink: 0;
+    }
 
-    mask-image: url('backdrop_texture.svg');
-    mask-repeat: repeat;
+    #book-grid {
+      display: flex;
+      flex-direction: row;
+      gap: 32px;
+      flex-wrap: nowrap;
+    }
 
-    pointer-events: none;
-    z-index: -1;
-  }
+    .book-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+      cursor: pointer;
+      text-decoration: none;
+    }
 
-  body {
-    font-family: Georgia, serif;
-    background: var(--backdrop);
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.3s ease;
-  }
+    .book-card:hover .cover-wrap {
+      box-shadow: 0 6px 20px var(--cover-shadow-hover);
+      transform: translateY(-6px);
+    }
 
-  #grid-inner {
-    width: 968px;
-    height: 540px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 24px;
-    transform-origin: center center;
-    flex-shrink: 0;
-  }
+    .cover-wrap {
+      width: 180px;
+      height: 268px;
+      background: var(--page-bg);
+      border: 1px solid var(--cover-border);
+      box-shadow: 0 3px 10px var(--cover-shadow);
+      transition: box-shadow 0.15s ease, transform 0.15s ease;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
 
-  #book-grid {
-    display: flex;
-    flex-direction: row;
-    gap: 32px;
-    flex-wrap: nowrap;
-  }
+    .cover-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
 
-  .book-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0;
-    cursor: pointer;
-    text-decoration: none;
-  }
+    .cover-placeholder {
+      font-size: 0.7em;
+      color: var(--cover-placeholder);
+      font-style: italic;
+      text-align: center;
+      padding: 8px;
+    }
 
-  .book-card:hover .cover-wrap {
-    box-shadow: 0 6px 20px var(--cover-shadow-hover);
-    transform: translateY(-6px);
-  }
+    /* Reading progress indicator dot */
+    .progress-pip {
+      display: none;
+      position: absolute;
+      bottom: 7px;
+      right: 7px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--progress-dot);
+      box-shadow: 0 0 0 2px rgba(0,0,0,0.3);
+    }
 
-  .cover-wrap {
-    width: 180px;
-    height: 268px;
-    background: var(--page-bg);
-    border: 1px solid var(--cover-border);
-    box-shadow: 0 3px 10px var(--cover-shadow);
-    transition: box-shadow 0.15s ease, transform 0.15s ease;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+    .book-card.has-progress .progress-pip {
+      display: block;
+    }
 
-  .cover-wrap img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
+    .book-title-block {
+      width: 180px;
+      margin-top: 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
 
-  .cover-placeholder {
-    font-size: 0.7em;
-    color: var(--cover-placeholder);
-    font-style: italic;
-    text-align: center;
-    padding: 8px;
-  }
+    .book-number {
+      font-size: 0.62em;
+      color: var(--heading-dark);
+      letter-spacing: 0.12em;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+      white-space: nowrap;
+    }
 
-  .book-title-block {
-    width: 180px;
-    margin-top: 14px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-  }
+    .book-number::before,
+    .book-number::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--heading-light);
+    }
 
-  .book-number {
-    font-size: 0.62em;
-    color: var(--heading-dark);
-    letter-spacing: 0.12em;
-    text-align: center;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    width: 100%;
-    white-space: nowrap;
-  }
+    .book-name {
+      font-size: 0.88em;
+      font-weight: bold;
+      color: var(--heading-dark);
+      text-align: center;
+      width: 180px;
+      line-height: 1.35;
+    }
 
-  .book-number::before,
-  .book-number::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--heading-light);
-  }
+    /* ── UI Components ── */
+    #bottom-bar {
+      position: fixed;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.72em;
+      color: var(--ui-text);
+      user-select: none;
+      white-space: nowrap;
+    }
 
-  .book-name {
-    font-size: 0.88em;
-    font-weight: bold;
-    color: var(--heading-dark);
-    text-align: center;
-    width: 180px;
-    line-height: 1.35;
-  }
+    #bottom-bar label {
+      cursor: pointer;
+      color: var(--ui-text);
+      transition: color 0.2s;
+    }
 
-  /* ── Bottom bar ── */
-  #bottom-bar {
-    position: fixed;
-    bottom: 18px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 0.72em;
-    color: var(--ui-text);
-    user-select: none;
-    white-space: nowrap;
-  }
+    #bottom-bar label:hover { color: var(--ui-text-hover); }
 
-  #bottom-bar label {
-    cursor: pointer;
-    color: var(--ui-text);
-    transition: color 0.2s;
-  }
+    .bar-divider { color: var(--divider); font-size: 0.9em; }
 
-  #bottom-bar label:hover {
-    color: var(--ui-text-hover);
-  }
+    .toggle-switch {
+      position: relative;
+      width: 32px;
+      height: 16px;
+      flex-shrink: 0;
+    }
 
-  .bar-divider {
-    color: var(--divider);
-    font-size: 0.9em;
-  }
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+      position: absolute;
+    }
 
-  /* ── Toggle switch (shared) ── */
-  .toggle-switch {
-    position: relative;
-    width: 32px;
-    height: 16px;
-    flex-shrink: 0;
-  }
+    .toggle-track {
+      position: absolute;
+      inset: 0;
+      background: var(--toggle-track);
+      border-radius: 16px;
+      transition: background 0.2s;
+      cursor: pointer;
+    }
 
-  .toggle-switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-    position: absolute;
-  }
+    .toggle-switch input:checked + .toggle-track { background: var(--toggle-track-on); }
 
-  .toggle-track {
-    position: absolute;
-    inset: 0;
-    background: var(--toggle-track);
-    border-radius: 16px;
-    transition: background 0.2s;
-    cursor: pointer;
-  }
+    .toggle-track::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 12px;
+      height: 12px;
+      background: var(--toggle-knob);
+      border-radius: 50%;
+      transition: transform 0.2s;
+    }
 
-  .toggle-switch input:checked + .toggle-track {
-    background: var(--toggle-track-on);
-  }
+    .toggle-switch input:checked + .toggle-track::after { transform: translateX(16px); }
 
-  .toggle-track::after {
-    content: '';
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    width: 12px;
-    height: 12px;
-    background: var(--toggle-knob);
-    border-radius: 50%;
-    transition: transform 0.2s;
-  }
-
-  .toggle-switch input:checked + .toggle-track::after {
-    transform: translateX(16px);
-  }
-
-  #error-msg {
-    font-size: 0.85em;
-    color: var(--error-text);
-    display: none;
-  }
-</style>
+    #error-msg {
+      font-size: 0.85em;
+      color: var(--error-text);
+      display: none;
+    }
+  </style>
 </head>
 <body>
 
-<div id="grid-inner">
-  <div id="book-grid"></div>
-  <div id="error-msg">Could not load book list.</div>
-</div>
+  <div id="grid-inner">
+    <div id="book-grid"></div>
+    <div id="error-msg">Could not load book list.</div>
+  </div>
 
-<div id="bottom-bar">
-  <label for="worn-toggle">Worn covers</label>
-  <label class="toggle-switch">
-    <input type="checkbox" id="worn-toggle">
-    <div class="toggle-track"></div>
-  </label>
+  <div id="bottom-bar">
+    <label for="worn-toggle">Worn covers</label>
+    <label class="toggle-switch">
+      <input type="checkbox" id="worn-toggle">
+      <div class="toggle-track"></div>
+    </label>
 
-  <span class="bar-divider">|</span>
+    <span class="bar-divider">|</span>
 
-  <label for="theme-toggle">Dark mode</label>
-  <label class="toggle-switch">
-    <input type="checkbox" id="theme-toggle">
-    <div class="toggle-track"></div>
-  </label>
-</div>
+    <label for="theme-toggle">Dark mode</label>
+    <label class="toggle-switch">
+      <input type="checkbox" id="theme-toggle">
+      <div class="toggle-track"></div>
+    </label>
+  </div>
 
-<script>
-  const DESIGN_W = 968;
-  const DESIGN_H = 540;
-  const PADDING  = 20;
+  <script>
+    // Configuration for the "Kiosk" style scaling logic
+    const DESIGN_W = 968;
+    const DESIGN_H = 540;
+    const PADDING  = 20;
 
-  let wornMode = false;
-  let bookData = [];
+    let wornMode = false;
+    let bookData = [];
 
-  // ── Theme persistence ─────────────────────────────────────
-  function applyTheme(dark) {
-    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
-    document.getElementById('theme-toggle').checked = dark;
-    localStorage.setItem('theme', dark ? 'dark' : 'light');
-  }
-
-  // Apply saved theme immediately on load
-  applyTheme(localStorage.getItem('theme') === 'dark');
-
-  document.getElementById('theme-toggle').addEventListener('change', e => {
-    applyTheme(e.target.checked);
-  });
-
-  // ── Grid scaling ──────────────────────────────────────────
-  function scaleGrid() {
-    const inner = document.getElementById('grid-inner');
-    if (!inner) return;
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    const scale = Math.min(
-      (vw - PADDING * 2) / DESIGN_W,
-      (vh - PADDING * 2) / DESIGN_H
-    );
-    inner.style.transform = `scale(${scale})`;
-  }
-
-  window.addEventListener('resize', scaleGrid);
-
-  // ── Cover helpers ─────────────────────────────────────────
-  function coverSrc(book, worn) {
-    const suffix = worn ? '_worn' : '';
-    return `${book.cover}${suffix}.${book.coverExt}`;
-  }
-
-  function parseTitle(title) {
-    const sep = title.indexOf(' - ');
-    if (sep !== -1) {
-      return { number: title.slice(0, sep).trim(), name: title.slice(sep + 3).trim() };
+    // ── Theme Management ──
+    function applyTheme(dark) {
+      document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+      document.getElementById('theme-toggle').checked = dark;
+      localStorage.setItem('theme', dark ? 'dark' : 'light');
     }
-    return { number: '', name: title };
-  }
 
-  function makeBookCard(book) {
-    const a = document.createElement('a');
-    a.className = 'book-card';
-    a.href = `book_viewer.html?book=${encodeURIComponent(book.codename)}`;
-    a.dataset.codename = book.codename;
+    applyTheme(localStorage.getItem('theme') === 'dark');
+    document.getElementById('theme-toggle').addEventListener('change', e => applyTheme(e.target.checked));
 
-    const wrap = document.createElement('div');
-    wrap.className = 'cover-wrap';
+    // ── Grid Scaling ──
+    // Recalculates the CSS transform to fit the 968x540 grid inside the viewport
+    function scaleGrid() {
+      const inner = document.getElementById('grid-inner');
+      if (!inner) return;
+      const scale = Math.min(
+        (window.innerWidth  - PADDING * 2) / DESIGN_W,
+        (window.innerHeight - PADDING * 2) / DESIGN_H
+      );
+      inner.style.transform = `scale(${scale})`;
+    }
 
-    const img = document.createElement('img');
-    img.alt = book.title;
-    img.src = coverSrc(book, wornMode);
-    img.dataset.codename = book.codename;
-    img.onerror = () => {
-      if (wornMode && !img.dataset.fallback) {
-        img.dataset.fallback = '1';
-        img.src = coverSrc(book, false);
-      } else {
-        wrap.removeChild(img);
-        const ph = document.createElement('div');
-        ph.className = 'cover-placeholder';
-        ph.textContent = book.title;
-        wrap.appendChild(ph);
+    window.addEventListener('resize', scaleGrid);
+
+    // ── Progress & Storage ──
+    function progressKey(codename) { return `book-progress-${codename}`; }
+
+    function hasProgress(codename) {
+      const val = localStorage.getItem(progressKey(codename));
+      return val !== null && parseInt(val, 10) > 0;
+    }
+
+    // ── UI Generation ──
+    function coverSrc(book, worn) {
+      return `${book.cover}${worn ? '_worn' : ''}.${book.coverExt}`;
+    }
+
+    // Splits "Book #1 - Title" into number and name components
+    function parseTitle(title) {
+      const sep = title.indexOf(' - ');
+      if (sep !== -1) {
+        return { 
+          number: title.slice(0, sep).trim(), 
+          name: title.slice(sep + 3).trim() 
+        };
       }
-    };
-    wrap.appendChild(img);
-
-    const titleBlock = document.createElement('div');
-    titleBlock.className = 'book-title-block';
-
-    const parsed = parseTitle(book.title);
-    if (parsed.number) {
-      const numEl = document.createElement('div');
-      numEl.className = 'book-number';
-      numEl.textContent = `BOOK ${parsed.number.replace('#', '')}`;
-      titleBlock.appendChild(numEl);
+      return { number: '', name: title };
     }
 
-    const nameEl = document.createElement('div');
-    nameEl.className = 'book-name';
-    nameEl.textContent = parsed.name;
-    titleBlock.appendChild(nameEl);
+    function makeBookCard(book) {
+      const a = document.createElement('a');
+      a.className = 'book-card';
+      a.href = `book_viewer.html?book=${encodeURIComponent(book.codename)}`;
+      a.dataset.codename = book.codename;
 
-    a.appendChild(wrap);
-    a.appendChild(titleBlock);
-    return a;
-  }
+      if (hasProgress(book.codename)) {
+        a.classList.add('has-progress');
+      }
 
-  function updateCovers() {
-    bookData.forEach(book => {
-      const img = document.querySelector(`img[data-codename="${book.codename}"]`);
-      if (!img) return;
-      delete img.dataset.fallback;
+      const wrap = document.createElement('div');
+      wrap.className = 'cover-wrap';
+
+      const img = document.createElement('img');
+      img.alt = book.title;
       img.src = coverSrc(book, wornMode);
-    });
-  }
+      img.dataset.codename = book.codename;
+      
+      // Fallback logic for missing "worn" covers
+      img.onerror = () => {
+        if (wornMode && !img.dataset.fallback) {
+          img.dataset.fallback = '1';
+          img.src = coverSrc(book, false);
+        } else {
+          wrap.removeChild(img);
+          const ph = document.createElement('div');
+          ph.className = 'cover-placeholder';
+          ph.textContent = book.title;
+          wrap.appendChild(ph);
+        }
+      };
+      wrap.appendChild(img);
 
-  document.getElementById('worn-toggle').addEventListener('change', e => {
-    wornMode = e.target.checked;
-    updateCovers();
-  });
+      const pip = document.createElement('div');
+      pip.className = 'progress-pip';
+      wrap.appendChild(pip);
 
-  // ── Load books ────────────────────────────────────────────
-  fetch('book_list.json?v=' + Date.now())
-    .then(r => {
-      if (!r.ok) throw new Error();
-      return r.json();
-    })
-    .then(books => {
-      bookData = books;
-      const grid = document.getElementById('book-grid');
-      for (const book of books) grid.appendChild(makeBookCard(book));
-      scaleGrid();
-    })
-    .catch(() => {
-      document.getElementById('error-msg').style.display = 'block';
-      scaleGrid();
+      const titleBlock = document.createElement('div');
+      titleBlock.className = 'book-title-block';
+
+      const parsed = parseTitle(book.title);
+      if (parsed.number) {
+        const numEl = document.createElement('div');
+        numEl.className = 'book-number';
+        numEl.textContent = `BOOK ${parsed.number.replace('#', '')}`;
+        titleBlock.appendChild(numEl);
+      }
+
+      const nameEl = document.createElement('div');
+      nameEl.className = 'book-name';
+      nameEl.textContent = parsed.name;
+      titleBlock.appendChild(nameEl);
+
+      a.appendChild(wrap);
+      a.appendChild(titleBlock);
+      return a;
+    }
+
+    function updateCovers() {
+      bookData.forEach(book => {
+        const img = document.querySelector(`img[data-codename="${book.codename}"]`);
+        if (!img) return;
+        delete img.dataset.fallback;
+        img.src = coverSrc(book, wornMode);
+      });
+    }
+
+    document.getElementById('worn-toggle').addEventListener('change', e => {
+      wornMode = e.target.checked;
+      updateCovers();
     });
-</script>
+
+    // ── Initialization ──
+    fetch('book_list.json?v=' + Date.now())
+      .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+      .then(books => {
+        bookData = books;
+        const grid = document.getElementById('book-grid');
+        for (const book of books) grid.appendChild(makeBookCard(book));
+        scaleGrid();
+      })
+      .catch(() => {
+        document.getElementById('error-msg').style.display = 'block';
+        scaleGrid();
+      });
+  </script>
 </body>
 </html>
